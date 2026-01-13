@@ -158,7 +158,6 @@ resource "aws_lambda_function" "auth_handlers" {
       COGNITO_USER_POOL_ID = aws_cognito_user_pool.main.id
       COGNITO_CLIENT_ID    = aws_cognito_user_pool_client.main.id
       USERS_TABLE_NAME     = aws_dynamodb_table.users.name
-      AWS_REGION          = local.region
     }
   }
   

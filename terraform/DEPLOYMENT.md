@@ -91,6 +91,12 @@ If Lambda functions fail to deploy:
 terraform apply
 ```
 
+### Reserved Environment Variable Error
+If you see an error about `AWS_REGION` being a reserved key:
+- This has been fixed in the current configuration
+- AWS Lambda automatically provides `AWS_DEFAULT_REGION` environment variable
+- No manual region configuration needed in Lambda environment variables
+
 ### Cognito Trigger Issues
 Check CloudWatch Logs:
 - `/aws/lambda/ai-therapy-platform-dev-cognito-triggers`

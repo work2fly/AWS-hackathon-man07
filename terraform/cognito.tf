@@ -209,7 +209,6 @@ resource "aws_lambda_function" "cognito_triggers" {
   environment {
     variables = {
       USERS_TABLE_NAME = aws_dynamodb_table.users.name
-      AWS_REGION      = local.region
     }
   }
   
