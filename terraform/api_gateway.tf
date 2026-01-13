@@ -29,7 +29,6 @@ resource "aws_api_gateway_deployment" "main" {
   ]
   
   rest_api_id = aws_api_gateway_rest_api.main.id
-  stage_name  = var.api_gateway_stage_name
   
   lifecycle {
     create_before_destroy = true
@@ -44,12 +43,6 @@ resource "aws_api_gateway_stage" "main" {
   
   # Enable detailed CloudWatch metrics
   xray_tracing_enabled = var.enable_detailed_monitoring
-  
-  # Throttling settings
-  throttle_settings {
-    rate_limit  = var.api_throttle_rate_limit
-    burst_limit = var.api_throttle_burst_limit
-  }
   
   # Access logging
   access_log_settings {
@@ -151,12 +144,6 @@ resource "aws_apigatewayv2_stage" "websocket" {
   api_id      = aws_apigatewayv2_api.websocket.id
   name        = var.api_gateway_stage_name
   auto_deploy = true
-  
-  # Throttling
-  throttle_settings {
-    rate_limit  = var.api_throttle_rate_limit
-    burst_limit = var.api_throttle_burst_limit
-  }
   
   # Access logging
   access_log_settings {

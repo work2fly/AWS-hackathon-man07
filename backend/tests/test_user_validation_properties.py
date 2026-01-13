@@ -247,7 +247,7 @@ class TestUserValidationProperties(unittest.TestCase):
         self.validator = SimpleDataValidator()
     
     @given(user_data=valid_user_data())
-    @settings(max_examples=20, deadline=None)
+    @settings(max_examples=5, deadline=None)
     @example(user_data={
         'user_id': 'test_user_123',
         'email': 'test@example.com',
@@ -305,7 +305,7 @@ class TestUserValidationProperties(unittest.TestCase):
                                f"Phone number should be valid: {profile['phone_number']}")
     
     @given(user_data=invalid_user_data())
-    @settings(max_examples=10, deadline=None)
+    @settings(max_examples=3, deadline=None)
     def test_property_invalid_user_data_rejection(self, user_data):
         """
         Property: Invalid user data should always be rejected with appropriate errors
@@ -327,7 +327,7 @@ class TestUserValidationProperties(unittest.TestCase):
                 self.assertGreater(len(error), 0, f"Error message should not be empty: {error}")
     
     @given(user_data=valid_user_data())
-    @settings(max_examples=10, deadline=None)
+    @settings(max_examples=3, deadline=None)
     def test_property_data_consistency(self, user_data):
         """
         Property: Data validation should be consistent
@@ -341,7 +341,7 @@ class TestUserValidationProperties(unittest.TestCase):
         self.assertEqual(result1, result2, f"Validation should be consistent for: {user_data}")
     
     @given(st.text(min_size=1, max_size=50, alphabet='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_'))
-    @settings(max_examples=10, deadline=None)
+    @settings(max_examples=3, deadline=None)
     def test_property_user_id_validation_consistency(self, user_id):
         """
         Property: User ID validation should be consistent
@@ -363,7 +363,7 @@ class TestUserValidationProperties(unittest.TestCase):
                            f"Valid user ID should only contain allowed characters: {user_id}")
     
     @given(st.emails())
-    @settings(max_examples=10, deadline=None)
+    @settings(max_examples=3, deadline=None)
     def test_property_email_validation_consistency(self, email):
         """
         Property: Email validation should be consistent

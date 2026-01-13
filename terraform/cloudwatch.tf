@@ -5,7 +5,6 @@
 resource "aws_cloudwatch_log_group" "api_gateway" {
   name              = "/aws/apigateway/${local.name_prefix}-rest-api"
   retention_in_days = var.log_retention_days
-  kms_key_id        = var.enable_encryption ? aws_kms_key.main.arn : null
   
   tags = merge(local.common_tags, {
     Name = "${local.name_prefix}-api-gateway-logs"
@@ -16,7 +15,6 @@ resource "aws_cloudwatch_log_group" "api_gateway" {
 resource "aws_cloudwatch_log_group" "api_gateway_websocket" {
   name              = "/aws/apigateway/${local.name_prefix}-websocket-api"
   retention_in_days = var.log_retention_days
-  kms_key_id        = var.enable_encryption ? aws_kms_key.main.arn : null
   
   tags = merge(local.common_tags, {
     Name = "${local.name_prefix}-websocket-logs"
@@ -27,7 +25,6 @@ resource "aws_cloudwatch_log_group" "api_gateway_websocket" {
 resource "aws_cloudwatch_log_group" "lambda" {
   name              = "/aws/lambda/${local.name_prefix}"
   retention_in_days = var.log_retention_days
-  kms_key_id        = var.enable_encryption ? aws_kms_key.main.arn : null
   
   tags = merge(local.common_tags, {
     Name = "${local.name_prefix}-lambda-logs"
@@ -96,10 +93,6 @@ resource "aws_cloudwatch_dashboard" "main" {
         }
       }
     ]
-  })
-  
-  tags = merge(local.common_tags, {
-    Name = "${local.name_prefix}-dashboard"
   })
 }
 
