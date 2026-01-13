@@ -47,7 +47,7 @@ graph TB
         end
         
         subgraph "Data Layer"
-            RDS[RDS PostgreSQL]
+            DYNAMODB[DynamoDB]
             S3[S3 Storage]
             REDIS[ElastiCache Redis]
         end
@@ -73,14 +73,14 @@ graph TB
     AGENTCORE --> MEMORY
     LAMBDA --> WEBSOCKET
     WEBSOCKET --> NOVA2
-    LAMBDA --> RDS
+    LAMBDA --> DYNAMODB
     LAMBDA --> S3
     LAMBDA --> REDIS
     LAMBDA --> ELEVENLABS
     LAMBDA --> OPENAI
     COGNITO --> MFA
     WAF --> ALB
-    KMS --> RDS
+    KMS --> DYNAMODB
     KMS --> S3
 ```
 
@@ -139,7 +139,7 @@ graph LR
 - **Single Audio Service**: Nova Sonic 2 handles all audio processing
 - **Managed Authentication**: AWS Cognito for user management
 - **Serverless Backend**: Lambda functions for all business logic
-- **Managed Database**: RDS PostgreSQL with minimal configuration
+- **Serverless Database**: DynamoDB with automatic scaling
 
 **Development Speed Optimizations**:
 - **React + TypeScript**: Fast component development with type safety
@@ -334,17 +334,30 @@ src/
 - Built-in language processing eliminates need for separate services
 - Real-time performance optimized for therapy sessions
 
-### 8. Data Storage and Management
+### 8. Data Storage and Management (Serverless)
 
-**Technology**: Amazon RDS PostgreSQL + Amazon S3 + ElastiCache Redis
+**Technology**: Amazon DynamoDB + Amazon S3 + ElastiCache Redis
 
 **Data Architecture**:
-- **PostgreSQL**: User profiles, session metadata, sentiment summaries
+- **DynamoDB**: User profiles, session metadata, sentiment summaries, red flags
 - **S3**: Audio recordings (encrypted), system logs, backups
-- **Redis**: Session state, real-time data, caching
+- **Redis**: Session state, real-time data, WebSocket connection caching
+
+**DynamoDB Table Design**:
+- **Users Table**: User profiles, roles, preferences (PK: userId)
+- **Sessions Table**: Session metadata, sentiment summaries (PK: sessionId, SK: timestamp)
+- **RedFlags Table**: Safety incidents and notifications (PK: sessionId, SK: flagId)
+- **Notifications Table**: Therapist and admin alerts (PK: recipientId, SK: timestamp)
+
+**Hackathon Benefits**:
+- **Serverless**: No database management or provisioning
+- **Auto-scaling**: Handles any load automatically
+- **Fast Setup**: Create tables in minutes
+- **Pay-per-Use**: Only pay for actual reads/writes
+- **Built-in Security**: Encryption at rest included
 
 **Encryption**:
-- Data at rest: AES-256 encryption
+- Data at rest: AES-256 encryption (DynamoDB and S3)
 - Data in transit: TLS 1.3
 - Key management: AWS KMS
 
@@ -355,21 +368,22 @@ src/
 - Consent management
 -->
 
-## Data Models
+## Data Models (DynamoDB Optimized)
 
-### User Model
+### Users Table
 ```typescript
 interface User {
-  id: string;
+  userId: string;           // Partition Key
   email: string;
   role: 'client' | 'therapist' | 'admin';
   profile: UserProfile;
   preferences: UserPreferences;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string;        // ISO timestamp
+  updatedAt: string;        // ISO timestamp
   isActive: boolean;
   mfaEnabled: boolean;
   languagePreference: string;
+  GSI1PK?: string;          // For email-based queries
 }
 
 interface UserProfile {
@@ -388,21 +402,23 @@ interface UserPreferences {
 }
 ```
 
-### Session Model
+### Sessions Table
 ```typescript
 interface TherapySession {
-  id: string;
+  sessionId: string;        // Partition Key
+  timestamp: string;        // Sort Key (ISO timestamp)
   clientId: string;
   agentId: string;
   status: 'active' | 'completed' | 'terminated';
-  startTime: Date;
-  endTime?: Date;
+  startTime: string;
+  endTime?: string;
   duration?: number;
   language: string;
   metadata: SessionMetadata;
   sentimentSummary: SentimentSummary;
-  redFlags: RedFlag[];
-  agentMemoryId: string; // AgentCore memory reference
+  agentMemoryId: string;    // AgentCore memory reference
+  GSI1PK: string;          // clientId for client-based queries
+  GSI1SK: string;          // timestamp for sorting
 }
 
 interface SessionMetadata {
@@ -418,33 +434,72 @@ interface SentimentSummary {
   progressIndicators: ProgressIndicator[];
   keyTopics: string[];
   riskLevel: 'low' | 'medium' | 'high';
-  generatedAt: Date;
+  generatedAt: string;
 }
 ```
 
-### Red Flag Model
+### RedFlags Table
 ```typescript
 interface RedFlag {
-  id: string;
-  sessionId: string;
+  sessionId: string;        // Partition Key
+  flagId: string;          // Sort Key (timestamp-based)
   type: 'self_harm' | 'suicidal_ideation' | 'abuse' | 'violence' | 'crisis';
   severity: 'low' | 'medium' | 'high' | 'critical';
-  detectedAt: Date;
-  context: string; // Sanitized context, not full transcript
+  detectedAt: string;
+  context: string;         // Sanitized context, not full transcript
   notificationsSent: NotificationRecord[];
   resolved: boolean;
   resolvedBy?: string;
-  resolvedAt?: Date;
+  resolvedAt?: string;
+  GSI1PK: string;         // For therapist queries
+  GSI1SK: string;         // severity + timestamp for prioritization
 }
 
 interface NotificationRecord {
   recipientId: string;
   method: 'email' | 'sms' | 'push' | 'in_app';
-  sentAt: Date;
+  sentAt: string;
   acknowledged: boolean;
-  acknowledgedAt?: Date;
+  acknowledgedAt?: string;
 }
 ```
+
+### Notifications Table
+```typescript
+interface Notification {
+  recipientId: string;      // Partition Key (therapist/admin ID)
+  timestamp: string;        // Sort Key
+  type: 'red_flag' | 'session_complete' | 'system_alert';
+  priority: 'low' | 'medium' | 'high' | 'urgent';
+  title: string;
+  message: string;
+  relatedSessionId?: string;
+  relatedFlagId?: string;
+  read: boolean;
+  readAt?: string;
+  actionRequired: boolean;
+}
+```
+
+### DynamoDB Access Patterns
+
+**Users Table**:
+- Get user by ID: `userId` (PK)
+- Get user by email: GSI on `email`
+
+**Sessions Table**:
+- Get session by ID: `sessionId` (PK)
+- Get client sessions: GSI on `clientId` (GSI1PK) + `timestamp` (GSI1SK)
+- Get recent sessions: Query by `timestamp` range
+
+**RedFlags Table**:
+- Get session red flags: `sessionId` (PK)
+- Get therapist red flags: GSI on therapist assignment
+- Get urgent flags: GSI on `severity` + `timestamp`
+
+**Notifications Table**:
+- Get user notifications: `recipientId` (PK) + `timestamp` (SK)
+- Get unread notifications: Filter on `read = false`
 
 ### AgentCore Memory Model
 ```typescript
