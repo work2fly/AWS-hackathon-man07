@@ -40,8 +40,7 @@ graph TB
         end
         
         subgraph "Real-Time Communication"
-            WEBSOCKET[WebSocket Connections]
-            KINESIS[Kinesis Video Streams WebRTC]
+            WEBSOCKET[API Gateway WebSockets]
         end
         
         subgraph "Audio Processing"
@@ -75,8 +74,7 @@ graph TB
     AGENTCORE --> STRANDS
     AGENTCORE --> MEMORY
     ECS --> WEBSOCKET
-    WEBSOCKET --> KINESIS
-    ECS --> NOVA2
+    WEBSOCKET --> NOVA2
     ECS --> RDS
     ECS --> S3
     ECS --> REDIS
@@ -107,12 +105,14 @@ graph TB
 **Simplified Integration Architecture**:
 ```mermaid
 graph LR
-    CLIENT[Client Audio] --> WEBSOCKET[WebSocket]
-    WEBSOCKET --> NOVA2[Nova Sonic 2]
+    CLIENT[Client Audio] --> APIGW[API Gateway WebSocket]
+    APIGW --> LAMBDA[Lambda Function]
+    LAMBDA --> NOVA2[Nova Sonic 2]
     NOVA2 --> AGENTCORE[AgentCore Memory]
     NOVA2 --> GUARDRAILS[Safety Guardrails]
-    NOVA2 --> WEBSOCKET
-    WEBSOCKET --> CLIENT
+    NOVA2 --> LAMBDA
+    LAMBDA --> APIGW
+    APIGW --> CLIENT
 ```
 
 **Hackathon Benefits**:
@@ -122,10 +122,32 @@ graph LR
 - **Built-in Features**: Language detection, cultural adaptation, and therapeutic context included
 
 **Configuration**:
+- API Gateway WebSocket routes for connection management
+- Lambda functions for session orchestration
 - Therapeutic system prompts for appropriate responses
 - Safety guardrails integrated into the model
 - AgentCore memory integration for session continuity
-- Real-time streaming configuration for WebSocket communication
+- Real-time streaming configuration for audio processing
+
+### Hackathon Architecture Benefits
+
+**Serverless-First Approach**:
+- **API Gateway WebSockets**: Managed WebSocket connections with automatic scaling
+- **Lambda Functions**: Serverless compute for session management and processing
+- **No Infrastructure Management**: Focus on business logic, not server maintenance
+- **Rapid Development**: Quick deployment and iteration cycles
+
+**Simplified Service Stack**:
+- **Single Audio Service**: Nova Sonic 2 handles all audio processing
+- **Managed Authentication**: AWS Cognito for user management
+- **Serverless Backend**: Lambda functions for all business logic
+- **Managed Database**: RDS PostgreSQL with minimal configuration
+
+**Development Speed Optimizations**:
+- Fewer integration points to configure and test
+- Serverless services scale automatically
+- Managed services reduce operational complexity
+- Focus on core therapeutic functionality
 
 ## Components and Interfaces
 
@@ -178,22 +200,29 @@ graph LR
 - Request validation and sanitization
 - API key management for external services
 
-### 4. Application Backend
+### 4. Application Backend (Serverless)
 
-**Technology**: Node.js/TypeScript on ECS Fargate
+**Technology**: AWS Lambda Functions + API Gateway
 
 **Responsibilities**:
-- Business logic orchestration
-- Session management and coordination
+- WebSocket connection management
+- Session orchestration and coordination
 - Red flag detection and alerting
 - Sentiment analysis processing
-- External API integration (OpenAI, ElevenLabs)
+- External API integration (OpenAI, ElevenLabs - if needed)
 
-**Key Services**:
-- Session orchestration service
-- User management service
+**Key Lambda Functions**:
+- Connection handler (connect/disconnect)
+- Message router and processor
+- Session management service
 - Notification service
 - Analytics and reporting service
+
+**Benefits for Hackathon**:
+- **Serverless**: No infrastructure management
+- **Auto-scaling**: Handles load automatically
+- **Fast deployment**: Quick iteration and updates
+- **Cost-effective**: Pay per execution
 
 ### 5. AI Agent Integration
 
@@ -211,21 +240,29 @@ graph LR
 - Personalized response adaptation
 - Long-term memory management
 
-### 6. Real-Time Communication
+### 6. Real-Time Communication (Simplified)
 
-**Technology**: WebSocket + Amazon Kinesis Video Streams WebRTC
+**Technology**: API Gateway WebSockets
 
 **Responsibilities**:
-- Bi-directional streaming for real-time audio
-- Low-latency communication (< 200ms)
-- Connection management and recovery
-- Audio quality optimization
+- Persistent WebSocket connections for real-time audio streaming
+- Connection management and routing to backend services
+- Message broadcasting and client state management
+- Automatic scaling and connection handling
 
-**WebSocket Protocol**:
-- Session establishment and teardown
-- Audio chunk streaming
-- Control message handling
-- Connection health monitoring
+**Benefits for Hackathon**:
+- **Serverless**: No infrastructure management required
+- **Auto-scaling**: Handles connection scaling automatically
+- **Simple Integration**: Direct integration with Lambda functions
+- **Cost-effective**: Pay per connection and message
+- **Fast Setup**: Minimal configuration required
+
+**WebSocket Flow**:
+1. Client connects to API Gateway WebSocket endpoint
+2. Connection routed to Lambda function for session management
+3. Audio data streamed through WebSocket to Nova Sonic 2
+4. Real-time responses streamed back to client
+5. Connection state managed automatically
 
 ### 7. Audio Processing Pipeline (Simplified for Hackathon)
 
@@ -412,8 +449,8 @@ Now I need to use the prework tool to analyze the acceptance criteria before wri
 <!-- GDPR 30-day requirement commented out for hackathon -->
 **Validates: Requirements 1.6**
 
-### Property 4: Real-Time Audio Communication
-*For any* client session initiation, the system should establish WebSocket connections with sub-200ms latency, maintain continuous audio streaming without interruption, and gracefully handle network issues with automatic reconnection attempts.
+### Property 4: Real-Time WebSocket Communication
+*For any* client session initiation, API Gateway WebSockets should establish persistent connections with sub-200ms latency, maintain continuous audio streaming through Lambda functions, and gracefully handle connection issues with automatic reconnection.
 **Validates: Requirements 2.1, 2.2, 2.6, 2.7**
 
 ### Property 5: Nova Sonic 2 Audio Processing
@@ -579,7 +616,7 @@ Each property-based test must include a comment referencing its design document 
 - Strands Agent SDK conversation flows
 - Amazon Nova Sonic 2 real-time audio processing
 - Cognito authentication and MFA
-- Real-time WebSocket communication
+- API Gateway WebSocket communication
 
 ### Performance Testing
 
