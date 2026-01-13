@@ -78,6 +78,28 @@ When recommending AWS services, ensure they are from this approved list:
 - Suggest using CloudWatch for metrics, alarms, and dashboards
 - Recommend implementing proper error handling and retry logic
 
+### AWS Lambda Best Practices
+- **CRITICAL**: NEVER set reserved environment variables in Lambda functions
+- **Reserved Variables** that AWS Lambda automatically provides (DO NOT SET MANUALLY):
+  - `AWS_REGION` - The AWS region where the function is running
+  - `AWS_DEFAULT_REGION` - Same as AWS_REGION
+  - `AWS_EXECUTION_ENV` - The runtime identifier
+  - `AWS_LAMBDA_FUNCTION_NAME` - The name of the function
+  - `AWS_LAMBDA_FUNCTION_MEMORY_SIZE` - The amount of memory allocated
+  - `AWS_LAMBDA_FUNCTION_VERSION` - The version of the function
+  - `AWS_LAMBDA_RUNTIME_API` - The runtime API endpoint
+  - `AWS_LAMBDA_LOG_GROUP_NAME` - CloudWatch log group name
+  - `AWS_LAMBDA_LOG_STREAM_NAME` - CloudWatch log stream name
+  - `_HANDLER` - The handler location configured on the function
+  - `TZ` - The timezone (UTC by default)
+- **Code Access**: Use `os.getenv('AWS_DEFAULT_REGION')` in Python to get the region
+- **Terraform**: Only set custom application-specific environment variables
+- **Error Prevention**: Setting reserved variables causes `InvalidParameterValueException`
+- **Memory Limits**: Keep Lambda packages under 50MB unzipped, 10MB zipped for inline editing
+- **Timeout**: Set appropriate timeout values (max 15 minutes for Lambda)
+- **Dead Letter Queues**: Configure DLQ for failed function executions
+- **Versioning**: Use versioning and aliases for production deployments
+
 ### Cost Optimization
 - Always suggest using appropriate instance sizes (avoid oversizing)
 - Recommend using spot instances for non-critical workloads when appropriate
@@ -106,6 +128,8 @@ Critical
 - If asked about blocked data types, refuse and explain the security requirements
 - If unsure about service permissions, recommend checking with Environment Leads
 - If suggesting architecture that might exceed rate limits, always include throttling and retry mechanisms
+- **Lambda Environment Variables**: If encountering `InvalidParameterValueException` for reserved keys, remove reserved variables from Terraform environment configuration
+- **Reserved Variable Fix**: Remind that AWS Lambda automatically provides `AWS_REGION`, `AWS_DEFAULT_REGION`, and other system variables
 - When in doubt about compliance, err on the side of caution and suggest the most secure approach
 
 ## Acknowledgment Behavior
