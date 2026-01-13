@@ -19,7 +19,7 @@ This implementation plan is optimized for a 2-day hackathon timeline, focusing o
     - Set up encryption and basic security
     - _Requirements: 6.1, 6.2_
 
-  - [ ]* 2.2 Write property test for DynamoDB operations
+  - [ ] 2.2 Write property test for DynamoDB operations
     - **Property 1: User Registration and Authentication**
     - **Validates: Requirements 1.1, 1.2, 1.3**
 
@@ -36,7 +36,7 @@ This implementation plan is optimized for a 2-day hackathon timeline, focusing o
     - Create Cognito triggers for user management
     - _Requirements: 1.1, 1.2, 1.3, 1.4_
 
-  - [ ]* 3.2 Write property test for role-based access control
+  - [ ] 3.2 Write property test for role-based access control
     - **Property 9: Role-Based Access Control**
     - **Validates: Requirements 5.1, 5.2, 5.3, 5.4, 5.5**
 
@@ -53,7 +53,7 @@ This implementation plan is optimized for a 2-day hackathon timeline, focusing o
     - Add connection management and routing
     - _Requirements: 2.1, 2.6_
 
-  - [ ]* 4.2 Write property test for WebSocket communication
+  - [ ] 4.2 Write property test for WebSocket communication
     - **Property 4: Real-Time WebSocket Communication**
     - **Validates: Requirements 2.1, 2.2, 2.6, 2.7**
 
@@ -70,7 +70,7 @@ This implementation plan is optimized for a 2-day hackathon timeline, focusing o
     - Add therapeutic system prompts and configuration
     - _Requirements: 2.3, 2.4, 2.5, 3.4_
 
-  - [ ]* 5.2 Write property test for Nova Sonic 2 processing
+  - [ ] 5.2 Write property test for Nova Sonic 2 processing
     - **Property 5: Nova Sonic 2 Audio Processing**
     - **Validates: Requirements 2.3, 2.4, 2.5, 10.1, 10.2, 10.3, 10.4**
 
@@ -80,7 +80,7 @@ This implementation plan is optimized for a 2-day hackathon timeline, focusing o
     - Add session continuity across multiple conversations
     - _Requirements: 3.1, 3.3, 3.6, 3.7_
 
-  - [ ]* 5.4 Write property test for AgentCore memory integration
+  - [ ] 5.4 Write property test for AgentCore memory integration
     - **Property 6: AgentCore Memory Integration**
     - **Validates: Requirements 3.3, 3.6, 3.7, 7.1, 7.2**
 
@@ -97,7 +97,7 @@ This implementation plan is optimized for a 2-day hackathon timeline, focusing o
     - Create severity classification and escalation logic
     - _Requirements: 4.1, 4.2, 4.3_
 
-  - [ ]* 7.2 Write property test for red flag detection
+  - [ ] 7.2 Write property test for red flag detection
     - **Property 8: Comprehensive Red Flag Detection**
     - **Validates: Requirements 4.1, 4.2, 4.3, 4.4, 4.5, 4.6**
 
@@ -114,7 +114,7 @@ This implementation plan is optimized for a 2-day hackathon timeline, focusing o
     - Implement session state management with Redis
     - _Requirements: 7.1, 7.2, 7.5_
 
-  - [ ]* 8.2 Write property test for session sentiment analysis
+  - [ ] 8.2 Write property test for session sentiment analysis
     - **Property 13: Session Sentiment Analysis**
     - **Validates: Requirements 7.3, 7.5**
 
@@ -131,7 +131,7 @@ This implementation plan is optimized for a 2-day hackathon timeline, focusing o
     - Configure WebSocket client and audio handling
     - _Requirements: 9.1, 9.3_
 
-  - [ ]* 9.2 Write property test for responsive web interface
+  - [ ] 9.2 Write property test for responsive web interface
     - **Property 16: Responsive Web Interface**
     - **Validates: Requirements 9.1, 9.3, 9.4, 9.5**
 
@@ -172,7 +172,7 @@ This implementation plan is optimized for a 2-day hackathon timeline, focusing o
     - Create API key protection for external services
     - _Requirements: 11.1, 11.2, 11.4_
 
-  - [ ]* 11.2 Write property test for API security
+  - [ ] 11.2 Write property test for API security
     - **Property 18: Comprehensive API Security**
     - **Validates: Requirements 11.1, 11.2, 11.3, 11.4, 11.5, 11.6**
 
@@ -189,7 +189,7 @@ This implementation plan is optimized for a 2-day hackathon timeline, focusing o
     - Set up monitoring and logging
     - _Requirements: 8.1, 8.2, 8.5_
 
-  - [ ]* 12.2 Write property test for infrastructure auto-scaling
+  - [ ] 12.2 Write property test for infrastructure auto-scaling
     - **Property 15: Infrastructure Auto-Scaling**
     - **Validates: Requirements 8.4, 8.6**
 
@@ -207,9 +207,9 @@ This implementation plan is optimized for a 2-day hackathon timeline, focusing o
 
 ## Notes
 
-- Tasks marked with `*` are optional property-based tests and can be skipped for faster MVP development
+- All tasks include comprehensive property-based testing for robust validation
 - Each task references specific requirements for traceability
 - Checkpoints ensure incremental validation and allow for course correction
-- Focus on core therapeutic functionality first, then add advanced features
+- Focus on core therapeutic functionality with comprehensive testing throughout
 - Property tests validate universal correctness properties across all inputs
-- The implementation prioritizes working software over comprehensive testing for hackathon speed
+- The implementation balances working software with thorough validation
