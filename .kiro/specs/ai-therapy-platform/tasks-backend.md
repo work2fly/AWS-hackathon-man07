@@ -88,29 +88,29 @@ Backend team is responsible for the serverless Python Lambda functions, API Gate
     - **Property 9: Role-Based Access Control**
     - **Validates: Requirements 5.1, 5.2, 5.3, 5.4, 5.5**
 
-- [ ] 4. Build API Gateway WebSocket infrastructure
-  - [ ] 4.1 Create API Gateway WebSocket API
+- [x] 4. Build API Gateway WebSocket infrastructure
+  - [x] 4.1 Create API Gateway WebSocket API
     - Set up WebSocket API with custom domain
     - Configure routes: $connect, $disconnect, $default
     - Add Lambda integrations for each route
     - Set up connection management and routing tables
     - _Requirements: 2.1, 2.6_
 
-  - [ ] 4.2 Implement WebSocket Lambda handlers
+  - [x] 4.2 Implement WebSocket Lambda handlers
     - Create connection manager for WebSocket sessions
     - Build message routing and broadcasting system
     - Add session state management with Redis/DynamoDB
     - Implement connection health monitoring
     - _Requirements: 2.7, 11.1, 11.2_
 
-  - [ ] 4.3 Add WebSocket security and rate limiting
+  - [x] 4.3 Add WebSocket security and rate limiting
     - Implement connection authentication and authorization
     - Add rate limiting and abuse prevention
     - Create connection monitoring and alerting
     - Build graceful connection termination handling
     - _Requirements: 11.1, 11.2, 11.3_
 
-  - [ ] 4.4 Write property test for WebSocket communication
+  - [x] 4.4 Write property test for WebSocket communication
     - **Property 4: Real-Time WebSocket Communication**
     - **Validates: Requirements 2.1, 2.2, 2.6, 2.7**
 

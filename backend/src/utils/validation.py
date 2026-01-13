@@ -387,3 +387,121 @@ class DataValidator:
                 sanitized[key] = value
         
         return sanitized
+    
+    @staticmethod
+    def validate_websocket_message(message: Dict[str, Any]) -> Dict[str, List[str]]:
+        """Validate WebSocket message format and content"""
+        errors = {}
+        
+        # Validate required fields
+        if 'type' not in message or not message['type']:
+            errors.setdefault('type', []).append("Message type is required")
+        
+        # Validate message type
+        if 'type' in message and message['type']:
+            valid_types = [
+                'ping', 'pong', 'join_session', 'leave_session', 
+                'audio_data', 'session_message', 'connection_established',
+                'session_joined', 'session_left', 'participant_joined',
+                'participant_left', 'audio_processed', 'error'
+            ]
+            if message['type'] not in valid_types:
+                errors.setdefault('type', []).append(f"Invalid message type. Must be one of: {', '.join(valid_types)}")
+        
+        # Validate timestamp if present
+        if 'timestamp' in message and message['timestamp']:
+            if not DataValidator.validate_datetime(message['timestamp']):
+                errors.setdefault('timestamp', []).append("Invalid timestamp format")
+        
+        # Type-specific validations
+        message_type = message.get('type', '')
+        
+        if message_type == 'join_session':
+            if 'session_id' not in message or not message['session_id']:
+                errors.setdefault('session_id', []).append("session_id is required for join_session")
+            elif not DataValidator.validate_session_id(message['session_id']):
+                errors.setdefault('session_id', []).append("Invalid session_id format")
+        
+        elif message_type == 'audio_data':
+            if 'data' not in message:
+                errors.setdefault('data', []).append("audio data is required for audio_data message")
+            
+            # Validate audio format if specified
+            if 'format' in message and message['format']:
+                valid_formats = ['wav', 'mp3', 'webm', 'ogg']
+                if message['format'] not in valid_formats:
+                    errors.setdefault('format', []).append(f"Invalid audio format. Must be one of: {', '.join(valid_formats)}")
+        
+        elif message_type == 'session_message':
+            if 'content' not in message or not message['content']:
+                errors.setdefault('content', []).append("content is required for session_message")
+            elif not DataValidator.validate_string_length(message['content'], 1, 5000):
+                errors.setdefault('content', []).append("Message content must be 1-5000 characters")
+        
+        # Validate user_id if present
+        if 'user_id' in message and message['user_id']:
+            if not DataValidator.validate_user_id(message['user_id']):
+                errors.setdefault('user_id', []).append("Invalid user_id format")
+        
+        # Validate session_id if present
+        if 'session_id' in message and message['session_id']:
+            if not DataValidator.validate_session_id(message['session_id']):
+                errors.setdefault('session_id', []).append("Invalid session_id format")
+        
+        return errors
+    
+    @staticmethod
+    def sanitize_websocket_message(message: Dict[str, Any]) -> Dict[str, Any]:
+        """Sanitize WebSocket message content"""
+        sanitized = {}
+        
+        for key, value in message.items():
+            if isinstance(value, str):
+                if key == 'content':
+                    # Sanitize message content but allow some formatting
+                    sanitized[key] = DataValidator.sanitize_string(value, max_length=5000, allow_html=False)
+                elif key in ['type', 'session_id', 'user_id']:
+                    # Keep these fields as-is but trim whitespace
+                    sanitized[key] = value.strip()
+                else:
+                    # General string sanitization
+                    sanitized[key] = DataValidator.sanitize_string(value, max_length=1000)
+            elif isinstance(value, dict):
+                # Recursively sanitize nested objects
+                sanitized[key] = DataValidator.sanitize_websocket_message(value)
+            else:
+                # Keep other types as-is
+                sanitized[key] = value
+        
+        return sanitized
+
+
+# Convenience functions for backward compatibility
+def validate_email(email: str) -> bool:
+    """Validate email address"""
+    return DataValidator.validate_email(email)
+
+
+def validate_password(password: str) -> bool:
+    """Validate password strength"""
+    if not password or len(password) < 8:
+        return False
+    
+    # Check for required character types
+    has_upper = any(c.isupper() for c in password)
+    has_lower = any(c.islower() for c in password)
+    has_digit = any(c.isdigit() for c in password)
+    has_symbol = any(c in "!@#$%^&*()_+-=[]{}|;:,.<>?" for c in password)
+    
+    return all([has_upper, has_lower, has_digit, has_symbol])
+
+
+def validate_json_message(message: Dict[str, Any]) -> bool:
+    """Validate WebSocket JSON message format"""
+    errors = DataValidator.validate_websocket_message(message)
+    return len(errors) == 0
+
+
+def sanitize_input(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Sanitize user input data"""
+    return DataValidator.sanitize_user_input(data)

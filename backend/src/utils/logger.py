@@ -238,3 +238,7 @@ def with_lambda_context(func):
             logger.clear_request_context()
     
     return wrapper
+
+def get_logger(name: str = __name__) -> StructuredLogger:
+    """Get a structured logger instance"""
+    return StructuredLogger(name)

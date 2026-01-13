@@ -214,3 +214,65 @@ resource "aws_dynamodb_table" "notifications" {
     Name = "${local.name_prefix}-notifications-table"
   })
 }
+
+# WebSocket Connections Table
+resource "aws_dynamodb_table" "websocket_connections" {
+  name           = "${local.name_prefix}-websocket-connections"
+  billing_mode   = var.dynamodb_billing_mode
+  hash_key       = "connectionId"
+  
+  attribute {
+    name = "connectionId"
+    type = "S"
+  }
+  
+  attribute {
+    name = "userId"
+    type = "S"
+  }
+  
+  attribute {
+    name = "sessionId"
+    type = "S"
+  }
+  
+  # GSI for user-based queries
+  global_secondary_index {
+    name     = "UserIndex"
+    hash_key = "userId"
+    
+    projection_type = "ALL"
+  }
+  
+  # GSI for session-based queries
+  global_secondary_index {
+    name     = "SessionIndex"
+    hash_key = "sessionId"
+    
+    projection_type = "ALL"
+  }
+  
+  # TTL for automatic cleanup of stale connections
+  ttl {
+    attribute_name = "ttl"
+    enabled        = true
+  }
+  
+  # Enable encryption at rest
+  server_side_encryption {
+    enabled     = var.enable_encryption
+    kms_key_arn = var.enable_encryption ? aws_kms_key.main.arn : null
+  }
+  
+  # Enable point-in-time recovery
+  point_in_time_recovery {
+    enabled = var.dynamodb_point_in_time_recovery
+  }
+  
+  # Deletion protection
+  deletion_protection_enabled = var.enable_deletion_protection
+  
+  tags = merge(local.common_tags, {
+    Name = "${local.name_prefix}-websocket-connections-table"
+  })
+}

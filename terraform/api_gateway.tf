@@ -423,10 +423,126 @@ resource "aws_apigatewayv2_stage" "websocket" {
   })
 }
 
-# WebSocket Routes (will be configured with Lambda functions later)
+# WebSocket Connection Handler Lambda Function
+resource "aws_lambda_function" "websocket_connect" {
+  filename         = "websocket_handlers.zip"
+  function_name    = "${local.name_prefix}-websocket-connect"
+  role            = aws_iam_role.lambda_execution_role.arn
+  handler         = "websocket_handlers.connect_handler"
+  runtime         = var.lambda_runtime
+  timeout         = var.lambda_timeout
+  memory_size     = var.lambda_memory_size
+  
+  environment {
+    variables = {
+      CONNECTIONS_TABLE_NAME = aws_dynamodb_table.websocket_connections.name
+      SESSIONS_TABLE_NAME    = aws_dynamodb_table.sessions.name
+      COGNITO_USER_POOL_ID   = aws_cognito_user_pool.main.id
+      WEBSOCKET_API_ENDPOINT = aws_apigatewayv2_stage.websocket.invoke_url
+    }
+  }
+  
+  tags = merge(local.common_tags, {
+    Name = "${local.name_prefix}-websocket-connect"
+  })
+}
+
+# WebSocket Disconnect Handler Lambda Function
+resource "aws_lambda_function" "websocket_disconnect" {
+  filename         = "websocket_handlers.zip"
+  function_name    = "${local.name_prefix}-websocket-disconnect"
+  role            = aws_iam_role.lambda_execution_role.arn
+  handler         = "websocket_handlers.disconnect_handler"
+  runtime         = var.lambda_runtime
+  timeout         = var.lambda_timeout
+  memory_size     = var.lambda_memory_size
+  
+  environment {
+    variables = {
+      CONNECTIONS_TABLE_NAME = aws_dynamodb_table.websocket_connections.name
+      SESSIONS_TABLE_NAME    = aws_dynamodb_table.sessions.name
+      WEBSOCKET_API_ENDPOINT = aws_apigatewayv2_stage.websocket.invoke_url
+    }
+  }
+  
+  tags = merge(local.common_tags, {
+    Name = "${local.name_prefix}-websocket-disconnect"
+  })
+}
+
+# WebSocket Default Handler Lambda Function
+resource "aws_lambda_function" "websocket_default" {
+  filename         = "websocket_handlers.zip"
+  function_name    = "${local.name_prefix}-websocket-default"
+  role            = aws_iam_role.lambda_execution_role.arn
+  handler         = "websocket_handlers.default_handler"
+  runtime         = var.lambda_runtime
+  timeout         = var.lambda_timeout
+  memory_size     = var.lambda_memory_size
+  
+  environment {
+    variables = {
+      CONNECTIONS_TABLE_NAME = aws_dynamodb_table.websocket_connections.name
+      SESSIONS_TABLE_NAME    = aws_dynamodb_table.sessions.name
+      WEBSOCKET_API_ENDPOINT = aws_apigatewayv2_stage.websocket.invoke_url
+      BEDROCK_MODEL_ID       = var.bedrock_model_id
+    }
+  }
+  
+  tags = merge(local.common_tags, {
+    Name = "${local.name_prefix}-websocket-default"
+  })
+}
+
+# Lambda permissions for WebSocket API Gateway
+resource "aws_lambda_permission" "websocket_connect" {
+  statement_id  = "AllowWebSocketAPIGatewayInvoke"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.websocket_connect.function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_apigatewayv2_api.websocket.execution_arn}/*/*"
+}
+
+resource "aws_lambda_permission" "websocket_disconnect" {
+  statement_id  = "AllowWebSocketAPIGatewayInvoke"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.websocket_disconnect.function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_apigatewayv2_api.websocket.execution_arn}/*/*"
+}
+
+resource "aws_lambda_permission" "websocket_default" {
+  statement_id  = "AllowWebSocketAPIGatewayInvoke"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.websocket_default.function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_apigatewayv2_api.websocket.execution_arn}/*/*"
+}
+
+# WebSocket Route Integrations
+resource "aws_apigatewayv2_integration" "connect" {
+  api_id           = aws_apigatewayv2_api.websocket.id
+  integration_type = "AWS_PROXY"
+  integration_uri  = aws_lambda_function.websocket_connect.invoke_arn
+}
+
+resource "aws_apigatewayv2_integration" "disconnect" {
+  api_id           = aws_apigatewayv2_api.websocket.id
+  integration_type = "AWS_PROXY"
+  integration_uri  = aws_lambda_function.websocket_disconnect.invoke_arn
+}
+
+resource "aws_apigatewayv2_integration" "default" {
+  api_id           = aws_apigatewayv2_api.websocket.id
+  integration_type = "AWS_PROXY"
+  integration_uri  = aws_lambda_function.websocket_default.invoke_arn
+}
+
+# WebSocket Routes with Lambda integrations
 resource "aws_apigatewayv2_route" "connect" {
   api_id    = aws_apigatewayv2_api.websocket.id
   route_key = "$connect"
+  target    = "integrations/${aws_apigatewayv2_integration.connect.id}"
   
   authorization_type = "AWS_IAM"
 }
@@ -434,11 +550,13 @@ resource "aws_apigatewayv2_route" "connect" {
 resource "aws_apigatewayv2_route" "disconnect" {
   api_id    = aws_apigatewayv2_api.websocket.id
   route_key = "$disconnect"
+  target    = "integrations/${aws_apigatewayv2_integration.disconnect.id}"
 }
 
 resource "aws_apigatewayv2_route" "default" {
   api_id    = aws_apigatewayv2_api.websocket.id
   route_key = "$default"
+  target    = "integrations/${aws_apigatewayv2_integration.default.id}"
 }
 
 # API Gateway Account (for CloudWatch logging)
