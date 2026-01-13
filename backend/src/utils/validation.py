@@ -505,3 +505,17 @@ def validate_json_message(message: Dict[str, Any]) -> bool:
 def sanitize_input(data: Dict[str, Any]) -> Dict[str, Any]:
     """Sanitize user input data"""
     return DataValidator.sanitize_user_input(data)
+
+
+def validate_session_data(session_data: Dict[str, Any]) -> bool:
+    """Validate session data"""
+    errors = DataValidator.validate_session_data(session_data)
+    return len(errors) == 0
+
+
+def validate_required_fields(data: Dict[str, Any], required_fields: List[str]) -> bool:
+    """Validate that all required fields are present and non-empty"""
+    for field in required_fields:
+        if field not in data or not data[field]:
+            return False
+    return True
