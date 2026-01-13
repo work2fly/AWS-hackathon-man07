@@ -27,6 +27,14 @@ if [ ! -f "terraform.tfvars" ]; then
     echo "✅ Please edit terraform.tfvars with your specific values"
 fi
 
+# Check if S3 backend is set up
+echo "🔍 Checking Terraform S3 backend setup..."
+if ! aws s3api head-bucket --bucket "ai-therapy-platform-terraform-state" 2>/dev/null; then
+    echo "❌ S3 backend not found. Please run './scripts/setup-backend.sh' first."
+    exit 1
+fi
+echo "✅ S3 backend is ready"
+
 # Check AWS credentials
 echo "🔍 Checking AWS credentials..."
 if ! aws sts get-caller-identity > /dev/null 2>&1; then
@@ -53,9 +61,9 @@ if [[ "$REGION" != "us-west-2" && "$REGION" != "us-east-1" ]]; then
     exit 1
 fi
 
-# Initialize Terraform
-echo "🔧 Initializing Terraform..."
-terraform init
+# Initialize Terraform with S3 backend
+echo "🔧 Initializing Terraform with S3 backend..."
+terraform init -backend-config=backend.hcl -upgrade
 
 # Validate configuration
 echo "🔍 Validating Terraform configuration..."

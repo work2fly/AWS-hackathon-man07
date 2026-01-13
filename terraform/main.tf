@@ -2,20 +2,18 @@
 # Breaking Barriers UK 2026 compliant infrastructure
 
 terraform {
-  required_version = ">= 1.0"
+  required_version = ">= 1.12"
   
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "~> 5.0"
+      version = "~> 5.82"
     }
   }
   
-  # State management - using local state for hackathon
-  # In production, use S3 backend
-  backend "local" {
-    path = "terraform.tfstate"
-  }
+  # S3 backend configuration is loaded from backend.hcl
+  # Run: terraform init -backend-config=backend.hcl
+  backend "s3" {}
 }
 
 # AWS Provider configuration
