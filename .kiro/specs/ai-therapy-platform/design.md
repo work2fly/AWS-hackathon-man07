@@ -13,7 +13,7 @@ The platform supports three user types (clients, therapists, admins) with role-b
 ```mermaid
 graph TB
     subgraph "Client Layer"
-        WEB[Web Application]
+        REACT[React + TypeScript App]
         UNITY[Unity Prototype Integration]
     end
     
@@ -65,7 +65,7 @@ graph TB
         OPENAI[OpenAI API]
     end
     
-    WEB --> ALB
+    REACT --> ALB
     UNITY --> ALB
     ALB --> APIGW
     APIGW --> ECS
@@ -144,10 +144,49 @@ graph LR
 - **Managed Database**: RDS PostgreSQL with minimal configuration
 
 **Development Speed Optimizations**:
-- Fewer integration points to configure and test
-- Serverless services scale automatically
-- Managed services reduce operational complexity
-- Focus on core therapeutic functionality
+- **React + TypeScript**: Fast component development with type safety
+- **Material-UI/Tailwind**: Pre-built components for rapid UI development
+- **WebSocket Libraries**: Simplified real-time communication
+- **Fewer integration points**: Focus on core therapeutic functionality
+- **Serverless services**: Auto-scaling without infrastructure management
+- **Managed services**: Reduced operational complexity
+
+### React Frontend Architecture
+
+**Component Structure**:
+```
+src/
+├── components/
+│   ├── auth/           # Login, registration, MFA
+│   ├── client/         # Client session interface
+│   ├── therapist/      # Therapist dashboard
+│   ├── admin/          # Admin management panel
+│   ├── audio/          # Audio capture/playback components
+│   └── shared/         # Reusable UI components
+├── hooks/
+│   ├── useWebSocket.ts # WebSocket connection management
+│   ├── useAudio.ts     # Audio capture and playback
+│   └── useAuth.ts      # Authentication state
+├── services/
+│   ├── api.ts          # API client configuration
+│   ├── websocket.ts    # WebSocket service
+│   └── audio.ts        # Audio processing utilities
+└── types/
+    └── index.ts        # TypeScript type definitions
+```
+
+**Key React Hooks for Real-time Audio**:
+- **useWebSocket**: Manages API Gateway WebSocket connections
+- **useAudio**: Handles microphone access and audio streaming
+- **useSession**: Manages therapy session state and Nova Sonic 2 integration
+- **useAuth**: Handles Cognito authentication and role-based access
+
+**Hackathon Development Benefits**:
+- **Component Reusability**: Shared components across user types
+- **Type Safety**: TypeScript prevents runtime errors
+- **Hot Reloading**: Fast development iteration
+- **Rich Ecosystem**: Extensive library support for audio and WebSockets
+- **Team Familiarity**: Popular framework with good documentation
 
 ## Components and Interfaces
 
@@ -170,19 +209,30 @@ graph LR
 
 ### 2. Web Application Frontend
 
-**Technology**: React/TypeScript with WebRTC support
+**Technology**: React + TypeScript with WebRTC and WebSocket support
 
 **Responsibilities**:
-- User interface for all three user types
-- Real-time audio communication setup
+- User interface for all three user types (client, therapist, admin)
+- Real-time audio communication setup and management
+- WebSocket connection handling for Nova Sonic 2 integration
 - Session management and history display
 - Role-specific dashboards and controls
 
+**Key Libraries for Hackathon**:
+- **React**: Component-based UI development
+- **TypeScript**: Type safety for faster development
+- **WebSocket Client**: Real-time communication with API Gateway
+- **Web Audio API**: Audio capture and playback
+- **React Router**: Client-side routing
+- **Material-UI or Tailwind CSS**: Rapid UI development
+- **React Query**: API state management
+
 **Key Components**:
-- Client session interface with audio controls
-- Therapist dashboard with sentiment summaries
-- Admin panel for user and system management
-- Unity prototype integration components
+- **Client Interface**: Session initiation, audio controls, conversation history
+- **Therapist Dashboard**: Sentiment summaries, red flag notifications, client monitoring
+- **Admin Panel**: User management, system configuration, analytics
+- **Audio Components**: Microphone access, speaker output, connection status
+- **Unity Integration**: Wrapper components for existing Unity prototype elements
 
 ### 3. API Gateway and Load Balancer
 
