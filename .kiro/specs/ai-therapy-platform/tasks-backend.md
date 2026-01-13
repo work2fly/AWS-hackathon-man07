@@ -140,29 +140,29 @@ Backend team is responsible for the serverless Python Lambda functions, API Gate
     - **Property 13: Session Sentiment Analysis**
     - **Validates: Requirements 7.3, 7.5**
 
-- [ ] 6. Implement safety and red flag detection
-  - [ ] 6.1 Create red flag detection system
+- [x] 6. Implement safety and red flag detection
+  - [x] 6.1 Create red flag detection system
     - Build content analysis pipeline for safety triggers
     - Implement pattern matching for self-harm, suicidal ideation, abuse
     - Create severity classification and risk assessment
     - Add real-time detection and alerting mechanisms
     - _Requirements: 4.1, 4.2, 4.3_
 
-  - [ ] 6.2 Build notification and escalation system
+  - [x] 6.2 Build notification and escalation system
     - Create multi-channel notification system (email, SMS, in-app)
     - Implement therapist and admin alert mechanisms
     - Add escalation logic for multiple or severe red flags
     - Build notification tracking and acknowledgment system
     - _Requirements: 4.4, 4.5, 4.6_
 
-  - [ ] 6.3 Add red flag management and resolution
+  - [x] 6.3 Add red flag management and resolution
     - Create red flag review and resolution workflows
     - Implement case management and tracking systems
     - Add reporting and analytics for safety incidents
     - Build audit trails for all safety-related actions
     - _Requirements: 4.5, 4.6, 5.7_
 
-  - [ ] 6.4 Write property test for red flag detection
+  - [x] 6.4 Write property test for red flag detection
     - **Property 8: Comprehensive Red Flag Detection**
     - **Validates: Requirements 4.1, 4.2, 4.3, 4.4, 4.5, 4.6**
 
