@@ -14,6 +14,7 @@ BACKEND_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 BUILD_DIR="${BACKEND_DIR}/build"
 DIST_DIR="${BACKEND_DIR}/dist"
 SRC_DIR="${BACKEND_DIR}/src"
+TERRAFORM_DIR="$(cd "${BACKEND_DIR}/.." && pwd)/terraform"
 
 # Clean previous builds
 echo "🧹 Cleaning previous builds..."
@@ -119,14 +120,47 @@ echo "===================="
 echo "Lambda packages created in: ${DIST_DIR}"
 echo ""
 echo "📦 Packaged Functions:"
+SUCCESSFUL_PACKAGES=()
 for function in "${LAMBDA_FUNCTIONS[@]}"; do
     if [ -f "${DIST_DIR}/${function}.zip" ]; then
         local size=$(du -h "${DIST_DIR}/${function}.zip" | cut -f1)
         echo "  ✅ ${function}.zip (${size})"
+        SUCCESSFUL_PACKAGES+=("${function}")
     else
         echo "  ❌ ${function}.zip (FAILED)"
     fi
 done
+
+# Copy successful packages to terraform directory
+if [ ${#SUCCESSFUL_PACKAGES[@]} -gt 0 ] && [ -d "${TERRAFORM_DIR}" ]; then
+    echo ""
+    echo "📁 Copying ZIP files to Terraform directory: ${TERRAFORM_DIR}"
+    COPIED_FILES=()
+    for function in "${SUCCESSFUL_PACKAGES[@]}"; do
+        if cp "${DIST_DIR}/${function}.zip" "${TERRAFORM_DIR}/${function}.zip" 2>/dev/null; then
+            echo "  ✅ Copied ${function}.zip"
+            COPIED_FILES+=("${function}.zip")
+        else
+            echo "  ❌ Failed to copy ${function}.zip"
+        fi
+    done
+    
+    if [ ${#COPIED_FILES[@]} -gt 0 ]; then
+        echo ""
+        echo "🎯 Ready for Terraform deployment!"
+        echo "   All ${#COPIED_FILES[@]} ZIP files copied to terraform/ directory"
+    else
+        echo ""
+        echo "⚠️  No files copied to terraform directory"
+    fi
+elif [ ! -d "${TERRAFORM_DIR}" ]; then
+    echo ""
+    echo "⚠️  Terraform directory not found: ${TERRAFORM_DIR}"
+    echo "   ZIP files available in dist/ directory only"
+else
+    echo ""
+    echo "⚠️  No successful packages to copy"
+fi
 
 echo ""
 echo "🔧 New Services Included in All Packages:"
@@ -137,10 +171,11 @@ echo "  ✅ trauma_informed_response_service.py - UKind trauma-informed response
 
 echo ""
 echo "🚀 Deployment Instructions:"
-echo "1. Upload ZIP files to AWS Lambda functions via AWS Console or CLI"
-echo "2. Update Lambda function code using AWS CLI:"
-echo "   aws lambda update-function-code --function-name <function-name> --zip-file fileb://dist/<function-name>.zip"
-echo "3. Or use Terraform to deploy with updated source_code_hash"
+echo "1. ZIP files automatically copied to terraform/ directory"
+echo "2. Run 'terraform apply' from terraform/ directory"
+echo "3. Or update Lambda function code using AWS CLI:"
+echo "   aws lambda update-function-code --function-name <function-name> --zip-file fileb://<function-name>.zip"
+echo "4. Or use Terraform with updated source_code_hash (auto-detected)"
 
 echo ""
 echo "⚠️  Important Notes:"

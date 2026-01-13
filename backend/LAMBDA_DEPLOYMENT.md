@@ -42,6 +42,11 @@ Each Lambda function ZIP file includes:
 - Optimized for Lambda (development dependencies excluded)
 - Uses `requirements-lambda.txt` for smaller package sizes
 
+### Automatic Terraform Integration
+- ✅ **ZIP files automatically copied to `terraform/` directory**
+- ✅ **Ready for immediate `terraform apply`**
+- ✅ **No manual file copying required**
+
 ## Package Sizes
 
 The script monitors package sizes and warns if approaching Lambda limits:
@@ -50,30 +55,33 @@ The script monitors package sizes and warns if approaching Lambda limits:
 
 ## Deployment Options
 
-### 1. AWS CLI
+### 1. Terraform (Recommended - Fully Automated)
 ```bash
-# Update a specific function
+# Package and deploy in one go
+cd backend
+python scripts/package_lambdas.py
+cd ../terraform
+terraform apply
+```
+
+The packaging script automatically:
+- ✅ Creates ZIP files in `backend/dist/`
+- ✅ Copies ZIP files to `terraform/` directory
+- ✅ Makes them ready for immediate Terraform deployment
+
+### 2. AWS CLI
+```bash
+# Update a specific function (from terraform directory)
 aws lambda update-function-code \
   --function-name ai-therapy-auth-handler \
-  --zip-file fileb://dist/auth_handlers.zip
+  --zip-file fileb://auth_handlers.zip
 
 # Update all functions
 for func in auth_handlers cognito_triggers protected_endpoints session_handlers websocket_handlers; do
   aws lambda update-function-code \
     --function-name ai-therapy-${func//_/-} \
-    --zip-file fileb://dist/${func}.zip
+    --zip-file fileb://${func}.zip
 done
-```
-
-### 2. Terraform
-Update your Terraform configuration to use the new ZIP files:
-
-```hcl
-resource "aws_lambda_function" "auth_handler" {
-  filename         = "../backend/dist/auth_handlers.zip"
-  source_code_hash = filebase64sha256("../backend/dist/auth_handlers.zip")
-  # ... other configuration
-}
 ```
 
 ### 3. AWS Console
@@ -81,7 +89,7 @@ resource "aws_lambda_function" "auth_handler" {
 2. Select your function
 3. Go to "Code" tab
 4. Click "Upload from" → ".zip file"
-5. Select the appropriate ZIP file from `backend/dist/`
+5. Select the appropriate ZIP file from `terraform/` directory
 
 ## New Services Integration
 

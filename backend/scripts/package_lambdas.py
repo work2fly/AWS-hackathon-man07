@@ -155,6 +155,7 @@ def main():
     backend_dir = Path(__file__).parent.parent.absolute()
     build_dir = backend_dir / "build"
     dist_dir = backend_dir / "dist"
+    terraform_dir = backend_dir.parent / "terraform"
     
     # Clean previous builds
     print("🧹 Cleaning previous builds...")
@@ -194,14 +195,41 @@ def main():
     print("📦 Packaged Functions:")
     
     total_size = 0
+    successful_packages = []
     for function, result in results.items():
         if result["success"]:
             print(f"  ✅ {function}.zip ({result['zip_size']:.1f}MB)")
             total_size += result["zip_size"]
+            successful_packages.append(function)
         else:
             print(f"  ❌ {function}.zip (FAILED: {result['error']})")
     
     print(f"\n📊 Total package size: {total_size:.1f}MB")
+    
+    # Copy successful packages to terraform directory
+    if successful_packages and terraform_dir.exists():
+        print(f"\n📁 Copying ZIP files to Terraform directory: {terraform_dir}")
+        copied_files = []
+        for function in successful_packages:
+            src_file = dist_dir / f"{function}.zip"
+            dst_file = terraform_dir / f"{function}.zip"
+            try:
+                shutil.copy2(src_file, dst_file)
+                copied_files.append(f"{function}.zip")
+                print(f"  ✅ Copied {function}.zip")
+            except Exception as e:
+                print(f"  ❌ Failed to copy {function}.zip: {e}")
+        
+        if copied_files:
+            print(f"\n🎯 Ready for Terraform deployment!")
+            print(f"   All {len(copied_files)} ZIP files copied to terraform/ directory")
+        else:
+            print(f"\n⚠️  No files copied to terraform directory")
+    elif not terraform_dir.exists():
+        print(f"\n⚠️  Terraform directory not found: {terraform_dir}")
+        print("   ZIP files available in dist/ directory only")
+    else:
+        print(f"\n⚠️  No successful packages to copy")
     
     print("\n🔧 New Services Included in All Packages:")
     print("  ✅ red_flag_detection_service.py - UKind charity pattern detection")
@@ -210,10 +238,11 @@ def main():
     print("  ✅ trauma_informed_response_service.py - UKind trauma-informed responses")
     
     print("\n🚀 Deployment Instructions:")
-    print("1. Upload ZIP files to AWS Lambda functions via AWS Console or CLI")
-    print("2. Update Lambda function code using AWS CLI:")
-    print("   aws lambda update-function-code --function-name <function-name> --zip-file fileb://dist/<function-name>.zip")
-    print("3. Or use Terraform to deploy with updated source_code_hash")
+    print("1. ZIP files automatically copied to terraform/ directory")
+    print("2. Run 'terraform apply' from terraform/ directory")
+    print("3. Or update Lambda function code using AWS CLI:")
+    print("   aws lambda update-function-code --function-name <function-name> --zip-file fileb://<function-name>.zip")
+    print("4. Or use Terraform with updated source_code_hash (auto-detected)")
     
     print("\n⚠️  Important Notes:")
     print("• Keep packages under 50MB unzipped for Lambda limits")
