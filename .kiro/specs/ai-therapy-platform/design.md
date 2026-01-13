@@ -29,7 +29,6 @@ graph TB
         end
         
         subgraph "Application Layer"
-            ECS[ECS Fargate]
             LAMBDA[Lambda Functions]
         end
         
@@ -68,18 +67,17 @@ graph TB
     REACT --> ALB
     UNITY --> ALB
     ALB --> APIGW
-    APIGW --> ECS
-    ECS --> AGENTCORE
-    ECS --> LAMBDA
-    AGENTCORE --> STRANDS
+    APIGW --> LAMBDA
+    LAMBDA --> AGENTCORE
+    LAMBDA --> STRANDS
     AGENTCORE --> MEMORY
-    ECS --> WEBSOCKET
+    LAMBDA --> WEBSOCKET
     WEBSOCKET --> NOVA2
-    ECS --> RDS
-    ECS --> S3
-    ECS --> REDIS
-    ECS --> ELEVENLABS
-    ECS --> OPENAI
+    LAMBDA --> RDS
+    LAMBDA --> S3
+    LAMBDA --> REDIS
+    LAMBDA --> ELEVENLABS
+    LAMBDA --> OPENAI
     COGNITO --> MFA
     WAF --> ALB
     KMS --> RDS
