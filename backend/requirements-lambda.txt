@@ -1,0 +1,27 @@
+# Lambda-optimized requirements for AI Therapy Platform
+# 🏆 Breaking Barriers UK 2026 compliant
+# Excludes development and testing dependencies to reduce package size
+
+# Core AWS SDK (usually pre-installed in Lambda, but pinned for consistency)
+boto3==1.35.77
+botocore==1.35.77
+
+# Authentication and JWT handling
+python-jose[cryptography]==3.3.0
+cryptography>=41.0.0,<47.0.0
+passlib[bcrypt]==1.7.4
+
+# HTTP requests and validation
+requests==2.31.0
+pydantic==2.5.3
+email-validator==2.1.0
+
+# Configuration management
+python-dotenv==1.0.0
+
+# Note: Excluded development dependencies to reduce Lambda package size:
+# - pytest, pytest-asyncio (testing)
+# - moto (AWS mocking for tests)
+# - hypothesis (property-based testing)
+# - fastapi, uvicorn (not needed in Lambda)
+# - python-multipart (not needed for Lambda handlers)
