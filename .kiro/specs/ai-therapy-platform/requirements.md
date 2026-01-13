@@ -10,8 +10,10 @@ The AI Therapy Platform is a web-based application for UKind therapy charity tha
 - **Therapist**: Human therapists who can monitor AI sessions and receive red flag notifications
 - **Admin**: UKind therapy administrative staff with system management capabilities
 - **AI_Agent**: The AI-powered therapeutic assistant that conducts sessions with clients
+- **Agent_Memory**: Persistent conversation context stored in AgentCore for therapeutic continuity
 - **Red_Flag**: Concerning content or behavior patterns that require immediate human therapist notification
 - **Session**: A real-time audio conversation between a client and the AI_Agent
+- **Session_Summary**: AI-generated sentiment and progress summary accessible to therapists (not full transcripts)
 - **Guardrails**: Safety mechanisms that control and filter AI responses to ensure therapeutic appropriateness
 - **Platform**: The complete AI Therapy Platform system including web app and backend infrastructure
 
@@ -30,31 +32,33 @@ The AI Therapy Platform is a web-based application for UKind therapy charity tha
 5. WHEN a user requests password reset, THE Platform SHALL provide secure email-based recovery
 6. WHEN a user requests account deletion, THE Platform SHALL permanently remove all associated data per GDPR requirements
 
-### Requirement 2: Real-Time Audio Communication
+### Requirement 2: Real-Time Multi-Language Audio Communication
 
-**User Story:** As a client, I want to have real-time audio conversations with the AI therapist, so that I can receive therapeutic support through natural speech interaction.
+**User Story:** As a client, I want to have real-time audio conversations with the AI therapist in my preferred language, so that I can receive therapeutic support through natural speech interaction without language barriers.
 
 #### Acceptance Criteria
 
 1. WHEN a client initiates a session, THE Platform SHALL establish real-time audio communication with the AI_Agent
 2. WHEN audio is transmitted, THE Platform SHALL ensure low-latency communication suitable for natural conversation
-3. WHEN a client speaks, THE Platform SHALL convert speech to text for AI processing
-4. WHEN the AI_Agent responds, THE Platform SHALL convert text responses to natural speech using voice synthesis
-5. WHILE a session is active, THE Platform SHALL maintain continuous audio connection without interruption
-6. WHEN network issues occur, THE Platform SHALL gracefully handle connection problems and attempt reconnection
+3. WHEN a client speaks in any supported language, THE Platform SHALL accurately convert speech to text with language detection
+4. WHEN the AI_Agent responds, THE Platform SHALL convert text responses to natural speech in the client's preferred language
+5. THE Platform SHALL support multiple languages for both speech recognition and voice synthesis
+6. WHILE a session is active, THE Platform SHALL maintain continuous audio connection without interruption
+7. WHEN network issues occur, THE Platform SHALL gracefully handle connection problems and attempt reconnection
 
-### Requirement 3: AI Agent Integration
+### Requirement 3: AI Agent Integration with Memory
 
-**User Story:** As a client, I want to interact with an AI agent that acts as a qualified therapist, so that I receive appropriate therapeutic guidance and support.
+**User Story:** As a client, I want to interact with an AI agent that remembers our previous conversations and acts as a qualified therapist, so that I receive personalized therapeutic guidance with continuity across sessions.
 
 #### Acceptance Criteria
 
-1. THE Platform SHALL integrate with AWS AgentCore for AI agent management and deployment
+1. THE Platform SHALL integrate with AWS AgentCore for AI agent management and persistent memory storage
 2. THE Platform SHALL integrate with Strands Agent SDK for AI conversation capabilities
-3. WHEN the AI_Agent responds, THE Platform SHALL ensure responses follow therapeutic best practices through system prompts
-4. WHEN processing client input, THE Platform SHALL apply guardrails to filter inappropriate or harmful responses
-5. WHEN a session begins, THE Platform SHALL initialize the AI_Agent with appropriate therapeutic context and personality
-6. WHEN generating responses, THE Platform SHALL maintain conversation context and therapeutic continuity
+3. WHEN a session begins, THE Platform SHALL load previous conversation context from AgentCore memory for therapeutic continuity
+4. WHEN the AI_Agent responds, THE Platform SHALL ensure responses follow therapeutic best practices through system prompts
+5. WHEN processing client input, THE Platform SHALL apply guardrails to filter inappropriate or harmful responses
+6. WHEN a session ends, THE Platform SHALL store conversation context in AgentCore memory for future sessions
+7. WHEN generating responses, THE Platform SHALL maintain conversation context and therapeutic continuity across multiple sessions
 
 ### Requirement 4: Safety and Red Flag Detection
 
@@ -69,18 +73,19 @@ The AI Therapy Platform is a web-based application for UKind therapy charity tha
 5. WHEN a red flag occurs, THE Platform SHALL log the incident with timestamp and session context for review
 6. WHEN multiple red flags occur, THE Platform SHALL escalate notifications to admin users
 
-### Requirement 5: User Role Management
+### Requirement 5: User Role Management and Privacy Controls
 
-**User Story:** As an admin, I want to manage different user types with appropriate permissions, so that the platform operates securely with proper access controls.
+**User Story:** As an admin, I want to manage different user types with appropriate permissions and privacy controls, so that the platform operates securely with proper access controls while protecting client confidentiality.
 
 #### Acceptance Criteria
 
 1. WHEN a client user logs in, THE Platform SHALL provide access to session initiation and personal session history
-2. WHEN a therapist user logs in, THE Platform SHALL provide access to client monitoring, red flag notifications, and session oversight
+2. WHEN a therapist user logs in, THE Platform SHALL provide access to session sentiment summaries and red flag notifications without access to full transcripts
 3. WHEN an admin user logs in, THE Platform SHALL provide access to user management, system configuration, and platform analytics
 4. THE Platform SHALL enforce role-based access control preventing unauthorized access to restricted features
-5. WHEN user roles are modified, THE Platform SHALL update permissions immediately without requiring re-authentication
-6. THE Platform SHALL maintain audit logs of all administrative actions and permission changes
+5. THE Platform SHALL ensure therapists cannot access actual conversation transcripts to maintain client privacy
+6. WHEN user roles are modified, THE Platform SHALL update permissions immediately without requiring re-authentication
+7. THE Platform SHALL maintain audit logs of all administrative actions and permission changes
 
 ### Requirement 6: Data Security and GDPR Compliance
 
@@ -95,18 +100,18 @@ The AI Therapy Platform is a web-based application for UKind therapy charity tha
 5. THE Platform SHALL store all data in EU regions only to comply with GDPR data residency requirements
 6. WHEN data breaches occur, THE Platform SHALL notify relevant authorities within 72 hours as required by GDPR
 
-### Requirement 7: Session Management and Persistence
+### Requirement 7: Session Management and Sentiment Analysis
 
-**User Story:** As a client, I want my therapy sessions to be remembered across visits, so that I can build continuity in my therapeutic journey.
+**User Story:** As a client, I want my therapy sessions to be remembered for continuity, and as a therapist, I want to receive sentiment summaries of sessions to monitor client progress without accessing private transcripts.
 
 #### Acceptance Criteria
 
-1. WHEN a session begins, THE Platform SHALL load previous conversation context for therapeutic continuity
-2. WHEN a session ends, THE Platform SHALL securely store the complete conversation transcript
-3. WHEN storing sessions, THE Platform SHALL generate AI-powered summaries to optimize future context loading
-4. WHEN a client returns, THE Platform SHALL provide access to their complete session history
-5. THE Platform SHALL maintain session metadata including timestamps, duration, and therapeutic exercises completed
-6. WHEN sessions are stored, THE Platform SHALL apply data retention policies automatically
+1. WHEN a session begins, THE Platform SHALL load previous conversation context from AgentCore memory for therapeutic continuity
+2. WHEN a session ends, THE Platform SHALL securely store the conversation context in AgentCore memory
+3. WHEN a session ends, THE Platform SHALL generate AI-powered sentiment analysis and progress summaries for therapist review
+4. WHEN therapists access session information, THE Platform SHALL provide only sentiment summaries and progress indicators, not full transcripts
+5. THE Platform SHALL maintain session metadata including timestamps, duration, sentiment scores, and therapeutic milestones
+6. WHEN sessions are stored, THE Platform SHALL apply data retention policies automatically while preserving AgentCore memory for therapeutic continuity
 
 ### Requirement 8: Infrastructure and Deployment
 
@@ -134,7 +139,21 @@ The AI Therapy Platform is a web-based application for UKind therapy charity tha
 5. WHEN admins access the platform, THE Platform SHALL provide comprehensive system management interfaces
 6. THE Platform SHALL integrate the existing Unity prototype components where applicable
 
-### Requirement 10: API Security and Rate Limiting
+### Requirement 10: Multi-Language Support
+
+**User Story:** As a client, I want to communicate with the AI therapist in my native language, so that I can express myself naturally and receive culturally appropriate therapeutic support.
+
+#### Acceptance Criteria
+
+1. THE Platform SHALL support speech recognition for multiple languages including English, Spanish, French, German, and other major languages
+2. THE Platform SHALL automatically detect the client's spoken language during sessions
+3. WHEN generating AI responses, THE Platform SHALL respond in the same language as the client's input
+4. THE Platform SHALL provide voice synthesis in multiple languages with culturally appropriate accents and intonation
+5. WHEN language detection is uncertain, THE Platform SHALL prompt the client to confirm their preferred language
+6. THE Platform SHALL maintain language preferences in user profiles for consistent experience across sessions
+7. WHEN therapeutic content requires cultural sensitivity, THE Platform SHALL adapt responses appropriately for the detected language and culture
+
+### Requirement 11: API Security and Rate Limiting
 
 **User Story:** As a system administrator, I want API endpoints to be secure and rate-limited, so that the platform is protected from abuse and unauthorized access.
 
