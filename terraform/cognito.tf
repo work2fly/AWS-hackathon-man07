@@ -162,3 +162,67 @@ resource "random_string" "domain_suffix" {
   special = false
   upper   = false
 }
+
+# Cognito User Groups for role-based access control
+resource "aws_cognito_user_group" "clients" {
+  name         = "clients"
+  user_pool_id = aws_cognito_user_pool.main.id
+  description  = "Client users who receive therapy sessions"
+  precedence   = 3
+}
+
+resource "aws_cognito_user_group" "therapists" {
+  name         = "therapists"
+  user_pool_id = aws_cognito_user_pool.main.id
+  description  = "Therapist users who monitor sessions and receive red flag notifications"
+  precedence   = 2
+}
+
+resource "aws_cognito_user_group" "admins" {
+  name         = "admins"
+  user_pool_id = aws_cognito_user_pool.main.id
+  description  = "Admin users with full system management capabilities"
+  precedence   = 1
+}
+
+# Lambda function for Cognito triggers
+resource "aws_lambda_function" "cognito_triggers" {
+  filename         = "cognito_triggers.zip"
+  function_name    = "${local.name_prefix}-cognito-triggers"
+  role            = aws_iam_role.lambda_execution_role.arn
+  handler         = "cognito_triggers.lambda_handler"
+  runtime         = var.lambda_runtime
+  timeout         = var.lambda_timeout
+  memory_size     = var.lambda_memory_size
+  
+  environment {
+    variables = {
+      USERS_TABLE_NAME = aws_dynamodb_table.users.name
+      AWS_REGION      = local.region
+    }
+  }
+  
+  tags = merge(local.common_tags, {
+    Name = "${local.name_prefix}-cognito-triggers"
+  })
+}
+
+# Lambda permission for Cognito to invoke the function
+resource "aws_lambda_permission" "cognito_triggers" {
+  statement_id  = "AllowCognitoInvoke"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.cognito_triggers.function_name
+  principal     = "cognito-idp.amazonaws.com"
+  source_arn    = aws_cognito_user_pool.main.arn
+}
+
+# Cognito User Pool Lambda Config (triggers)
+resource "aws_cognito_user_pool_lambda_config" "main" {
+  user_pool_id = aws_cognito_user_pool.main.id
+  
+  pre_sign_up                    = aws_lambda_function.cognito_triggers.arn
+  post_confirmation             = aws_lambda_function.cognito_triggers.arn
+  pre_authentication            = aws_lambda_function.cognito_triggers.arn
+  post_authentication           = aws_lambda_function.cognito_triggers.arn
+  custom_message                = aws_lambda_function.cognito_triggers.arn
+}

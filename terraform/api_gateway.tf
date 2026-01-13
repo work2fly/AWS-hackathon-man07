@@ -25,7 +25,23 @@ resource "aws_api_gateway_rest_api" "main" {
 resource "aws_api_gateway_deployment" "main" {
   depends_on = [
     aws_api_gateway_method.health_check,
-    aws_api_gateway_integration.health_check
+    aws_api_gateway_integration.health_check,
+    aws_api_gateway_method.auth_register,
+    aws_api_gateway_integration.auth_register,
+    aws_api_gateway_method.auth_login,
+    aws_api_gateway_integration.auth_login,
+    aws_api_gateway_method.auth_logout,
+    aws_api_gateway_integration.auth_logout,
+    aws_api_gateway_method.auth_refresh,
+    aws_api_gateway_integration.auth_refresh,
+    aws_api_gateway_method.auth_reset_password,
+    aws_api_gateway_integration.auth_reset_password,
+    aws_api_gateway_method.auth_profile_get,
+    aws_api_gateway_integration.auth_profile_get,
+    aws_api_gateway_method.auth_profile_put,
+    aws_api_gateway_integration.auth_profile_put,
+    aws_api_gateway_method.auth_enable_mfa,
+    aws_api_gateway_integration.auth_enable_mfa
   ]
   
   rest_api_id = aws_api_gateway_rest_api.main.id
@@ -125,6 +141,247 @@ resource "aws_api_gateway_integration_response" "health_check" {
       timestamp = "$context.requestTime"
     })
   }
+}
+
+# Authentication Lambda Function
+resource "aws_lambda_function" "auth_handlers" {
+  filename         = "auth_handlers.zip"
+  function_name    = "${local.name_prefix}-auth-handlers"
+  role            = aws_iam_role.lambda_execution_role.arn
+  handler         = "auth_handlers.lambda_handler"
+  runtime         = var.lambda_runtime
+  timeout         = var.lambda_timeout
+  memory_size     = var.lambda_memory_size
+  
+  environment {
+    variables = {
+      COGNITO_USER_POOL_ID = aws_cognito_user_pool.main.id
+      COGNITO_CLIENT_ID    = aws_cognito_user_pool_client.main.id
+      USERS_TABLE_NAME     = aws_dynamodb_table.users.name
+      AWS_REGION          = local.region
+    }
+  }
+  
+  tags = merge(local.common_tags, {
+    Name = "${local.name_prefix}-auth-handlers"
+  })
+}
+
+# Lambda permission for API Gateway to invoke auth function
+resource "aws_lambda_permission" "auth_handlers" {
+  statement_id  = "AllowAPIGatewayInvoke"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.auth_handlers.function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_api_gateway_rest_api.main.execution_arn}/*/*"
+}
+
+# Auth resource
+resource "aws_api_gateway_resource" "auth" {
+  rest_api_id = aws_api_gateway_rest_api.main.id
+  parent_id   = aws_api_gateway_rest_api.main.root_resource_id
+  path_part   = "auth"
+}
+
+# Auth register resource
+resource "aws_api_gateway_resource" "auth_register" {
+  rest_api_id = aws_api_gateway_rest_api.main.id
+  parent_id   = aws_api_gateway_resource.auth.id
+  path_part   = "register"
+}
+
+# Auth register method
+resource "aws_api_gateway_method" "auth_register" {
+  rest_api_id   = aws_api_gateway_rest_api.main.id
+  resource_id   = aws_api_gateway_resource.auth_register.id
+  http_method   = "POST"
+  authorization = "NONE"
+}
+
+# Auth register integration
+resource "aws_api_gateway_integration" "auth_register" {
+  rest_api_id = aws_api_gateway_rest_api.main.id
+  resource_id = aws_api_gateway_resource.auth_register.id
+  http_method = aws_api_gateway_method.auth_register.http_method
+  
+  integration_http_method = "POST"
+  type                   = "AWS_PROXY"
+  uri                    = aws_lambda_function.auth_handlers.invoke_arn
+}
+
+# Auth login resource
+resource "aws_api_gateway_resource" "auth_login" {
+  rest_api_id = aws_api_gateway_rest_api.main.id
+  parent_id   = aws_api_gateway_resource.auth.id
+  path_part   = "login"
+}
+
+# Auth login method
+resource "aws_api_gateway_method" "auth_login" {
+  rest_api_id   = aws_api_gateway_rest_api.main.id
+  resource_id   = aws_api_gateway_resource.auth_login.id
+  http_method   = "POST"
+  authorization = "NONE"
+}
+
+# Auth login integration
+resource "aws_api_gateway_integration" "auth_login" {
+  rest_api_id = aws_api_gateway_rest_api.main.id
+  resource_id = aws_api_gateway_resource.auth_login.id
+  http_method = aws_api_gateway_method.auth_login.http_method
+  
+  integration_http_method = "POST"
+  type                   = "AWS_PROXY"
+  uri                    = aws_lambda_function.auth_handlers.invoke_arn
+}
+
+# Auth logout resource
+resource "aws_api_gateway_resource" "auth_logout" {
+  rest_api_id = aws_api_gateway_rest_api.main.id
+  parent_id   = aws_api_gateway_resource.auth.id
+  path_part   = "logout"
+}
+
+# Auth logout method
+resource "aws_api_gateway_method" "auth_logout" {
+  rest_api_id   = aws_api_gateway_rest_api.main.id
+  resource_id   = aws_api_gateway_resource.auth_logout.id
+  http_method   = "POST"
+  authorization = "NONE"
+}
+
+# Auth logout integration
+resource "aws_api_gateway_integration" "auth_logout" {
+  rest_api_id = aws_api_gateway_rest_api.main.id
+  resource_id = aws_api_gateway_resource.auth_logout.id
+  http_method = aws_api_gateway_method.auth_logout.http_method
+  
+  integration_http_method = "POST"
+  type                   = "AWS_PROXY"
+  uri                    = aws_lambda_function.auth_handlers.invoke_arn
+}
+
+# Auth refresh resource
+resource "aws_api_gateway_resource" "auth_refresh" {
+  rest_api_id = aws_api_gateway_rest_api.main.id
+  parent_id   = aws_api_gateway_resource.auth.id
+  path_part   = "refresh"
+}
+
+# Auth refresh method
+resource "aws_api_gateway_method" "auth_refresh" {
+  rest_api_id   = aws_api_gateway_rest_api.main.id
+  resource_id   = aws_api_gateway_resource.auth_refresh.id
+  http_method   = "POST"
+  authorization = "NONE"
+}
+
+# Auth refresh integration
+resource "aws_api_gateway_integration" "auth_refresh" {
+  rest_api_id = aws_api_gateway_rest_api.main.id
+  resource_id = aws_api_gateway_resource.auth_refresh.id
+  http_method = aws_api_gateway_method.auth_refresh.http_method
+  
+  integration_http_method = "POST"
+  type                   = "AWS_PROXY"
+  uri                    = aws_lambda_function.auth_handlers.invoke_arn
+}
+
+# Auth reset-password resource
+resource "aws_api_gateway_resource" "auth_reset_password" {
+  rest_api_id = aws_api_gateway_rest_api.main.id
+  parent_id   = aws_api_gateway_resource.auth.id
+  path_part   = "reset-password"
+}
+
+# Auth reset-password method
+resource "aws_api_gateway_method" "auth_reset_password" {
+  rest_api_id   = aws_api_gateway_rest_api.main.id
+  resource_id   = aws_api_gateway_resource.auth_reset_password.id
+  http_method   = "POST"
+  authorization = "NONE"
+}
+
+# Auth reset-password integration
+resource "aws_api_gateway_integration" "auth_reset_password" {
+  rest_api_id = aws_api_gateway_rest_api.main.id
+  resource_id = aws_api_gateway_resource.auth_reset_password.id
+  http_method = aws_api_gateway_method.auth_reset_password.http_method
+  
+  integration_http_method = "POST"
+  type                   = "AWS_PROXY"
+  uri                    = aws_lambda_function.auth_handlers.invoke_arn
+}
+
+# Auth profile resource
+resource "aws_api_gateway_resource" "auth_profile" {
+  rest_api_id = aws_api_gateway_rest_api.main.id
+  parent_id   = aws_api_gateway_resource.auth.id
+  path_part   = "profile"
+}
+
+# Auth profile GET method
+resource "aws_api_gateway_method" "auth_profile_get" {
+  rest_api_id   = aws_api_gateway_rest_api.main.id
+  resource_id   = aws_api_gateway_resource.auth_profile.id
+  http_method   = "GET"
+  authorization = "NONE"
+}
+
+# Auth profile GET integration
+resource "aws_api_gateway_integration" "auth_profile_get" {
+  rest_api_id = aws_api_gateway_rest_api.main.id
+  resource_id = aws_api_gateway_resource.auth_profile.id
+  http_method = aws_api_gateway_method.auth_profile_get.http_method
+  
+  integration_http_method = "POST"
+  type                   = "AWS_PROXY"
+  uri                    = aws_lambda_function.auth_handlers.invoke_arn
+}
+
+# Auth profile PUT method
+resource "aws_api_gateway_method" "auth_profile_put" {
+  rest_api_id   = aws_api_gateway_rest_api.main.id
+  resource_id   = aws_api_gateway_resource.auth_profile.id
+  http_method   = "PUT"
+  authorization = "NONE"
+}
+
+# Auth profile PUT integration
+resource "aws_api_gateway_integration" "auth_profile_put" {
+  rest_api_id = aws_api_gateway_rest_api.main.id
+  resource_id = aws_api_gateway_resource.auth_profile.id
+  http_method = aws_api_gateway_method.auth_profile_put.http_method
+  
+  integration_http_method = "POST"
+  type                   = "AWS_PROXY"
+  uri                    = aws_lambda_function.auth_handlers.invoke_arn
+}
+
+# Auth enable-mfa resource
+resource "aws_api_gateway_resource" "auth_enable_mfa" {
+  rest_api_id = aws_api_gateway_rest_api.main.id
+  parent_id   = aws_api_gateway_resource.auth.id
+  path_part   = "enable-mfa"
+}
+
+# Auth enable-mfa method
+resource "aws_api_gateway_method" "auth_enable_mfa" {
+  rest_api_id   = aws_api_gateway_rest_api.main.id
+  resource_id   = aws_api_gateway_resource.auth_enable_mfa.id
+  http_method   = "POST"
+  authorization = "NONE"
+}
+
+# Auth enable-mfa integration
+resource "aws_api_gateway_integration" "auth_enable_mfa" {
+  rest_api_id = aws_api_gateway_rest_api.main.id
+  resource_id = aws_api_gateway_resource.auth_enable_mfa.id
+  http_method = aws_api_gateway_method.auth_enable_mfa.http_method
+  
+  integration_http_method = "POST"
+  type                   = "AWS_PROXY"
+  uri                    = aws_lambda_function.auth_handlers.invoke_arn
 }
 
 # WebSocket API Gateway

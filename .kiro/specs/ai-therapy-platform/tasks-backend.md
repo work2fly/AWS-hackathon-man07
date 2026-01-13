@@ -62,29 +62,29 @@ Backend team is responsible for the serverless Python Lambda functions, API Gate
     - **Property 1: User Registration and Authentication**
     - **Validates: Requirements 1.1, 1.2, 1.3**
 
-- [ ] 3. Implement authentication and user management
-  - [ ] 3.1 Set up AWS Cognito integration
+- [x] 3. Implement authentication and user management
+  - [x] 3.1 Set up AWS Cognito integration
     - Configure Cognito User Pools with custom attributes
     - Set up user groups for client/therapist/admin roles
     - Create Cognito triggers for user lifecycle management
     - Configure MFA settings and policies
     - _Requirements: 1.1, 1.2, 1.3, 1.4_
 
-  - [ ] 3.2 Create authentication Lambda functions
+  - [x] 3.2 Create authentication Lambda functions
     - Implement user registration and confirmation handlers
     - Create login/logout and token refresh endpoints
     - Add password reset and account recovery functions
     - Build user profile management APIs
     - _Requirements: 1.2, 1.5_
 
-  - [ ] 3.3 Build authorization middleware
+  - [x] 3.3 Build authorization middleware
     - Create JWT token validation middleware
     - Implement role-based access control (RBAC)
     - Add API endpoint protection and authorization
     - Create audit logging for authentication events
     - _Requirements: 5.4, 5.6, 5.7_
 
-  - [ ] 3.4 Write property test for role-based access control
+  - [x] 3.4 Write property test for role-based access control
     - **Property 9: Role-Based Access Control**
     - **Validates: Requirements 5.1, 5.2, 5.3, 5.4, 5.5**
 

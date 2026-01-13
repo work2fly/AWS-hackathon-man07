@@ -65,6 +65,32 @@ output "cognito_user_pool_client" {
   sensitive = true
 }
 
+output "cognito_user_groups" {
+  description = "Cognito User Groups information"
+  value = {
+    clients = {
+      name = aws_cognito_user_group.clients.name
+      precedence = aws_cognito_user_group.clients.precedence
+    }
+    therapists = {
+      name = aws_cognito_user_group.therapists.name
+      precedence = aws_cognito_user_group.therapists.precedence
+    }
+    admins = {
+      name = aws_cognito_user_group.admins.name
+      precedence = aws_cognito_user_group.admins.precedence
+    }
+  }
+}
+
+output "cognito_domain" {
+  description = "Cognito User Pool Domain"
+  value = {
+    domain = aws_cognito_user_pool_domain.main.domain
+    cloudfront_distribution_arn = aws_cognito_user_pool_domain.main.cloudfront_distribution_arn
+  }
+}
+
 # API Gateway Outputs
 output "api_gateway_websocket" {
   description = "API Gateway WebSocket information"

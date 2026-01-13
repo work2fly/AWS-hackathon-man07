@@ -244,3 +244,83 @@ class UserRepository(BaseRepository):
         except Exception as e:
             logger.error(f"Failed to update language preference for user {user_id}: {str(e)}")
             return False
+    
+    def create_user(self, user_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Create a new user from dictionary data (for Cognito triggers)"""
+        try:
+            # Add timestamps
+            now = datetime.utcnow().isoformat()
+            user_data['created_at'] = now
+            user_data['updated_at'] = now
+            
+            # Convert to DynamoDB format
+            item = {
+                'userId': user_data['user_id'],
+                'email': user_data['email'],
+                'role': user_data['role'],
+                'profile': user_data['profile'],
+                'preferences': user_data['preferences'],
+                'createdAt': user_data['created_at'],
+                'updatedAt': user_data['updated_at'],
+                'isActive': user_data['is_active'],
+                'mfaEnabled': user_data['mfa_enabled'],
+                'languagePreference': user_data['language_preference'],
+                'GSI1PK': user_data['email']  # For email-based queries
+            }
+            
+            # Use condition to prevent overwriting existing users
+            condition = "attribute_not_exists(userId)"
+            
+            success = self.put_item(item, condition)
+            
+            if success:
+                return {'success': True, 'user_id': user_data['user_id']}
+            else:
+                return {'success': False, 'error': 'Failed to create user'}
+            
+        except Exception as e:
+            logger.error(f"Failed to create user {user_data.get('user_id')}: {str(e)}")
+            return {'success': False, 'error': str(e)}
+    
+    def get_user_by_email(self, email: str) -> Optional[Dict[str, Any]]:
+        """Get user by email using GSI (returns dict for Cognito triggers)"""
+        try:
+            response = self.query(
+                key_condition_expression="GSI1PK = :email",
+                expression_attribute_values={":email": email},
+                index_name="EmailIndex",
+                limit=1
+            )
+            
+            items = response.get('Items', [])
+            if items:
+                return items[0]
+            return None
+            
+        except Exception as e:
+            logger.error(f"Failed to get user by email {email}: {str(e)}")
+            return None
+    
+    def update_user_last_login(self, user_id: str) -> bool:
+        """Update user's last login timestamp"""
+        try:
+            key = {'userId': user_id}
+            update_expression = "SET lastLoginAt = :login_time, updatedAt = :updated_at"
+            expression_attribute_values = {
+                ":login_time": datetime.utcnow().isoformat(),
+                ":updated_at": datetime.utcnow().isoformat()
+            }
+            
+            return self.update_item(
+                key=key,
+                update_expression=update_expression,
+                expression_attribute_values=expression_attribute_values
+            )
+            
+        except Exception as e:
+            logger.error(f"Failed to update last login for user {user_id}: {str(e)}")
+            return False
+
+
+# Global user repository instance
+user_repository = UserRepository()
