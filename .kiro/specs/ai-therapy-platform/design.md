@@ -45,10 +45,7 @@ graph TB
         end
         
         subgraph "Audio Processing"
-            NOVA[Amazon Nova Sonic]
-            TRANSCRIBE[Amazon Transcribe - Backup]
-            POLLY[Amazon Polly]
-            TRANSLATE[Amazon Translate]
+            NOVA2[Amazon Nova Sonic 2]
         end
         
         subgraph "Data Layer"
@@ -79,10 +76,7 @@ graph TB
     AGENTCORE --> MEMORY
     ECS --> WEBSOCKET
     WEBSOCKET --> KINESIS
-    ECS --> NOVA
-    ECS --> TRANSCRIBE
-    ECS --> POLLY
-    ECS --> TRANSLATE
+    ECS --> NOVA2
     ECS --> RDS
     ECS --> S3
     ECS --> REDIS
@@ -100,38 +94,38 @@ graph TB
 - **Multi-AZ Deployment**: High availability across availability zones
 - **Note**: GDPR compliance features commented out for hackathon scope
 
-### Nova Sonic Integration Details
+### Nova Sonic 2 Integration Details (Hackathon Simplified)
 
-**Amazon Nova Sonic** is a speech-to-speech generative AI model specifically designed for telephony and real-time voice applications. For the AI Therapy Platform, Nova Sonic provides:
+**Amazon Nova Sonic 2** is the latest speech-to-speech generative AI model, providing all audio processing capabilities in a single service. For the hackathon AI Therapy Platform:
 
 **Key Capabilities**:
-- **Real-time Processing**: Sub-200ms latency for natural conversation flow
-- **Natural Turn-taking**: Understands conversation patterns and appropriate response timing
-- **Multi-accent Support**: Handles various accents and speaking styles automatically
-- **Therapeutic Context**: Can be configured with therapeutic system prompts and guardrails
+- **All-in-One Processing**: Speech-to-speech, language detection, and synthesis in one model
+- **Real-time Performance**: Optimized for sub-200ms latency
+- **Therapeutic Context**: Advanced system prompts for therapy-specific responses
+- **Multi-language Native**: Built-in support for multiple languages and accents
 
-**Integration Architecture**:
+**Simplified Integration Architecture**:
 ```mermaid
 graph LR
-    CLIENT[Client Audio] --> WEBSOCKET[WebSocket Connection]
-    WEBSOCKET --> NOVA[Nova Sonic Model]
-    NOVA --> AGENTCORE[AgentCore Memory]
-    NOVA --> GUARDRAILS[Safety Guardrails]
-    GUARDRAILS --> RESPONSE[Therapeutic Response]
-    RESPONSE --> WEBSOCKET
+    CLIENT[Client Audio] --> WEBSOCKET[WebSocket]
+    WEBSOCKET --> NOVA2[Nova Sonic 2]
+    NOVA2 --> AGENTCORE[AgentCore Memory]
+    NOVA2 --> GUARDRAILS[Safety Guardrails]
+    NOVA2 --> WEBSOCKET
     WEBSOCKET --> CLIENT
 ```
 
-**Configuration for Therapy**:
-- System prompts for therapeutic best practices
-- Safety guardrails for harmful content detection
-- Cultural sensitivity adaptations
-- Integration with AgentCore memory for session continuity
+**Hackathon Benefits**:
+- **Single Integration Point**: Only one AI service to configure and deploy
+- **Reduced Complexity**: No need for separate transcription, translation, or synthesis
+- **Faster Development**: Simplified architecture means faster implementation
+- **Built-in Features**: Language detection, cultural adaptation, and therapeutic context included
 
-**Fallback Strategy**:
-- Primary: Nova Sonic for real-time speech-to-speech
-- Fallback: Amazon Transcribe + Polly for specific language requirements
-- Backup: Text-based interaction if audio processing fails
+**Configuration**:
+- Therapeutic system prompts for appropriate responses
+- Safety guardrails integrated into the model
+- AgentCore memory integration for session continuity
+- Real-time streaming configuration for WebSocket communication
 
 ## Components and Interfaces
 
@@ -233,27 +227,27 @@ graph LR
 - Control message handling
 - Connection health monitoring
 
-### 7. Audio Processing Pipeline
+### 7. Audio Processing Pipeline (Simplified for Hackathon)
 
-**Technology**: Amazon Nova Sonic + Amazon Polly + Amazon Translate
+**Technology**: Amazon Nova Sonic 2 (Primary and Only)
 
-**Nova Sonic Integration**:
-- Real-time speech-to-speech AI model for telephony applications
-- Low-latency voice conversations with natural turn-taking
-- Built-in understanding of various accents and speaking styles
-- Bidirectional streaming for real-time audio processing
+**Nova Sonic 2 Integration**:
+- Latest speech-to-speech AI model with enhanced capabilities
+- Real-time audio processing with therapeutic context awareness
+- Built-in multi-language support and cultural sensitivity
+- Direct integration with AgentCore for memory and context
 
-**Multi-Language Support**:
-- Automatic language detection via Nova Sonic
-- Real-time speech-to-text conversion
-- Text-to-speech synthesis in multiple languages
-- Cultural adaptation for therapeutic responses
+**Simplified Processing Flow**:
+1. Client audio input → WebSocket → Nova Sonic 2
+2. Nova Sonic 2 processes with therapeutic prompts and AgentCore memory
+3. Real-time speech response → WebSocket → Client audio output
+4. Session context automatically stored in AgentCore memory
 
-**Processing Flow**:
-1. Audio input → Nova Sonic real-time processing
-2. Speech-to-speech with AI response generation
-3. Fallback to Transcribe + Polly for specific language requirements
-4. Audio output with appropriate accent/intonation
+**Benefits for Hackathon**:
+- Single service reduces complexity and integration points
+- Faster development and deployment
+- Built-in language processing eliminates need for separate services
+- Real-time performance optimized for therapy sessions
 
 ### 8. Data Storage and Management
 
@@ -422,8 +416,8 @@ Now I need to use the prework tool to analyze the acceptance criteria before wri
 *For any* client session initiation, the system should establish WebSocket connections with sub-200ms latency, maintain continuous audio streaming without interruption, and gracefully handle network issues with automatic reconnection attempts.
 **Validates: Requirements 2.1, 2.2, 2.6, 2.7**
 
-### Property 5: Multi-Language Audio Processing with Nova Sonic
-*For any* audio input in supported languages, Amazon Nova Sonic should provide real-time speech-to-speech processing with natural turn-taking, accurate language detection, and culturally appropriate therapeutic responses with proper accent and intonation.
+### Property 5: Nova Sonic 2 Audio Processing
+*For any* audio input, Nova Sonic 2 should provide real-time speech-to-speech processing with therapeutic context, natural turn-taking, multi-language support, and cultural sensitivity in a single integrated service.
 **Validates: Requirements 2.3, 2.4, 2.5, 10.1, 10.2, 10.3, 10.4**
 
 ### Property 6: AgentCore Memory Integration
@@ -489,9 +483,9 @@ Now I need to use the prework tool to analyze the acceptance criteria before wri
 
 ### Audio Communication Errors
 - **Connection Failures**: Automatic reconnection with exponential backoff
+- **Nova Sonic 2 Failures**: Graceful degradation with error messages and session recovery
 - **Audio Quality Issues**: Dynamic quality adjustment based on network conditions
-- **Language Detection Failures**: Fallback to user's preferred language with confirmation prompt
-- **Transcription Errors**: Error correction suggestions and manual override options
+- **Language Detection Failures**: Nova Sonic 2 built-in fallback to English with user notification
 
 ### AI Agent Errors
 - **AgentCore Unavailability**: Graceful degradation with cached responses and service restoration
@@ -559,7 +553,7 @@ Each property-based test must include a comment referencing its design document 
 - MFA configurations
 
 **Session Data Generators**:
-- Audio samples in multiple languages
+- Audio samples for Nova Sonic 2 testing
 - Conversation contexts of varying lengths
 - Red flag content patterns
 - Network condition simulations
@@ -583,7 +577,7 @@ Each property-based test must include a comment referencing its design document 
 **External Service Integration**:
 - AWS AgentCore memory operations
 - Strands Agent SDK conversation flows
-- Amazon Transcribe/Polly language processing
+- Amazon Nova Sonic 2 real-time audio processing
 - Cognito authentication and MFA
 - Real-time WebSocket communication
 
@@ -597,7 +591,7 @@ Each property-based test must include a comment referencing its design document 
 - Auto-scaling trigger validation
 
 **Latency Requirements**:
-- Audio round-trip latency < 200ms
+- Nova Sonic 2 audio processing < 200ms
 - API response times < 100ms
 - Database query performance < 50ms
 - Memory loading from AgentCore < 500ms
