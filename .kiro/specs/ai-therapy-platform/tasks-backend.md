@@ -23,21 +23,21 @@ Backend team is responsible for the serverless Python Lambda functions, API Gate
 
 ## Backend Tasks
 
-- [ ] 1. Set up serverless infrastructure foundation
-  - [ ] 1.1 Create AWS account setup and IAM roles
+- [x] 1. Set up serverless infrastructure foundation
+  - [x] 1.1 Create AWS account setup and IAM roles
     - Configure AWS CLI and credentials
     - Create IAM roles for Lambda execution
     - Set up cross-service permissions and policies
     - Configure AWS SDK for Python (boto3)
     - _Requirements: 8.1_
 
-  - [ ] 1.2 Set up Terraform infrastructure as code
+  - [x] 1.2 Set up Terraform infrastructure as code
     - Create Terraform configuration for all AWS resources
     - Define variables and environment configurations
     - Set up state management and deployment pipeline
     - _Requirements: 8.2_
 
-  - [ ] 1.3 Configure monitoring and logging
+  - [x] 1.3 Configure monitoring and logging
     - Set up CloudWatch logging for all Lambda functions
     - Create monitoring dashboards and alerts
     - Configure error tracking and notification systems

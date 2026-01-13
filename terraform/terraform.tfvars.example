@@ -1,0 +1,43 @@
+# AI Therapy Platform - Terraform Variables
+# Breaking Barriers UK 2026 compliant configuration
+# Copy this file to terraform.tfvars and customize values
+
+# AWS Configuration
+aws_region = "us-west-2"  # Breaking Barriers UK 2026: Only us-west-2 and us-east-1 allowed
+environment = "dev"
+project_name = "ai-therapy-platform"
+
+# DynamoDB Configuration
+dynamodb_billing_mode = "PAY_PER_REQUEST"
+dynamodb_point_in_time_recovery = true
+
+# Lambda Configuration
+lambda_runtime = "python3.11"
+lambda_timeout = 30
+lambda_memory_size = 256
+
+# API Gateway Configuration
+api_gateway_stage_name = "dev"
+api_throttle_rate_limit = 100
+api_throttle_burst_limit = 200
+
+# Cognito Configuration
+cognito_password_policy = {
+  minimum_length    = 8
+  require_lowercase = true
+  require_numbers   = true
+  require_symbols   = true
+  require_uppercase = true
+}
+cognito_mfa_configuration = "OPTIONAL"
+
+# Security Configuration
+enable_encryption = true
+enable_deletion_protection = false  # Set to false for hackathon
+
+# Monitoring Configuration
+enable_detailed_monitoring = true
+log_retention_days = 7  # Short retention for hackathon
+
+# Bedrock Configuration (Breaking Barriers UK 2026 compliant)
+bedrock_model_id = "anthropic.claude-3-5-sonnet-20241022-v2:0"

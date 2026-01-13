@@ -1,0 +1,238 @@
+{
+  "widgets": [
+    {
+      "type": "metric",
+      "x": 0,
+      "y": 0,
+      "width": 12,
+      "height": 6,
+      "properties": {
+        "metrics": [
+          ["AI-Therapy-Platform", "APIRequests", "Method", "GET"],
+          [".", ".", ".", "POST"],
+          [".", ".", ".", "PUT"],
+          [".", ".", ".", "DELETE"]
+        ],
+        "view": "timeSeries",
+        "stacked": false,
+        "region": "us-west-2",
+        "title": "API Requests by Method",
+        "period": 300,
+        "stat": "Sum"
+      }
+    },
+    {
+      "type": "metric",
+      "x": 12,
+      "y": 0,
+      "width": 12,
+      "height": 6,
+      "properties": {
+        "metrics": [
+          ["AI-Therapy-Platform", "APILatency", "Method", "GET"],
+          [".", ".", ".", "POST"],
+          [".", ".", ".", "PUT"],
+          [".", ".", ".", "DELETE"]
+        ],
+        "view": "timeSeries",
+        "stacked": false,
+        "region": "us-west-2",
+        "title": "API Latency by Method",
+        "period": 300,
+        "stat": "Average",
+        "yAxis": {
+          "left": {
+            "min": 0
+          }
+        }
+      }
+    },
+    {
+      "type": "metric",
+      "x": 0,
+      "y": 6,
+      "width": 8,
+      "height": 6,
+      "properties": {
+        "metrics": [
+          ["AI-Therapy-Platform", "SessionsStarted"],
+          [".", "SessionsCompleted"]
+        ],
+        "view": "timeSeries",
+        "stacked": false,
+        "region": "us-west-2",
+        "title": "Therapy Sessions",
+        "period": 300,
+        "stat": "Sum"
+      }
+    },
+    {
+      "type": "metric",
+      "x": 8,
+      "y": 6,
+      "width": 8,
+      "height": 6,
+      "properties": {
+        "metrics": [
+          ["AI-Therapy-Platform", "RedFlagsDetected", "Severity", "low"],
+          [".", ".", ".", "medium"],
+          [".", ".", ".", "high"],
+          [".", ".", ".", "critical"]
+        ],
+        "view": "timeSeries",
+        "stacked": true,
+        "region": "us-west-2",
+        "title": "Red Flags Detected by Severity",
+        "period": 300,
+        "stat": "Sum"
+      }
+    },
+    {
+      "type": "metric",
+      "x": 16,
+      "y": 6,
+      "width": 8,
+      "height": 6,
+      "properties": {
+        "metrics": [
+          ["AI-Therapy-Platform", "UserRegistrations", "UserRole", "client"],
+          [".", ".", ".", "therapist"],
+          [".", ".", ".", "admin"]
+        ],
+        "view": "timeSeries",
+        "stacked": true,
+        "region": "us-west-2",
+        "title": "User Registrations by Role",
+        "period": 300,
+        "stat": "Sum"
+      }
+    },
+    {
+      "type": "metric",
+      "x": 0,
+      "y": 12,
+      "width": 12,
+      "height": 6,
+      "properties": {
+        "metrics": [
+          ["AI-Therapy-Platform", "BedrockRequests", "ModelId", "anthropic.claude-3-5-sonnet-20241022-v2:0"],
+          [".", "BedrockLatency", ".", "."]
+        ],
+        "view": "timeSeries",
+        "stacked": false,
+        "region": "us-west-2",
+        "title": "Bedrock API Usage (Breaking Barriers UK 2026 Compliant)",
+        "period": 300,
+        "stat": "Average"
+      }
+    },
+    {
+      "type": "metric",
+      "x": 12,
+      "y": 12,
+      "width": 12,
+      "height": 6,
+      "properties": {
+        "metrics": [
+          ["AI-Therapy-Platform", "DatabaseOperations", "Operation", "GetItem"],
+          [".", ".", ".", "PutItem"],
+          [".", ".", ".", "UpdateItem"],
+          [".", ".", ".", "Query"],
+          [".", ".", ".", "Scan"]
+        ],
+        "view": "timeSeries",
+        "stacked": false,
+        "region": "us-west-2",
+        "title": "DynamoDB Operations",
+        "period": 300,
+        "stat": "Sum"
+      }
+    },
+    {
+      "type": "metric",
+      "x": 0,
+      "y": 18,
+      "width": 8,
+      "height": 6,
+      "properties": {
+        "metrics": [
+          ["AI-Therapy-Platform", "WebSocketConnections", "Action", "connect"],
+          [".", ".", ".", "disconnect"],
+          [".", ".", ".", "message"]
+        ],
+        "view": "timeSeries",
+        "stacked": false,
+        "region": "us-west-2",
+        "title": "WebSocket Connections",
+        "period": 300,
+        "stat": "Sum"
+      }
+    },
+    {
+      "type": "metric",
+      "x": 8,
+      "y": 18,
+      "width": 8,
+      "height": 6,
+      "properties": {
+        "metrics": [
+          ["AI-Therapy-Platform", "AuthenticationAttempts", "Success", "True"],
+          [".", ".", ".", "False"]
+        ],
+        "view": "timeSeries",
+        "stacked": false,
+        "region": "us-west-2",
+        "title": "Authentication Attempts",
+        "period": 300,
+        "stat": "Sum"
+      }
+    },
+    {
+      "type": "metric",
+      "x": 16,
+      "y": 18,
+      "width": 8,
+      "height": 6,
+      "properties": {
+        "metrics": [
+          ["AI-Therapy-Platform", "AlertsGenerated", "Severity", "low"],
+          [".", ".", ".", "medium"],
+          [".", ".", ".", "high"],
+          [".", ".", ".", "critical"]
+        ],
+        "view": "timeSeries",
+        "stacked": true,
+        "region": "us-west-2",
+        "title": "Alerts Generated by Severity",
+        "period": 300,
+        "stat": "Sum"
+      }
+    },
+    {
+      "type": "log",
+      "x": 0,
+      "y": 24,
+      "width": 24,
+      "height": 6,
+      "properties": {
+        "query": "SOURCE '/aws/lambda/ai-therapy-platform' | fields @timestamp, level, message, service\n| filter level = \"ERROR\" or level = \"CRITICAL\"\n| sort @timestamp desc\n| limit 100",
+        "region": "us-west-2",
+        "title": "Recent Errors and Critical Events",
+        "view": "table"
+      }
+    },
+    {
+      "type": "log",
+      "x": 0,
+      "y": 30,
+      "width": 24,
+      "height": 6,
+      "properties": {
+        "query": "SOURCE '/aws/lambda/ai-therapy-platform' | fields @timestamp, message, session_id, user_id\n| filter red_flag_event = true\n| sort @timestamp desc\n| limit 50",
+        "region": "us-west-2",
+        "title": "Recent Red Flag Events",
+        "view": "table"
+      }
+    }
+  ]
+}
