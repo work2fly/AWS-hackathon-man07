@@ -1,7 +1,7 @@
 # AI Therapy Platform - Cognito Resources
 # Breaking Barriers UK 2026 compliant authentication
 
-# Cognito User Pool
+# Cognito User Pool Lambda Config (triggers)
 resource "aws_cognito_user_pool" "main" {
   name = "${local.name_prefix}-user-pool"
   
@@ -56,6 +56,15 @@ resource "aws_cognito_user_pool" "main" {
     attributes_require_verification_before_update = ["email"]
   }
   
+  # Lambda triggers configuration
+  lambda_config {
+    pre_sign_up                    = aws_lambda_function.cognito_triggers.arn
+    post_confirmation             = aws_lambda_function.cognito_triggers.arn
+    pre_authentication            = aws_lambda_function.cognito_triggers.arn
+    post_authentication           = aws_lambda_function.cognito_triggers.arn
+    custom_message                = aws_lambda_function.cognito_triggers.arn
+  }
+  
   # Schema for custom attributes
   schema {
     attribute_data_type = "String"
@@ -84,6 +93,8 @@ resource "aws_cognito_user_pool" "main" {
   tags = merge(local.common_tags, {
     Name = "${local.name_prefix}-user-pool"
   })
+  
+  depends_on = [aws_lambda_function.cognito_triggers]
 }
 
 # Cognito User Pool Client
@@ -214,15 +225,4 @@ resource "aws_lambda_permission" "cognito_triggers" {
   function_name = aws_lambda_function.cognito_triggers.function_name
   principal     = "cognito-idp.amazonaws.com"
   source_arn    = aws_cognito_user_pool.main.arn
-}
-
-# Cognito User Pool Lambda Config (triggers)
-resource "aws_cognito_user_pool_lambda_config" "main" {
-  user_pool_id = aws_cognito_user_pool.main.id
-  
-  pre_sign_up                    = aws_lambda_function.cognito_triggers.arn
-  post_confirmation             = aws_lambda_function.cognito_triggers.arn
-  pre_authentication            = aws_lambda_function.cognito_triggers.arn
-  post_authentication           = aws_lambda_function.cognito_triggers.arn
-  custom_message                = aws_lambda_function.cognito_triggers.arn
 }

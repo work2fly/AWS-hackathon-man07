@@ -22,6 +22,16 @@ This directory contains Terraform configuration for deploying the AI Therapy Pla
    - Only `us-west-2` and `us-east-1` regions permitted
    - AWS accounts terminate at 23:00 on 15th January 2026
 
+## Provider Versions
+
+- **AWS Provider**: `~> 6.28` (latest stable)
+- **Random Provider**: `~> 3.7`
+
+After updating provider versions, run:
+```bash
+terraform init -upgrade
+```
+
 ## Quick Start
 
 ### 1. Set up S3 Backend (Required)
