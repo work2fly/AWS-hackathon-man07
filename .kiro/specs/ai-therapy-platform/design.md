@@ -45,7 +45,8 @@ graph TB
         end
         
         subgraph "Audio Processing"
-            TRANSCRIBE[Amazon Transcribe]
+            NOVA[Amazon Nova Sonic]
+            TRANSCRIBE[Amazon Transcribe - Backup]
             POLLY[Amazon Polly]
             TRANSLATE[Amazon Translate]
         end
@@ -78,6 +79,7 @@ graph TB
     AGENTCORE --> MEMORY
     ECS --> WEBSOCKET
     WEBSOCKET --> KINESIS
+    ECS --> NOVA
     ECS --> TRANSCRIBE
     ECS --> POLLY
     ECS --> TRANSLATE
@@ -94,9 +96,42 @@ graph TB
 
 ### Regional Deployment
 
-- **Primary Region**: US-West-2 (Oregon)
-- **Data Residency**: EU regions for GDPR compliance (data replication)
+- **Primary Region**: US-West-2 (Oregon) - Hackathon deployment
 - **Multi-AZ Deployment**: High availability across availability zones
+- **Note**: GDPR compliance features commented out for hackathon scope
+
+### Nova Sonic Integration Details
+
+**Amazon Nova Sonic** is a speech-to-speech generative AI model specifically designed for telephony and real-time voice applications. For the AI Therapy Platform, Nova Sonic provides:
+
+**Key Capabilities**:
+- **Real-time Processing**: Sub-200ms latency for natural conversation flow
+- **Natural Turn-taking**: Understands conversation patterns and appropriate response timing
+- **Multi-accent Support**: Handles various accents and speaking styles automatically
+- **Therapeutic Context**: Can be configured with therapeutic system prompts and guardrails
+
+**Integration Architecture**:
+```mermaid
+graph LR
+    CLIENT[Client Audio] --> WEBSOCKET[WebSocket Connection]
+    WEBSOCKET --> NOVA[Nova Sonic Model]
+    NOVA --> AGENTCORE[AgentCore Memory]
+    NOVA --> GUARDRAILS[Safety Guardrails]
+    GUARDRAILS --> RESPONSE[Therapeutic Response]
+    RESPONSE --> WEBSOCKET
+    WEBSOCKET --> CLIENT
+```
+
+**Configuration for Therapy**:
+- System prompts for therapeutic best practices
+- Safety guardrails for harmful content detection
+- Cultural sensitivity adaptations
+- Integration with AgentCore memory for session continuity
+
+**Fallback Strategy**:
+- Primary: Nova Sonic for real-time speech-to-speech
+- Fallback: Amazon Transcribe + Polly for specific language requirements
+- Backup: Text-based interaction if audio processing fails
 
 ## Components and Interfaces
 
@@ -112,7 +147,7 @@ graph TB
 - Password reset and account recovery
 
 **Key Features**:
-- GDPR-compliant user management
+- <!-- GDPR-compliant user management (commented out for hackathon) -->
 - Adaptive authentication for risk detection
 - Integration with external identity providers
 - Session management with configurable timeouts
@@ -200,18 +235,24 @@ graph TB
 
 ### 7. Audio Processing Pipeline
 
-**Technology**: Amazon Transcribe + Amazon Polly + Amazon Translate
+**Technology**: Amazon Nova Sonic + Amazon Polly + Amazon Translate
+
+**Nova Sonic Integration**:
+- Real-time speech-to-speech AI model for telephony applications
+- Low-latency voice conversations with natural turn-taking
+- Built-in understanding of various accents and speaking styles
+- Bidirectional streaming for real-time audio processing
 
 **Multi-Language Support**:
-- Automatic language detection
+- Automatic language detection via Nova Sonic
 - Real-time speech-to-text conversion
 - Text-to-speech synthesis in multiple languages
 - Cultural adaptation for therapeutic responses
 
 **Processing Flow**:
-1. Audio input → Language detection
-2. Speech-to-text → Text processing
-3. AI response generation → Text-to-speech
+1. Audio input → Nova Sonic real-time processing
+2. Speech-to-speech with AI response generation
+3. Fallback to Transcribe + Polly for specific language requirements
 4. Audio output with appropriate accent/intonation
 
 ### 8. Data Storage and Management
@@ -227,6 +268,13 @@ graph TB
 - Data at rest: AES-256 encryption
 - Data in transit: TLS 1.3
 - Key management: AWS KMS
+
+<!-- GDPR Compliance Features (commented out for hackathon):
+- Data residency controls
+- Right to erasure implementation
+- Data export functionality
+- Consent management
+-->
 
 ## Data Models
 
@@ -365,16 +413,17 @@ Now I need to use the prework tool to analyze the acceptance criteria before wri
 *For any* user when MFA is enabled, the system should require additional authentication factors for all user types and validate MFA tokens before granting access.
 **Validates: Requirements 1.4**
 
-### Property 3: GDPR Data Management
-*For any* user account deletion request, the system should permanently remove all associated personal data within 30 days while maintaining audit logs of the deletion process.
-**Validates: Requirements 1.6, 6.4**
+### Property 3: Data Management (Hackathon Scope)
+*For any* user account deletion request, the system should remove associated data while maintaining audit logs of the deletion process.
+<!-- GDPR 30-day requirement commented out for hackathon -->
+**Validates: Requirements 1.6**
 
 ### Property 4: Real-Time Audio Communication
 *For any* client session initiation, the system should establish WebSocket connections with sub-200ms latency, maintain continuous audio streaming without interruption, and gracefully handle network issues with automatic reconnection attempts.
 **Validates: Requirements 2.1, 2.2, 2.6, 2.7**
 
-### Property 5: Multi-Language Audio Processing
-*For any* audio input in supported languages, the system should accurately detect the language, convert speech to text, generate appropriate AI responses, and synthesize speech output in the same language with culturally appropriate characteristics.
+### Property 5: Multi-Language Audio Processing with Nova Sonic
+*For any* audio input in supported languages, Amazon Nova Sonic should provide real-time speech-to-speech processing with natural turn-taking, accurate language detection, and culturally appropriate therapeutic responses with proper accent and intonation.
 **Validates: Requirements 2.3, 2.4, 2.5, 10.1, 10.2, 10.3, 10.4**
 
 ### Property 6: AgentCore Memory Integration
@@ -401,8 +450,9 @@ Now I need to use the prework tool to analyze the acceptance criteria before wri
 *For any* data transmission or storage operation, the system should encrypt data in transit using TLS 1.3 and data at rest using AES-256 encryption.
 **Validates: Requirements 6.1, 6.2**
 
-### Property 12: GDPR Data Export
-*For any* user data export request, the system should provide all personal data in machine-readable format within the specified timeframe.
+### Property 12: Data Export (Hackathon Scope)
+*For any* user data export request, the system should provide available personal data in machine-readable format.
+<!-- GDPR compliance timeframes commented out for hackathon -->
 **Validates: Requirements 6.3**
 
 ### Property 13: Session Sentiment Analysis
@@ -562,12 +612,14 @@ Each property-based test must include a comment referencing its design document 
 - API security assessment
 - Network security evaluation
 
-**GDPR Compliance Testing**:
+**GDPR Compliance Testing** (Commented out for hackathon):
+<!-- 
 - Data export completeness verification
 - Data deletion effectiveness validation
 - Consent management workflows
 - Cross-border data transfer compliance
 - Audit trail completeness
+-->
 
 ### Monitoring and Observability
 
