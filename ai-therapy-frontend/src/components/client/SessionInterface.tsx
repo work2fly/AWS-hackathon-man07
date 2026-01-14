@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AvatarSimple } from '@/components/client/AvatarSimple';
+import { BabylonAvatar } from '@/components/client/BabylonAvatar';
 import { 
   Mic, 
   MicOff, 
@@ -312,13 +312,14 @@ export function SessionInterface() {
         </CardHeader>
         <CardContent>
           <div className="flex flex-col items-center space-y-6">
-            {/* 3D AI Avatar */}
+            {/* 3D AI Avatar - Babylon.js */}
             <div className="relative w-full max-w-md h-96">
-              <AvatarSimple
+              <BabylonAvatar
                 isActive={session.isActive}
                 isSpeaking={session.isActive && !isRecording && session.messageCount > 0}
                 isListening={session.isActive && isRecording}
                 volumeLevel={volumeLevel}
+                modelUrl="https://models.readyplayer.me/692c94887b7a88e1f63f3d82.glb?pose=A"
               />
               
               {/* Volume indicator overlay */}
