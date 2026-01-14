@@ -108,22 +108,22 @@ def update_session_state_handler(event: Dict[str, Any], context: Any) -> Dict[st
         session_id = path_params.get('session_id')
         
         if not session_id:
-            return create_response(400, {'error': 'Missing session_id parameter'})
+            return error_response('Missing session_id parameter', 400)
         
         # Get query parameters
         query_params = event.get('queryStringParameters') or {}
         timestamp = query_params.get('timestamp')
         
         if not timestamp:
-            return create_response(400, {'error': 'Missing timestamp parameter'})
+            return error_response('Missing timestamp parameter', 400)
         
         # Verify session ownership
         session = session_service.get_session(session_id, timestamp)
         if not session:
-            return create_response(404, {'error': 'Session not found'})
+            return error_response('Session not found', 404)
         
         if session.client_id != user_info['user_id']:
-            return create_response(403, {'error': 'Access denied'})
+            return error_response('Access denied', 403)
         
         # Parse request body
         body = json.loads(event.get('body', '{}'))
@@ -136,15 +136,15 @@ def update_session_state_handler(event: Dict[str, Any], context: Any) -> Dict[st
         )
         
         if success:
-            return create_response(200, {'message': 'Session state updated successfully'})
+            return success_response({}, 200, 'Session state updated successfully')
         else:
-            return create_response(500, {'error': 'Failed to update session state'})
+            return error_response('Failed to update session state', 500)
     
     except json.JSONDecodeError:
-        return create_response(400, {'error': 'Invalid JSON in request body'})
+        return error_response('Invalid JSON in request body', 400)
     except Exception as e:
         logger.error(f"Update session state handler error: {str(e)}")
-        return create_response(500, {'error': 'Internal server error'})
+        return error_response('Internal server error', 500)
 
 
 @require_role('client')
@@ -258,23 +258,23 @@ def terminate_session_handler(event: Dict[str, Any], context: Any) -> Dict[str, 
         session_id = path_params.get('session_id')
         
         if not session_id:
-            return create_response(400, {'error': 'Missing session_id parameter'})
+            return error_response('Missing session_id parameter', 400)
         
         # Get query parameters
         query_params = event.get('queryStringParameters') or {}
         timestamp = query_params.get('timestamp')
         
         if not timestamp:
-            return create_response(400, {'error': 'Missing timestamp parameter'})
+            return error_response('Missing timestamp parameter', 400)
         
         # Verify session access
         session = session_service.get_session(session_id, timestamp)
         if not session:
-            return create_response(404, {'error': 'Session not found'})
+            return error_response('Session not found', 404)
         
         # Clients can only terminate their own sessions, therapists/admins can terminate any
         if user_info['role'] == 'client' and session.client_id != user_info['user_id']:
-            return create_response(403, {'error': 'Access denied'})
+            return error_response('Access denied', 403)
         
         # Parse request body
         body = json.loads(event.get('body', '{}'))
@@ -284,15 +284,15 @@ def terminate_session_handler(event: Dict[str, Any], context: Any) -> Dict[str, 
         success = session_service.terminate_session(session_id, timestamp, reason)
         
         if success:
-            return create_response(200, {'message': 'Session terminated successfully'})
+            return success_response({}, 200, 'Session terminated successfully')
         else:
-            return create_response(500, {'error': 'Failed to terminate session'})
+            return error_response('Failed to terminate session', 500)
     
     except json.JSONDecodeError:
-        return create_response(400, {'error': 'Invalid JSON in request body'})
+        return error_response('Invalid JSON in request body', 400)
     except Exception as e:
         logger.error(f"Terminate session handler error: {str(e)}")
-        return create_response(500, {'error': 'Internal server error'})
+        return error_response('Internal server error', 500)
 
 
 @authenticated_user
@@ -311,11 +311,11 @@ def get_client_sessions_handler(event: Dict[str, Any], context: Any) -> Dict[str
         client_id = path_params.get('client_id')
         
         if not client_id:
-            return create_response(400, {'error': 'Missing client_id parameter'})
+            return error_response('Missing client_id parameter', 400)
         
         # Check authorization - clients can only see their own sessions
         if user_info['role'] == 'client' and client_id != user_info['user_id']:
-            return create_response(403, {'error': 'Access denied'})
+            return error_response('Access denied', 403)
         
         # Get query parameters
         query_params = event.get('queryStringParameters') or {}
@@ -377,15 +377,15 @@ def get_client_sessions_handler(event: Dict[str, Any], context: Any) -> Dict[str
         if result['last_evaluated_key']:
             response_data['last_evaluated_key'] = result['last_evaluated_key']
         
-        return create_response(200, response_data)
+        return success_response(response_data)
     
     except ValueError as e:
-        return create_response(400, {'error': f'Invalid date format: {str(e)}'})
+        return error_response(f'Invalid date format: {str(e)}', 400)
     except json.JSONDecodeError:
-        return create_response(400, {'error': 'Invalid exclusive_start_key format'})
+        return error_response('Invalid exclusive_start_key format', 400)
     except Exception as e:
         logger.error(f"Get client sessions handler error: {str(e)}")
-        return create_response(500, {'error': 'Internal server error'})
+        return error_response('Internal server error', 500)
 
 
 @therapist_or_admin
@@ -503,8 +503,6 @@ def list_sessions_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]
     except Exception as e:
         logger.error(f"List sessions handler error: {str(e)}")
         return error_response('Internal server error', 500)
-        logger.error(f"Get active sessions handler error: {str(e)}")
-        return create_response(500, {'error': 'Internal server error'})
 
 
 @therapist_or_admin
@@ -582,7 +580,7 @@ def search_sessions_handler(event: Dict[str, Any], context: Any) -> Dict[str, An
             
             sessions_data.append(session_data)
         
-        return create_response(200, {
+        return success_response({
             'sessions': sessions_data,
             'count': result['count'],
             'search_criteria': result['search_criteria'],
@@ -590,10 +588,10 @@ def search_sessions_handler(event: Dict[str, Any], context: Any) -> Dict[str, An
         })
     
     except json.JSONDecodeError:
-        return create_response(400, {'error': 'Invalid JSON in request body'})
+        return error_response('Invalid JSON in request body', 400)
     except Exception as e:
         logger.error(f"Search sessions handler error: {str(e)}")
-        return create_response(500, {'error': 'Internal server error'})
+        return error_response('Internal server error', 500)
 
 
 @authenticated_user
@@ -617,11 +615,11 @@ def export_session_data_handler(event: Dict[str, Any], context: Any) -> Dict[str
         client_id = path_params.get('client_id')
         
         if not client_id:
-            return create_response(400, {'error': 'Missing client_id parameter'})
+            return error_response('Missing client_id parameter', 400)
         
         # Check authorization - clients can only export their own data
         if user_info['role'] == 'client' and client_id != user_info['user_id']:
-            return create_response(403, {'error': 'Access denied'})
+            return error_response('Access denied', 403)
         
         # Parse request body
         body = json.loads(event.get('body', '{}'))
@@ -647,7 +645,7 @@ def export_session_data_handler(event: Dict[str, Any], context: Any) -> Dict[str
         if result.get('success'):
             # For JSON format, return the data directly
             if format_type.lower() == 'json':
-                return create_response(200, {
+                return success_response({
                     'export_data': result['data'],
                     'metadata': {
                         'format': result['format'],
@@ -656,26 +654,27 @@ def export_session_data_handler(event: Dict[str, Any], context: Any) -> Dict[str
                     }
                 })
             else:
-                # For CSV format, return as downloadable content
+                # For CSV format, return as downloadable content with CORS headers
+                from ..utils.response_formatter import get_cors_headers
                 return {
                     'statusCode': 200,
                     'headers': {
+                        **get_cors_headers(),
                         'Content-Type': 'text/csv',
-                        'Content-Disposition': f'attachment; filename="sessions_{client_id}.csv"',
-                        'Access-Control-Allow-Origin': '*'
+                        'Content-Disposition': f'attachment; filename="sessions_{client_id}.csv"'
                     },
                     'body': result['data']
                 }
         else:
-            return create_response(500, {'error': result.get('error', 'Export failed')})
+            return error_response(result.get('error', 'Export failed'), 500)
     
     except json.JSONDecodeError:
-        return create_response(400, {'error': 'Invalid JSON in request body'})
+        return error_response('Invalid JSON in request body', 400)
     except ValueError as e:
-        return create_response(400, {'error': f'Invalid date format: {str(e)}'})
+        return error_response(f'Invalid date format: {str(e)}', 400)
     except Exception as e:
         logger.error(f"Export session data handler error: {str(e)}")
-        return create_response(500, {'error': 'Internal server error'})
+        return error_response('Internal server error', 500)
 
 
 @therapist_or_admin
@@ -696,18 +695,18 @@ def get_session_statistics_handler(event: Dict[str, Any], context: Any) -> Dict[
         
         # Check authorization for client-specific statistics
         if client_id and user_info['role'] == 'client' and client_id != user_info['user_id']:
-            return create_response(403, {'error': 'Access denied'})
+            return error_response('Access denied', 403)
         
         # Get statistics
         stats = session_service.get_session_statistics(client_id=client_id, days=days)
         
-        return create_response(200, stats)
+        return success_response(stats)
     
     except ValueError:
-        return create_response(400, {'error': 'Invalid days parameter'})
+        return error_response('Invalid days parameter', 400)
     except Exception as e:
         logger.error(f"Get session statistics handler error: {str(e)}")
-        return create_response(500, {'error': 'Internal server error'})
+        return error_response('Internal server error', 500)
 
 
 @authenticated_user
@@ -728,13 +727,13 @@ def delete_user_session_data_handler(event: Dict[str, Any], context: Any) -> Dic
         client_id = path_params.get('client_id')
         
         if not client_id:
-            return create_response(400, {'error': 'Missing client_id parameter'})
+            return error_response('Missing client_id parameter', 400)
         
         # Check authorization - clients can only delete their own data, admins can delete any
         if user_info['role'] == 'client' and client_id != user_info['user_id']:
-            return create_response(403, {'error': 'Access denied'})
+            return error_response('Access denied', 403)
         elif user_info['role'] not in ['client', 'admin']:
-            return create_response(403, {'error': 'Insufficient permissions'})
+            return error_response('Insufficient permissions', 403)
         
         # Parse request body
         body = json.loads(event.get('body', '{}'))
@@ -752,20 +751,19 @@ def delete_user_session_data_handler(event: Dict[str, Any], context: Any) -> Dic
         result = security_service.delete_user_session_data(client_id, reason)
         
         if result.get('success'):
-            return create_response(200, {
-                'message': 'User session data deleted successfully',
+            return success_response({
                 'sessions_deleted': result['sessions_deleted'],
                 'total_sessions': result['total_sessions'],
                 'client_id': client_id
-            })
+            }, 200, 'User session data deleted successfully')
         else:
-            return create_response(500, {'error': result.get('error', 'Deletion failed')})
+            return error_response(result.get('error', 'Deletion failed'), 500)
     
     except json.JSONDecodeError:
-        return create_response(400, {'error': 'Invalid JSON in request body'})
+        return error_response('Invalid JSON in request body', 400)
     except Exception as e:
         logger.error(f"Delete user session data handler error: {str(e)}")
-        return create_response(500, {'error': 'Internal server error'})
+        return error_response('Internal server error', 500)
 
 
 @therapist_or_admin
@@ -797,15 +795,15 @@ def apply_data_retention_policy_handler(event: Dict[str, Any], context: Any) -> 
         result = security_service.apply_data_retention_policy(retention_days)
         
         if result.get('success'):
-            return create_response(200, result)
+            return success_response(result)
         else:
-            return create_response(500, {'error': result.get('error', 'Retention policy failed')})
+            return error_response(result.get('error', 'Retention policy failed'), 500)
     
     except json.JSONDecodeError:
-        return create_response(400, {'error': 'Invalid JSON in request body'})
+        return error_response('Invalid JSON in request body', 400)
     except Exception as e:
         logger.error(f"Apply data retention policy handler error: {str(e)}")
-        return create_response(500, {'error': 'Internal server error'})
+        return error_response('Internal server error', 500)
 
 
 @therapist_or_admin
@@ -825,7 +823,7 @@ def create_privacy_report_handler(event: Dict[str, Any], context: Any) -> Dict[s
         
         # Check authorization for client-specific reports
         if client_id and user_info['role'] == 'client' and client_id != user_info['user_id']:
-            return create_response(403, {'error': 'Access denied'})
+            return error_response('Access denied', 403)
         
         # Audit the privacy report request
         security_service.audit_session_access(
@@ -838,11 +836,11 @@ def create_privacy_report_handler(event: Dict[str, Any], context: Any) -> Dict[s
         # Create privacy report
         report = security_service.create_privacy_report(client_id)
         
-        return create_response(200, report)
+        return success_response(report)
     
     except Exception as e:
         logger.error(f"Create privacy report handler error: {str(e)}")
-        return create_response(500, {'error': 'Internal server error'})
+        return error_response('Internal server error', 500)
 
 
 @authenticated_user

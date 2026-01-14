@@ -20,10 +20,14 @@ from hypothesis.strategies import composite
 # Import WebSocket components for testing
 import sys
 import os
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'src'))
 
-from utils.websocket_security import WebSocketSecurityManager, RateLimiter
-from utils.validation import DataValidator
+# Setup path for imports
+backend_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if backend_dir not in sys.path:
+    sys.path.insert(0, backend_dir)
+
+from src.utils.websocket_security import WebSocketSecurityManager, RateLimiter
+from src.utils.validation import DataValidator
 
 
 class MockWebSocketConnection:

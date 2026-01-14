@@ -20,13 +20,12 @@ from hypothesis.strategies import composite
 import sys
 import os
 backend_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-src_dir = os.path.join(backend_dir, 'src')
-if src_dir not in sys.path:
-    sys.path.insert(0, src_dir)
+if backend_dir not in sys.path:
+    sys.path.insert(0, backend_dir)
 
 # Import the actual response formatter and auth utilities we need
-from utils.response_formatter import success_response, error_response
-from middleware.auth_middleware import get_user_from_event, is_user_authorized_for_resource
+from src.utils.response_formatter import success_response, error_response
+from src.middleware.auth_middleware import get_user_from_event, is_user_authorized_for_resource
 
 
 @composite

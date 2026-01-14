@@ -9,11 +9,13 @@ import sys
 import os
 from datetime import datetime
 
-# Add the src directory to the path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
+# Setup path for imports
+backend_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if backend_dir not in sys.path:
+    sys.path.insert(0, backend_dir)
 
-from services.trauma_informed_response_service import TraumaInformedResponseService, ResponseType
-from models.red_flag import RedFlag, RedFlagType, Severity
+from src.services.trauma_informed_response_service import TraumaInformedResponseService, ResponseType
+from src.models.red_flag import RedFlag, RedFlagType, Severity
 
 
 class TestTraumaInformedResponses(unittest.TestCase):

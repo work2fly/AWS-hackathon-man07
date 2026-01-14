@@ -23,27 +23,16 @@ import os
 
 # Setup path for imports
 backend_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-src_dir = os.path.join(backend_dir, 'src')
-if src_dir not in sys.path:
-    sys.path.insert(0, src_dir)
+if backend_dir not in sys.path:
+    sys.path.insert(0, backend_dir)
 
-# Import directly from the module file to avoid circular imports
-import importlib.util
-spec = importlib.util.spec_from_file_location("websocket_auth", 
-                                               os.path.join(src_dir, "utils", "websocket_auth.py"))
-websocket_auth = importlib.util.module_from_spec(spec)
-
-# Mock dependencies before loading
-sys.modules['utils.logger'] = Mock()
-sys.modules['services.cognito_service'] = Mock()
-sys.modules['data.user_repository'] = Mock()
-
-spec.loader.exec_module(websocket_auth)
-
-extract_token_from_query_params = websocket_auth.extract_token_from_query_params
-validate_token_against_cognito = websocket_auth.validate_token_against_cognito
-extract_user_information = websocket_auth.extract_user_information
-authenticate_websocket_connection = websocket_auth.authenticate_websocket_connection
+# Now import the websocket_auth module
+from src.utils.websocket_auth import (
+    extract_token_from_query_params,
+    validate_token_against_cognito,
+    extract_user_information,
+    authenticate_websocket_connection
+)
 
 
 @composite
