@@ -75,8 +75,8 @@ This implementation plan addresses critical backend integration issues blocking 
     - **Property 5: User Management Endpoints Availability**
     - **Validates: Requirements 4.1-4.5**
 
-- [ ] 5. Extend session management endpoints
-  - [ ] 5.1 Update session_handlers.py module
+- [x] 5. Extend session management endpoints
+  - [x] 5.1 Update session_handlers.py module
     - Implement create_session_handler (POST /sessions)
     - Implement get_session_handler (GET /sessions/{sessionId})
     - Implement end_session_handler (POST /sessions/{sessionId}/end)
@@ -85,9 +85,23 @@ This implementation plan addresses critical backend integration issues blocking 
     - Use response formatter
     - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5, 5.6_
 
-  - [ ] 5.2 Write property test for session management endpoints
+  - [x] 5.2 Write property test for session management endpoints
     - **Property 6: Session Management Endpoints Availability**
     - **Validates: Requirements 5.1-5.6**
+
+- [ ] 5.3 Refactor remaining session handlers to use response_formatter
+  - Update update_session_state_handler to use response_formatter
+  - Update terminate_session_handler to use response_formatter
+  - Update get_client_sessions_handler to use response_formatter
+  - Update search_sessions_handler to use response_formatter
+  - Update export_session_data_handler to use response_formatter
+  - Update get_session_statistics_handler to use response_formatter
+  - Update delete_user_session_data_handler to use response_formatter
+  - Update apply_data_retention_policy_handler to use response_formatter
+  - Update create_privacy_report_handler to use response_formatter
+  - Remove old create_response function
+  - Verify all handlers return consistent response format
+  - _Requirements: 10.1, 10.2, 10.3, 10.4, 10.5, 10.6, 11.1, 11.2_
 
 - [ ] 6. Implement red flag management endpoints
   - [ ] 6.1 Create red_flag_handlers.py module
