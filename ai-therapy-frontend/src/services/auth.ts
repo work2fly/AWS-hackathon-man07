@@ -8,7 +8,7 @@ import type { User } from '@/types';
 import { MockAuthService } from './mock-auth';
 
 // TEMPORARY: Use mock auth until backend team fixes Cognito client secret issue
-const USE_MOCK_AUTH = true;
+const USE_MOCK_AUTH = false;
 
 // Configure Amplify with Cognito settings (ready for when backend is fixed)
 Amplify.configure({

@@ -128,7 +128,7 @@ export function useAuth() {
       
       const result = await AuthService.signIn(params);
       
-      if (result.success && result.isSignedIn && result.user) {
+      if (result.success && 'isSignedIn' in result && result.isSignedIn && result.user) {
         setAuthState({
           isAuthenticated: true,
           user: result.user,
@@ -137,7 +137,7 @@ export function useAuth() {
           error: null,
         });
         return result;
-      } else if (result.success && result.nextStep) {
+      } else if (result.success && 'nextStep' in result && result.nextStep) {
         // Handle MFA or other next steps
         setAuthState(prev => ({ ...prev, loading: false }));
         return result;
@@ -145,7 +145,7 @@ export function useAuth() {
         setAuthState(prev => ({ 
           ...prev, 
           loading: false, 
-          error: result.error || 'Sign in failed' 
+          error: ('error' in result ? result.error : 'Sign in failed') || null
         }));
         return result;
       }

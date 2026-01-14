@@ -45,6 +45,14 @@ htmlcov/
 .env.test.local
 .env.production.local
 
+# Cognito configuration (contains client IDs)
+backend/cognito-frontend-config.json
+cognito-frontend-config.json
+
+# Backup files
+*.backup
+*~
+
 # IDE
 .vscode/
 .idea/

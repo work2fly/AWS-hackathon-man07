@@ -20,7 +20,7 @@ export function useWebSocket(token?: string) {
     lastMessage: null,
   });
 
-  const handlersRef = useRef<Map<WebSocketEventType, Function>>(new Map());
+  const handlersRef = useRef<Map<WebSocketEventType, (data?: any) => void>>(new Map());
 
   // Initialize WebSocket connection
   const connect = useCallback(async () => {
@@ -96,7 +96,7 @@ export function useWebSocket(token?: string) {
   // Add event listener
   const addEventListener = useCallback((
     event: WebSocketEventType, 
-    handler: Function
+    handler: (data?: any) => void
   ) => {
     webSocketService.on(event, handler);
     handlersRef.current.set(event, handler);
@@ -105,7 +105,7 @@ export function useWebSocket(token?: string) {
   // Remove event listener
   const removeEventListener = useCallback((
     event: WebSocketEventType, 
-    handler: Function
+    handler: (data?: any) => void
   ) => {
     webSocketService.off(event, handler);
     handlersRef.current.delete(event);
