@@ -89,7 +89,7 @@ This implementation plan addresses critical backend integration issues blocking 
     - **Property 6: Session Management Endpoints Availability**
     - **Validates: Requirements 5.1-5.6**
 
-- [ ] 5.3 Refactor remaining session handlers to use response_formatter
+- [x] 5.3 Refactor remaining session handlers to use response_formatter
   - Update update_session_state_handler to use response_formatter
   - Update terminate_session_handler to use response_formatter
   - Update get_client_sessions_handler to use response_formatter
@@ -103,8 +103,8 @@ This implementation plan addresses critical backend integration issues blocking 
   - Verify all handlers return consistent response format
   - _Requirements: 10.1, 10.2, 10.3, 10.4, 10.5, 10.6, 11.1, 11.2_
 
-- [ ] 6. Implement red flag management endpoints
-  - [ ] 6.1 Create red_flag_handlers.py module
+- [x] 6. Implement red flag management endpoints
+  - [x] 6.1 Create red_flag_handlers.py module
     - Implement get_therapist_red_flags_handler (GET /therapists/{therapistId}/red-flags)
     - Implement acknowledge_red_flag_handler (POST /red-flags/{flagId}/acknowledge)
     - Implement resolve_red_flag_handler (POST /red-flags/{flagId}/resolve)
@@ -112,7 +112,7 @@ This implementation plan addresses critical backend integration issues blocking 
     - Use response formatter
     - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.5, 6.6_
 
-  - [ ] 6.2 Write property test for red flag management endpoints
+  - [x] 6.2 Write property test for red flag management endpoints
     - **Property 7: Red Flag Management Endpoints Availability**
     - **Validates: Requirements 6.1-6.6**
 
