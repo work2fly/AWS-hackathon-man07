@@ -1,0 +1,80 @@
+# LiveKit Server Configuration
+# AI Therapy Platform - Breaking Barriers UK 2026
+
+# Server ports
+port: 7880
+bind_addresses:
+  - "0.0.0.0"
+
+# RTC configuration for WebRTC
+rtc:
+  # UDP port range for WebRTC media
+  port_range_start: 50000
+  port_range_end: 60000
+  
+  # Use external IP for WebRTC connections
+  use_external_ip: true
+  
+  # TCP fallback for restrictive networks
+  tcp_port: 7881
+  
+  # TURN server configuration (optional, for NAT traversal)
+  # turn_servers:
+  #   - host: turn.example.com
+  #     port: 3478
+  #     protocol: udp
+  #     username: ${TURN_USERNAME}
+  #     credential: ${TURN_PASSWORD}
+
+# Redis configuration for distributed state
+redis:
+  address: ${REDIS_HOST}:${REDIS_PORT}
+  # For encrypted Redis (ElastiCache with TLS)
+  # use_tls: true
+  # db: 0
+
+# API keys (loaded from environment variables)
+keys:
+  ${LIVEKIT_API_KEY}: ${LIVEKIT_API_SECRET}
+
+# Room configuration
+room:
+  # Auto-create rooms when clients connect
+  auto_create: true
+  
+  # Maximum number of participants per room
+  max_participants: 10
+  
+  # Empty room timeout (in seconds)
+  empty_timeout: 300
+  
+  # Enable room recording (optional)
+  # enable_recording: false
+
+# Logging configuration
+logging:
+  level: info
+  # Available levels: debug, info, warn, error
+  
+  # Log to file (optional)
+  # file: /var/log/livekit/livekit.log
+  
+  # JSON formatted logs for CloudWatch
+  json: true
+
+# Webhook configuration (for session events)
+# webhook:
+#   urls:
+#     - https://your-api-endpoint.com/livekit/webhook
+#   api_key: ${WEBHOOK_API_KEY}
+
+# Limits and quotas
+limit:
+  # Maximum bitrate per participant (in bps)
+  max_bitrate: 3000000
+  
+  # Maximum number of tracks per participant
+  max_tracks_per_participant: 10
+
+# Health check endpoint
+# Accessible at http://localhost:7880/health

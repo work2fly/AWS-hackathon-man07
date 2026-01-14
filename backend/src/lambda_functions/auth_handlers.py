@@ -12,27 +12,9 @@ from ..services.cognito_service import cognito_service
 from ..data.user_repository import user_repository
 from ..utils.logger import get_logger
 from ..utils.validation import validate_email, validate_password
+from ..utils.response_formatter import success_response, error_response, get_cors_headers
 
 logger = get_logger(__name__)
-
-def create_response(status_code: int, body: Dict[str, Any], 
-                   headers: Optional[Dict[str, str]] = None) -> Dict[str, Any]:
-    """Create standardized API response"""
-    default_headers = {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
-        'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS'
-    }
-    
-    if headers:
-        default_headers.update(headers)
-    
-    return {
-        'statusCode': status_code,
-        'headers': default_headers,
-        'body': json.dumps(body)
-    }
 
 def register_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     """
@@ -47,9 +29,12 @@ def register_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     }
     """
     try:
+        logger.info("Processing registration request")
+        
         # Parse request body
         if 'body' not in event:
-            return create_response(400, {'error': 'Missing request body'})
+            logger.warning("Registration request missing body")
+            return error_response('Missing request body', 400)
         
         body = json.loads(event['body']) if isinstance(event['body'], str) else event['body']
         
@@ -61,42 +46,55 @@ def register_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         
         # Validate required fields
         if not all([email, password, role]):
-            return create_response(400, {'error': 'Missing required fields: email, password, role'})
+            logger.warning("Registration request missing required fields")
+            return error_response('Missing required fields: email, password, role', 400, 
+                                 details={'fields': ['email', 'password', 'role']})
         
         # Validate email format
         if not validate_email(email):
-            return create_response(400, {'error': 'Invalid email format'})
+            logger.warning(f"Invalid email format: {email}")
+            return error_response('Invalid email format', 400, 
+                                 details={'field': 'email'})
         
         # Validate password strength
         if not validate_password(password):
-            return create_response(400, {
-                'error': 'Password must be at least 8 characters with uppercase, lowercase, number, and symbol'
-            })
+            logger.warning("Password does not meet requirements")
+            return error_response(
+                'Password must be at least 8 characters with uppercase, lowercase, number, and symbol',
+                400,
+                details={'field': 'password'}
+            )
         
         # Validate role
         if role not in ['client', 'therapist', 'admin']:
-            return create_response(400, {'error': 'Invalid role. Must be client, therapist, or admin'})
+            logger.warning(f"Invalid role: {role}")
+            return error_response('Invalid role. Must be client, therapist, or admin', 400,
+                                 details={'field': 'role', 'valid_values': ['client', 'therapist', 'admin']})
         
         # Register user with Cognito
         result = cognito_service.register_user(email, password, role, language_preference)
         
         if result['success']:
             logger.info(f"User registered successfully: {email}")
-            return create_response(201, {
-                'message': 'User registered successfully',
-                'user_id': result['user_id'],
-                'email': result['email'],
-                'role': result['role']
-            })
+            return success_response(
+                {
+                    'user_id': result['user_id'],
+                    'email': result['email'],
+                    'role': result['role']
+                },
+                201,
+                message='User registered successfully'
+            )
         else:
             logger.warning(f"Registration failed for {email}: {result['error']}")
-            return create_response(400, {'error': result['error']})
+            return error_response(result['error'], 400)
     
     except json.JSONDecodeError:
-        return create_response(400, {'error': 'Invalid JSON in request body'})
+        logger.error("Invalid JSON in registration request body")
+        return error_response('Invalid JSON in request body', 400)
     except Exception as e:
         logger.error(f"Registration handler error: {str(e)}")
-        return create_response(500, {'error': 'Internal server error'})
+        return error_response('Internal server error', 500)
 
 def login_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     """
@@ -109,9 +107,12 @@ def login_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     }
     """
     try:
+        logger.info("Processing login request")
+        
         # Parse request body
         if 'body' not in event:
-            return create_response(400, {'error': 'Missing request body'})
+            logger.warning("Login request missing body")
+            return error_response('Missing request body', 400)
         
         body = json.loads(event['body']) if isinstance(event['body'], str) else event['body']
         
@@ -121,30 +122,36 @@ def login_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         
         # Validate required fields
         if not all([email, password]):
-            return create_response(400, {'error': 'Missing email or password'})
+            logger.warning("Login request missing email or password")
+            return error_response('Missing email or password', 400,
+                                 details={'fields': ['email', 'password']})
         
         # Authenticate with Cognito
         result = cognito_service.authenticate_user(email, password)
         
         if result['success']:
             logger.info(f"User authenticated successfully: {email}")
-            return create_response(200, {
-                'message': 'Authentication successful',
-                'access_token': result['access_token'],
-                'id_token': result['id_token'],
-                'refresh_token': result['refresh_token'],
-                'expires_in': result['expires_in'],
-                'user_info': result['user_info']
-            })
+            return success_response(
+                {
+                    'access_token': result['access_token'],
+                    'id_token': result['id_token'],
+                    'refresh_token': result['refresh_token'],
+                    'expires_in': result['expires_in'],
+                    'user_info': result['user_info']
+                },
+                200,
+                message='Authentication successful'
+            )
         else:
             logger.warning(f"Authentication failed for {email}: {result['error']}")
-            return create_response(401, {'error': result['error']})
+            return error_response(result['error'], 401)
     
     except json.JSONDecodeError:
-        return create_response(400, {'error': 'Invalid JSON in request body'})
+        logger.error("Invalid JSON in login request body")
+        return error_response('Invalid JSON in request body', 400)
     except Exception as e:
         logger.error(f"Login handler error: {str(e)}")
-        return create_response(500, {'error': 'Internal server error'})
+        return error_response('Internal server error', 500)
 
 def refresh_token_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     """
@@ -156,9 +163,12 @@ def refresh_token_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]
     }
     """
     try:
+        logger.info("Processing token refresh request")
+        
         # Parse request body
         if 'body' not in event:
-            return create_response(400, {'error': 'Missing request body'})
+            logger.warning("Token refresh request missing body")
+            return error_response('Missing request body', 400)
         
         body = json.loads(event['body']) if isinstance(event['body'], str) else event['body']
         
@@ -166,28 +176,34 @@ def refresh_token_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]
         refresh_token = body.get('refresh_token', '')
         
         if not refresh_token:
-            return create_response(400, {'error': 'Missing refresh token'})
+            logger.warning("Token refresh request missing refresh_token")
+            return error_response('Missing refresh token', 400,
+                                 details={'field': 'refresh_token'})
         
         # Refresh tokens with Cognito
         result = cognito_service.refresh_token(refresh_token)
         
         if result['success']:
             logger.info("Token refreshed successfully")
-            return create_response(200, {
-                'message': 'Token refreshed successfully',
-                'access_token': result['access_token'],
-                'id_token': result['id_token'],
-                'expires_in': result['expires_in']
-            })
+            return success_response(
+                {
+                    'access_token': result['access_token'],
+                    'id_token': result['id_token'],
+                    'expires_in': result['expires_in']
+                },
+                200,
+                message='Token refreshed successfully'
+            )
         else:
             logger.warning(f"Token refresh failed: {result['error']}")
-            return create_response(401, {'error': result['error']})
+            return error_response(result['error'], 401)
     
     except json.JSONDecodeError:
-        return create_response(400, {'error': 'Invalid JSON in request body'})
+        logger.error("Invalid JSON in token refresh request body")
+        return error_response('Invalid JSON in request body', 400)
     except Exception as e:
         logger.error(f"Token refresh handler error: {str(e)}")
-        return create_response(500, {'error': 'Internal server error'})
+        return error_response('Internal server error', 500)
 
 def logout_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     """
@@ -199,12 +215,15 @@ def logout_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     }
     """
     try:
+        logger.info("Processing logout request")
+        
         # Extract access token from headers
         headers = event.get('headers', {})
         auth_header = headers.get('Authorization', '') or headers.get('authorization', '')
         
         if not auth_header.startswith('Bearer '):
-            return create_response(401, {'error': 'Missing or invalid authorization header'})
+            logger.warning("Logout request missing or invalid authorization header")
+            return error_response('Missing or invalid authorization header', 401)
         
         access_token = auth_header.replace('Bearer ', '')
         
@@ -213,13 +232,18 @@ def logout_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         
         if token_info['valid']:
             logger.info(f"User logged out: {token_info['email']}")
-            return create_response(200, {'message': 'Logout successful'})
+            return success_response(
+                {'logged_out': True},
+                200,
+                message='Logout successful'
+            )
         else:
-            return create_response(401, {'error': 'Invalid token'})
+            logger.warning("Logout request with invalid token")
+            return error_response('Invalid token', 401)
     
     except Exception as e:
         logger.error(f"Logout handler error: {str(e)}")
-        return create_response(500, {'error': 'Internal server error'})
+        return error_response('Internal server error', 500)
 
 def reset_password_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     """
@@ -231,9 +255,12 @@ def reset_password_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any
     }
     """
     try:
+        logger.info("Processing password reset request")
+        
         # Parse request body
         if 'body' not in event:
-            return create_response(400, {'error': 'Missing request body'})
+            logger.warning("Password reset request missing body")
+            return error_response('Missing request body', 400)
         
         body = json.loads(event['body']) if isinstance(event['body'], str) else event['body']
         
@@ -241,26 +268,35 @@ def reset_password_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any
         email = body.get('email', '').strip().lower()
         
         if not email:
-            return create_response(400, {'error': 'Missing email'})
+            logger.warning("Password reset request missing email")
+            return error_response('Missing email', 400,
+                                 details={'field': 'email'})
         
         if not validate_email(email):
-            return create_response(400, {'error': 'Invalid email format'})
+            logger.warning(f"Invalid email format for password reset: {email}")
+            return error_response('Invalid email format', 400,
+                                 details={'field': 'email'})
         
         # Initiate password reset with Cognito
         result = cognito_service.reset_password(email)
         
         if result['success']:
             logger.info(f"Password reset initiated for: {email}")
-            return create_response(200, {'message': result['message']})
+            return success_response(
+                {'email': email},
+                200,
+                message=result['message']
+            )
         else:
             logger.warning(f"Password reset failed for {email}: {result['error']}")
-            return create_response(400, {'error': result['error']})
+            return error_response(result['error'], 400)
     
     except json.JSONDecodeError:
-        return create_response(400, {'error': 'Invalid JSON in request body'})
+        logger.error("Invalid JSON in password reset request body")
+        return error_response('Invalid JSON in request body', 400)
     except Exception as e:
         logger.error(f"Password reset handler error: {str(e)}")
-        return create_response(500, {'error': 'Internal server error'})
+        return error_response('Internal server error', 500)
 
 def get_profile_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     """
@@ -272,12 +308,15 @@ def get_profile_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     }
     """
     try:
+        logger.info("Processing get profile request")
+        
         # Extract access token from headers
         headers = event.get('headers', {})
         auth_header = headers.get('Authorization', '') or headers.get('authorization', '')
         
         if not auth_header.startswith('Bearer '):
-            return create_response(401, {'error': 'Missing or invalid authorization header'})
+            logger.warning("Get profile request missing or invalid authorization header")
+            return error_response('Missing or invalid authorization header', 401)
         
         access_token = auth_header.replace('Bearer ', '')
         
@@ -285,7 +324,8 @@ def get_profile_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         token_info = cognito_service.verify_jwt_token(access_token)
         
         if not token_info['valid']:
-            return create_response(401, {'error': 'Invalid token'})
+            logger.warning("Get profile request with invalid token")
+            return error_response('Invalid token', 401)
         
         # Get detailed user info from DynamoDB
         user_data = user_repository.get_user_by_email(token_info['email'])
@@ -305,13 +345,15 @@ def get_profile_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 'last_login_at': user_data.get('lastLoginAt')
             }
             
-            return create_response(200, profile_data)
+            logger.info(f"Profile retrieved for user: {token_info['email']}")
+            return success_response(profile_data, 200)
         else:
-            return create_response(404, {'error': 'User profile not found'})
+            logger.warning(f"Profile not found for user: {token_info['email']}")
+            return error_response('User profile not found', 404)
     
     except Exception as e:
         logger.error(f"Get profile handler error: {str(e)}")
-        return create_response(500, {'error': 'Internal server error'})
+        return error_response('Internal server error', 500)
 
 def update_profile_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     """
@@ -334,12 +376,15 @@ def update_profile_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any
     }
     """
     try:
+        logger.info("Processing update profile request")
+        
         # Extract access token from headers
         headers = event.get('headers', {})
         auth_header = headers.get('Authorization', '') or headers.get('authorization', '')
         
         if not auth_header.startswith('Bearer '):
-            return create_response(401, {'error': 'Missing or invalid authorization header'})
+            logger.warning("Update profile request missing or invalid authorization header")
+            return error_response('Missing or invalid authorization header', 401)
         
         access_token = auth_header.replace('Bearer ', '')
         
@@ -347,11 +392,13 @@ def update_profile_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any
         token_info = cognito_service.verify_jwt_token(access_token)
         
         if not token_info['valid']:
-            return create_response(401, {'error': 'Invalid token'})
+            logger.warning("Update profile request with invalid token")
+            return error_response('Invalid token', 401)
         
         # Parse request body
         if 'body' not in event:
-            return create_response(400, {'error': 'Missing request body'})
+            logger.warning("Update profile request missing body")
+            return error_response('Missing request body', 400)
         
         body = json.loads(event['body']) if isinstance(event['body'], str) else event['body']
         
@@ -359,7 +406,8 @@ def update_profile_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any
         user_data = user_repository.get_user_by_email(token_info['email'])
         
         if not user_data:
-            return create_response(404, {'error': 'User not found'})
+            logger.warning(f"User not found for profile update: {token_info['email']}")
+            return error_response('User not found', 404)
         
         # Update profile fields if provided
         if 'profile' in body:
@@ -396,15 +444,21 @@ def update_profile_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any
         
         if success:
             logger.info(f"Profile updated for user: {token_info['email']}")
-            return create_response(200, {'message': 'Profile updated successfully'})
+            return success_response(
+                {'updated': True},
+                200,
+                message='Profile updated successfully'
+            )
         else:
-            return create_response(500, {'error': 'Failed to update profile'})
+            logger.error(f"Failed to update profile for user: {token_info['email']}")
+            return error_response('Failed to update profile', 500)
     
     except json.JSONDecodeError:
-        return create_response(400, {'error': 'Invalid JSON in request body'})
+        logger.error("Invalid JSON in update profile request body")
+        return error_response('Invalid JSON in request body', 400)
     except Exception as e:
         logger.error(f"Update profile handler error: {str(e)}")
-        return create_response(500, {'error': 'Internal server error'})
+        return error_response('Internal server error', 500)
 
 def enable_mfa_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     """
@@ -416,12 +470,15 @@ def enable_mfa_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     }
     """
     try:
+        logger.info("Processing enable MFA request")
+        
         # Extract access token from headers
         headers = event.get('headers', {})
         auth_header = headers.get('Authorization', '') or headers.get('authorization', '')
         
         if not auth_header.startswith('Bearer '):
-            return create_response(401, {'error': 'Missing or invalid authorization header'})
+            logger.warning("Enable MFA request missing or invalid authorization header")
+            return error_response('Missing or invalid authorization header', 401)
         
         access_token = auth_header.replace('Bearer ', '')
         
@@ -429,7 +486,8 @@ def enable_mfa_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         token_info = cognito_service.verify_jwt_token(access_token)
         
         if not token_info['valid']:
-            return create_response(401, {'error': 'Invalid token'})
+            logger.warning("Enable MFA request with invalid token")
+            return error_response('Invalid token', 401)
         
         # Enable MFA in Cognito
         success = cognito_service.enable_mfa(token_info['username'])
@@ -439,13 +497,18 @@ def enable_mfa_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             user_repository.enable_mfa(token_info['username'])
             
             logger.info(f"MFA enabled for user: {token_info['email']}")
-            return create_response(200, {'message': 'MFA enabled successfully'})
+            return success_response(
+                {'mfa_enabled': True},
+                200,
+                message='MFA enabled successfully'
+            )
         else:
-            return create_response(500, {'error': 'Failed to enable MFA'})
+            logger.error(f"Failed to enable MFA for user: {token_info['email']}")
+            return error_response('Failed to enable MFA', 500)
     
     except Exception as e:
         logger.error(f"Enable MFA handler error: {str(e)}")
-        return create_response(500, {'error': 'Internal server error'})
+        return error_response('Internal server error', 500)
 
 # Lambda handler routing
 def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
@@ -477,8 +540,9 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         elif path == '/auth/enable-mfa' and http_method == 'POST':
             return enable_mfa_handler(event, context)
         else:
-            return create_response(404, {'error': 'Endpoint not found'})
+            logger.warning(f"Endpoint not found: {http_method} {path}")
+            return error_response('Endpoint not found', 404)
     
     except Exception as e:
         logger.error(f"Auth handler routing error: {str(e)}")
-        return create_response(500, {'error': 'Internal server error'})
+        return error_response('Internal server error', 500)

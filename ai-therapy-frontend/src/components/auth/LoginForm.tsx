@@ -5,6 +5,7 @@
 
 import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -18,6 +19,7 @@ interface LoginFormProps {
 
 export function LoginForm({ onGoToSignUp }: LoginFormProps = {}) {
   const { signIn, loading, error, clearError } = useAuth();
+  const { t } = useLanguage();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -51,9 +53,9 @@ export function LoginForm({ onGoToSignUp }: LoginFormProps = {}) {
         <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
           <Heart className="h-8 w-8 text-purple-600" />
         </div>
-        <CardTitle className="text-2xl font-bold text-gray-900">Welcome Back</CardTitle>
+        <CardTitle className="text-2xl font-bold text-gray-900">{t('auth.login.title')}</CardTitle>
         <CardDescription className="text-gray-600">
-          Continue your healing journey with UKind AI Therapy
+          {t('auth.login.subtitle')}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -65,13 +67,13 @@ export function LoginForm({ onGoToSignUp }: LoginFormProps = {}) {
           )}
           
           <div className="space-y-2">
-            <Label htmlFor="email" className="text-gray-700 font-medium">Email Address</Label>
+            <Label htmlFor="email" className="text-gray-700 font-medium">{t('auth.login.email')}</Label>
             <div className="relative">
               <Mail className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
               <Input
                 id="email"
                 type="email"
-                placeholder="Enter your email"
+                placeholder={t('auth.login.email')}
                 value={formData.email}
                 onChange={handleInputChange('email')}
                 className="pl-10 h-12 border-gray-200 focus:border-purple-500 focus:ring-purple-500"
@@ -82,13 +84,13 @@ export function LoginForm({ onGoToSignUp }: LoginFormProps = {}) {
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="password" className="text-gray-700 font-medium">Password</Label>
+            <Label htmlFor="password" className="text-gray-700 font-medium">{t('auth.login.password')}</Label>
             <div className="relative">
               <Lock className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
               <Input
                 id="password"
                 type="password"
-                placeholder="Enter your password"
+                placeholder={t('auth.login.password')}
                 value={formData.password}
                 onChange={handleInputChange('password')}
                 className="pl-10 h-12 border-gray-200 focus:border-purple-500 focus:ring-purple-500"
@@ -106,23 +108,23 @@ export function LoginForm({ onGoToSignUp }: LoginFormProps = {}) {
             {loading ? (
               <>
                 <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                Signing In...
+                {t('auth.login.submitting')}
               </>
             ) : (
-              'Sign In to Continue'
+              t('auth.login.submit')
             )}
           </Button>
         </form>
         
         <div className="mt-6 text-center">
           <p className="text-gray-600">
-            New to UKind AI Therapy?{' '}
+            {t('auth.login.noAccount')}{' '}
             <button 
               type="button"
               className="text-purple-600 hover:text-purple-700 font-medium hover:underline"
               onClick={onGoToSignUp}
             >
-              Create your account
+              {t('auth.login.signupLink')}
             </button>
           </p>
         </div>

@@ -1,0 +1,268 @@
+Q&A Prep - After our discussion, I tried to combine judge criteria and our architecture to compose this FAQ doc.
+Please feel free to change or update and point out errors.
+
+Voice-to-Voice Virtual Therapist for Domestic Violence Survivors
+Hackathon Q&A Preparation Guide - UK Market
+
+Solution Overview:
+Voice-to-voice AI therapist using AWS Bedrock, LiveKit Agent Framework, and Amazon Nova Sonic 2 model to provide 24/7 trauma-informed support for domestic violence survivors in the UK.
+
+Team: Healthcare Solutions Architect (AWS & AI/ML expert) + Software Engineering Student
+
+TECHNICAL CAPABILITY
+
+Q: What technology stack powers your voice-to-voice interaction?
+
+Answer: "We built our solution on AWS Bedrock using the LiveKit Agent Framework with Amazon Nova Sonic 2 model. Nova Sonic 2 provides native voice-to-voice capabilities, which means we can process speech directly without the traditional pipeline of speech-to-text, LLM processing, then text-to-speech. This reduces latency significantly and creates more natural, human-like conversations that are crucial for trauma survivors who need empathetic, responsive support. The LiveKit framework handles real-time audio streaming and session management, while AWS Bedrock provides the enterprise-grade infrastructure, security, and scalability essential for healthcare applications serving vulnerable populations."
+
+Q: How do you ensure real-time, low-latency voice conversations?
+
+Answer: "Amazon Nova Sonic 2's native voice-to-voice architecture eliminates the multi-step conversion process that creates delays in traditional systems. This is critical for domestic violence survivors who may be in unsafe situations and need immediate, responsive support. LiveKit's WebRTC-based infrastructure provides sub-second latency for audio streaming. We've optimized our deployment using AWS regions close to our users (London region) and leverage Bedrock's managed infrastructure to ensure consistent performance without cold starts. For survivors who may only have brief windows of privacy to access support, every second of latency matters."
+
+Q: How does your system integrate with existing Electronic Health Records (EHR) systems?
+
+Answer: "Currently, our prototype focuses on secure, isolated session management to protect survivor privacy. We've designed the architecture to support future FHIR-compliant API integration with NHS systems, but we're taking a privacy-first approach. Given the sensitive nature of domestic violence cases, we want to ensure survivors have complete control over what information is shared and with whom. Our therapist dashboard provides clinical insights without requiring full EHR integration, which also makes our solution deployable in community charities and refuges that may not have sophisticated EHR systems."
+
+Q: What measures are in place to handle technical failures or connectivity issues during a therapy session?
+
+Answer: "This is critical for our user population. LiveKit provides automatic reconnection handling and session persistence. If a connection drops—which might happen if a survivor needs to quickly hide their phone—the system can resume the conversation context when it's safe to reconnect. We also implement graceful degradation: if voice quality degrades, the system can switch to text-based interaction. All session data is continuously persisted to AWS with encryption, so no therapeutic progress is lost. We also have an 'emergency exit' feature that allows users to quickly close the session and clear recent activity if they're interrupted."
+
+Q: How do you handle multiple languages or accents?
+
+Answer: "Amazon Nova Sonic 2 supports multiple languages and is trained on diverse voice data. For our initial prototype, we're focusing on English, but the architecture supports expansion to Welsh and other languages spoken across the UK. The model handles various British accents well, which is important because domestic violence affects people across all demographics and regions throughout England, Scotland, Wales, and Northern Ireland."
+
+USER INTERFACE AND DESIGN
+
+Q: How did you design the interface to be accessible for patients with varying technical literacy?
+
+Answer: "We designed with the principle that survivors in crisis shouldn't need technical expertise to access help. The interface is intentionally minimal—users can start a conversation with a single tap. There's no complex onboarding, no forms to fill out initially. The voice-first design means users don't need to type or navigate complex menus. For survivors who may be using the app discreetly, we've included a 'disguise mode' that makes the app appear as a different type of application on their phone screen."
+
+Q: What considerations did you make for patients with disabilities?
+
+Answer: "Voice-first design inherently serves users with visual impairments or motor disabilities. We've ensured compatibility with screen readers for users who need them. The system can also operate in text mode for users who are deaf or hard of hearing. We're following WCAG 2.1 AA standards and have designed for one-handed operation, which is important for users who may have physical injuries from abuse."
+
+Q: How do you maintain a therapeutic, calming user experience through voice interaction?
+
+Answer: "We've carefully crafted the AI's voice personality to be warm, non-judgmental, and trauma-informed. The system uses pacing and tone that conveys empathy without being patronizing. It's trained to recognize when users are distressed and adjust its responses accordingly—speaking more slowly, using shorter sentences, and offering grounding techniques. The voice never sounds rushed or impatient, which is crucial for survivors who may have experienced verbal abuse. We've also programmed it to avoid certain triggering phrases and to validate the user's experiences consistently."
+
+Q: Can you demonstrate the user journey from first interaction to ongoing therapy sessions?
+
+Answer: "A survivor opens the app and is greeted with a simple, calming interface. They tap 'Start Conversation' and immediately hear a warm voice: 'I'm here to listen. You're safe here. Would you like to talk?' The conversation flows naturally—the AI asks open-ended questions, validates feelings, and introduces coping techniques. After the first session, the AI remembers context for future conversations. Over time, it tracks progress, celebrates small wins, and gently encourages engagement with human therapist support. The therapist dashboard shows progress metrics without exposing specific conversation details, maintaining survivor privacy while enabling clinical oversight."
+
+IMPACT AND SCALABILITY
+
+Q: What is the target patient population, and how many people could this solution help?
+
+Answer: "We're targeting domestic violence survivors in the UK, a population facing significant barriers to accessing mental health support. In the UK, an estimated 2.4 million adults experience domestic abuse annually, with 1.7 million of those being women. The charity Refuge reports that on average, a woman is killed by a current or former partner every four days in England and Wales. Many survivors can't access traditional therapy due to safety concerns, financial constraints, transportation barriers, or lack of available therapists—particularly outside major cities. Our solution could provide 24/7 support to survivors who might otherwise have nowhere to turn, especially during evenings and weekends when crisis services are overwhelmed."
+
+Q: How does your solution address the shortage of mental health professionals?
+
+Answer: "The NHS faces a critical shortage of mental health professionals, with waiting times for psychological therapies often exceeding 18 weeks, and specialist trauma-informed therapists are even scarcer. Our solution doesn't replace human therapists—it extends their capacity. A therapist might see 20-30 clients per week. With our virtual assistant providing continuity between sessions, those same therapists can effectively support 50-100 clients because the AI handles daily check-ins, crisis stabilization, and skill practice. This is particularly impactful in rural areas and underserved communities across Wales, Scotland, Northern Ireland, and northern England where specialized therapists may be hours away."
+
+Q: What is your plan to scale from prototype to serving thousands or millions of users?
+
+Answer: "AWS Bedrock's fully managed infrastructure means we can scale automatically based on demand. LiveKit's architecture supports millions of concurrent users—it's battle-tested in production environments. Our cost per session is approximately £0.20, which is sustainable even for charity deployment. We can serve thousands of concurrent therapy sessions with our current architecture. Our go-to-market strategy focuses on partnerships with domestic violence charities like Refuge and Women's Aid, NHS IAPT services, and community organizations who can subsidize access for survivors who can't pay."
+
+Q: How do you measure therapeutic outcomes and patient progress?
+
+Answer: "We track multiple indicators: sentiment analysis across sessions to detect mood patterns, session frequency and engagement levels, crisis keyword detection frequency, self-reported mood scores, and progress on specific therapeutic goals. The system monitors whether survivors are practicing coping skills, whether crisis episodes are decreasing in frequency and intensity, and whether they're building safety plans. Our therapist dashboard visualizes these metrics over time, allowing human clinicians to identify when survivors need additional intervention or when they're making positive progress."
+
+Q: What evidence do you have that virtual therapy can be as effective as in-person sessions?
+
+Answer: "Research shows that teletherapy and digital mental health interventions can be as effective as in-person care for many conditions, particularly when they provide consistent, accessible support. For domestic violence survivors specifically, the anonymity and accessibility of digital support can actually improve outcomes because survivors are more likely to engage when they feel safe and in control. Our solution isn't replacing in-person therapy—it's providing crucial support between sessions and for survivors who can't access traditional care. We're designing our pilot program to measure clinical outcomes using validated scales like the PHQ-9 for depression and PCL-5 for PTSD symptoms, aligned with NICE guidelines."
+
+ORIGINALITY & UNIQUENESS
+
+Q: How is your solution different from existing mental health chatbots or teletherapy platforms?
+
+Answer: "Most mental health chatbots use text-based interaction and provide generic support. Teletherapy platforms simply connect patients to human therapists via video—they don't provide support between sessions. Our solution is unique in three ways: First, we use voice-to-voice interaction, which is more natural and accessible, especially for trauma survivors who may find typing difficult during distress. Second, we're specifically designed for domestic violence survivors with trauma-informed responses, safety planning features, and crisis detection. Third, we serve as a bridge between human therapy sessions, maintaining therapeutic continuity while monitoring for escalating risk. We're not replacing therapists—we're amplifying their impact and providing 24/7 support when human help isn't available."
+
+Q: What makes your approach to monitoring patient progress innovative?
+
+Answer: "We combine multiple AI-driven insights: real-time sentiment analysis, crisis keyword detection, engagement pattern analysis, and therapeutic goal tracking. But what's truly innovative is how we present this to therapists. Instead of overwhelming them with raw data, our dashboard provides actionable insights: 'This client had three crisis episodes this week—up from one last week' or 'This client is consistently practicing grounding techniques and reporting improved mood.' We use red flag detection to alert therapists in near real-time when intervention is needed, but we also celebrate progress to prevent clinician burnout. The system learns each survivor's baseline and detects meaningful changes, not just absolute values."
+
+Q: How does your solution bridge the gap between human therapists and AI assistance?
+
+Answer: "We've designed a collaborative care model. The AI provides consistent, trauma-informed support and skill practice between human therapy sessions. It reinforces techniques the human therapist introduces and tracks whether survivors are implementing them. When the AI detects concerning patterns—increased crisis keywords, declining engagement, or explicit red flags—it alerts the human therapist who can reach out proactively. The therapist dashboard shows progress without exposing private conversation details, respecting survivor autonomy while enabling clinical oversight. This creates a safety net where survivors have 24/7 support, but human expertise is always in the loop for critical decisions."
+
+HEALTHCARE INNOVATION
+
+Q: How do you ensure patient safety, especially in crisis situations?
+
+Answer: "We have a multi-layered safety approach. First, the AI is trained to recognize crisis indicators: suicidal ideation, immediate danger, severe distress. When detected, it immediately offers crisis resources and coping techniques. Second, our keyword and red flag detection system alerts human therapists in near real-time—within minutes, not hours. Third, the system provides immediate access to the National Domestic Abuse Helpline and emergency services. Fourth, we never promise confidentiality that we can't keep—users are informed that concerning safety issues will trigger therapist notification. Finally, the AI is programmed to never provide medical advice or diagnosis—it focuses on emotional support and evidence-based coping skills."
+
+Q: What clinical frameworks or therapeutic approaches does your AI follow?
+
+Answer: "We've implemented trauma-informed care principles throughout, along with evidence-based techniques from Cognitive Behavioral Therapy (CBT) and Dialectical Behavior Therapy (DBT), aligned with NICE guidelines. The AI teaches grounding techniques, emotional regulation skills, and safety planning—all proven effective for trauma survivors. We've consulted with domestic violence specialists to ensure our approach aligns with best practices in the field. The system avoids victim-blaming language, validates survivor experiences, and emphasizes that abuse is never the survivor's fault."
+
+Q: How do you maintain regulatory compliance and protect patient privacy?
+
+Answer: "We're designed to comply with UK GDPR, the Data Protection Act 2018, and NHS Data Security and Protection Toolkit requirements. AWS Bedrock operates in UK data centers (London region), ensuring data sovereignty—all patient data remains within the UK. All voice data is encrypted in transit using TLS and at rest using AWS KMS. Amazon Nova Sonic 2 processes voice data without permanently storing raw audio—we only retain encrypted session transcripts and metadata necessary for therapeutic continuity. Access controls follow least-privilege principles with multi-factor authentication for therapists. We maintain comprehensive audit logs as required by the ICO. Importantly, survivors control their data—they can exercise their right to erasure, and we never share information with third parties without explicit consent. We're also preparing for potential CQC (Care Quality Commission) registration as we scale."
+
+Q: How do you prevent the AI from providing harmful advice or misdiagnosing conditions?
+
+Answer: "We have strict guardrails. The AI is explicitly programmed to never diagnose conditions, prescribe treatments, or provide medical advice. It focuses on emotional support, validated coping techniques, and connecting users to human resources. We've implemented content filtering to prevent the AI from suggesting anything potentially harmful. The system is trained to recognize when questions are outside its scope and redirect to human professionals. We also have human oversight—our therapist partners review flagged conversations and provide feedback to continuously improve the AI's responses. The AI clearly identifies itself as a support tool, not a replacement for human therapy."
+
+Q: How do real therapists interact with the data collected by your virtual assistant?
+
+Answer: "Therapists access a secure dashboard that shows progress metrics, crisis alerts, and engagement patterns. They can see sentiment trends, frequency of crisis episodes, and whether clients are practicing coping skills—but they don't automatically see full conversation transcripts. This protects survivor privacy while giving clinicians the information they need. When the system detects red flags, therapists receive near real-time alerts so they can reach out proactively. Therapists can access the dashboard anytime from any secure device, allowing them to monitor their clients efficiently without being overwhelmed by data. The dashboard is designed to surface actionable insights, not just raw information."
+
+Q: What is your clinical validation strategy?
+
+Answer: "We're planning pilot programs with domestic violence charities like Refuge, Women's Aid, and SafeLives. We'll measure outcomes using validated clinical scales, track engagement rates, and gather qualitative feedback from both survivors and therapists. We're seeking partnerships with academic institutions like King's College London or the University of Manchester to conduct rigorous evaluation. Our team includes healthcare and AI/ML experts who understand the importance of evidence-based practice and NICE guidelines. We're committed to transparency about what our solution can and cannot do, and we'll publish our findings to contribute to the broader field of digital mental health for trauma survivors."
+
+SUSTAINABILITY - REDUCING CARBON FOOTPRINT
+
+Q: How does your solution reduce carbon emissions compared to traditional in-person therapy?
+
+Answer: "Every in-person therapy session eliminated saves approximately 5-10 kg of CO2 from transportation. For domestic violence survivors in rural areas—across the Scottish Highlands, rural Wales, or Cornwall—who might drive 50+ miles to reach a specialized therapist, that's 20-30 kg per session. Many survivors attend weekly therapy, meaning 1,000-1,500 kg of CO2 saved annually per person. Beyond patient travel, our solution reduces the need for physical clinic infrastructure—heating (particularly significant in the UK climate), lighting, and maintenance of therapy offices. If we serve 10,000 survivors virtually instead of requiring in-person visits, we could save approximately 10,000-15,000 tonnes of CO2 annually. This aligns with the NHS's commitment to reach net zero by 2040 and supports the UK's broader climate goals."
+
+Q: What is the carbon footprint of running your AI models and cloud infrastructure?
+
+Answer: "AWS has committed to 100% renewable energy by 2025 and is on track to achieve that goal. The AWS London region increasingly uses renewable energy sources. Amazon Nova Sonic 2 is optimized for efficiency—it's a multimodal model that processes voice directly, which is significantly more efficient than running separate speech recognition, LLM, and speech synthesis models. AWS Bedrock's managed infrastructure means we benefit from AWS's scale efficiencies and their investments in custom AI chips like Trainium and Inferentia, which are designed for energy efficiency. We estimate our carbon footprint per therapy session is less than 5% of the emissions saved from eliminated travel. This supports the NHS's green agenda and the UK's net zero strategy."
+
+Q: How do you balance computational requirements with environmental sustainability?
+
+Answer: "We've made deliberate architectural choices for efficiency. Using Amazon Nova Sonic 2's native voice-to-voice processing reduces computational overhead compared to multi-model pipelines. We implement intelligent session management—the AI doesn't continuously process when users aren't speaking. We leverage AWS's London regional data center to minimize data transfer distances and ensure data sovereignty. We're also exploring edge computing for certain processing tasks to reduce cloud computation. As we scale, we plan to participate in AWS's carbon offset programs and prioritize deployment in regions with high renewable energy usage. We believe that the massive reduction in transportation emissions far outweighs our computational footprint, making this a net-positive environmental solution."
+
+Q: Can you quantify the environmental impact per patient served?
+
+Answer: "Per survivor served annually: We save approximately 1,000-1,500 kg of CO2 from eliminated travel, while our computational footprint is approximately 20-50 kg of CO2 per year per user. That's a net savings of 950-1,450 kg of CO2 per survivor annually—equivalent to planting 20-30 trees. At scale serving 10,000 survivors, we're talking about 10,000+ tonnes of CO2 saved annually, equivalent to taking 2,000 cars off the road for a year. These numbers become even more impressive when you consider that our solution enables access for survivors who couldn't reach in-person care at all, meaning we're not just reducing emissions—we're providing care that wouldn't otherwise exist."
+
+Q: What sustainable practices are built into your long-term operational model?
+
+Answer: "We're committed to continuous efficiency improvements. We monitor our computational costs and carbon footprint as key metrics. We'll prioritize AWS regions with high renewable energy usage for deployment. We're designing our data retention policies to minimize unnecessary storage—keeping only what's clinically necessary. We're also exploring partnerships with carbon offset programs. Importantly, by enabling remote work for therapists through our dashboard, we're also reducing their commute emissions. Our entire business model is built on reducing the need for physical infrastructure and travel, making sustainability core to our mission, not an afterthought."
+
+COST STRUCTURE
+
+Q: What is your cost structure? How much would it cost to serve 1,000 patients with monthly 10-minute therapy sessions?
+
+Answer: "We've designed our solution to be highly cost-effective while maintaining clinical quality. For 1,000 patients each having one 10-minute therapy session per month, our total monthly cost is approximately £200, which breaks down to just £0.20 per patient per month or £0.19 per session.
+
+Per Session Costs:
+• AWS Bedrock (Amazon Nova Sonic 2): £0.07 per session
+• LiveKit (WebRTC infrastructure): £0.12 per session
+• Total: £0.19 per session
+
+Monthly Infrastructure (1,000 patients):
+• AWS Bedrock (AI processing): £67
+• LiveKit (real-time voice streaming): £121
+• Storage, database, monitoring, encryption: £12
+• Total: £200/month
+
+What makes this sustainable:
+Economies of scale: As we grow, per-patient costs decrease. At 10,000 patients, the cost drops to £0.19 per patient per month due to fixed infrastructure costs being spread across more users.
+Compare to traditional care: A single NHS therapy session costs the system approximately £80-150. Our solution provides 24/7 support, crisis monitoring, and therapeutic continuity for less than a pound per month.
+Pricing model: We can offer this to domestic violence charities and refuges at £5-8 per patient per month (25-40x markup on costs), which is still dramatically cheaper than traditional care while ensuring sustainability. NHS Trusts would pay £15-25 per patient per month, which subsidizes free access for underserved populations.
+Cost optimization opportunities:
+• AWS enterprise pricing could reduce costs by 20-30% at scale
+• Self-hosting LiveKit could cut WebRTC costs by 50-70%
+• Reserved capacity commitments offer additional savings
+
+Scaling scenarios:
+• 100 patients: £0.31 per patient/month
+• 500 patients: £0.21 per patient/month
+• 1,000 patients: £0.20 per patient/month
+• 5,000 patients: £0.19 per patient/month
+• 10,000 patients: £0.19 per patient/month
+
+If patients need more frequent support (2 sessions per month), the cost is £0.39 per patient per month—still incredibly affordable.
+
+The bottom line: Our infrastructure costs are low enough that we can provide life-saving mental health support to thousands of domestic violence survivors while maintaining financial sustainability through a social enterprise model. The technology enables us to serve populations who couldn't otherwise afford care, which is core to our mission."
+
+GENERAL QUESTIONS
+
+Q: What is your go-to-market strategy?
+
+Answer: "We're targeting three channels in the UK: First, partnerships with domestic violence charities like Refuge, Women's Aid, SafeLives, and local refuge services who can offer our solution to survivors they serve. Second, collaboration with the National Domestic Abuse Helpline and local crisis services to provide ongoing support after initial calls. Third, partnerships with NHS Trusts, IAPT services (Improving Access to Psychological Therapies), and community mental health teams. Our pricing model will be tiered—subsidized or free for charities and refuges serving low-income survivors, with sustainable pricing for NHS Trusts. We're exploring NHS commissioning pathways and potential inclusion in the NHS Apps Library. Our initial focus is proving clinical value through pilot programs, then scaling through organizational partnerships rather than direct-to-consumer marketing, which better serves our vulnerable population."
+
+Q: What are the biggest risks or challenges you foresee?
+
+Answer: "First, clinical validation—we need rigorous evidence that our solution improves outcomes, aligned with NICE guidelines. Second, user trust—domestic violence survivors have often experienced betrayal and may be skeptical of technology. We address this through transparency, survivor-centered design, and partnerships with trusted charities. Third, regulatory compliance—we're navigating UK GDPR, Data Protection Act 2018, NHS Data Security and Protection Toolkit, and potential CQC oversight. Fourth, ensuring the AI never provides harmful advice—we mitigate this through extensive testing, human oversight, and conservative guardrails. Fifth, sustainable funding—we need to balance accessibility for low-income survivors with financial sustainability. We're addressing these through careful pilot design, strong clinical partnerships, and a commitment to evidence-based practice."
+
+Q: How will you monetize this solution while keeping it accessible to underserved populations?
+
+Answer: "We're implementing a social enterprise model. NHS Trusts and well-funded organizations pay market rates (£15-40 per user per month), which subsidizes free or low-cost access for charities and refuges serving low-income survivors. We're pursuing grants from UK foundations focused on domestic violence prevention and digital health innovation, including Innovate UK funding and NHS England innovation programs. We're also exploring social prescribing pathways where GPs can refer patients to our service. Long-term, we believe NHS commissioning and potential NICE approval for digital therapeutics will make our solution sustainable while maintaining accessibility. Our core principle is that no survivor should be denied access due to inability to pay."
+
+Q: What is your team's background in healthcare and AI?
+
+Answer: "Our team combines healthcare and technical expertise. We have a Healthcare Solutions Architect with deep AWS and AI/ML experience, who has worked on multiple healthcare AI implementations and understands both the technical and regulatory landscape. We have a software engineering student who brings fresh perspective and strong technical skills. We've consulted with domestic violence specialists and trauma-informed therapists to ensure our clinical approach is sound. We're actively building an advisory board of clinicians, survivors, and domestic violence advocates to guide our development. We recognize that technology alone isn't enough—we need deep domain expertise to serve this population responsibly."
+
+Q: What are your next steps after the hackathon?
+
+Answer: "First, we're seeking pilot partnerships with 2-3 UK domestic violence charities to test our prototype with real users under clinical supervision. Second, we're applying for Innovate UK grants and NHS England innovation funding. Third, we're expanding our advisory board to include UK clinical experts, domestic violence specialists, and survivor advocates. Fourth, we're pursuing AWS credits and technical support to continue development. Fifth, we're documenting our outcomes rigorously to build evidence for broader NHS adoption and potential NICE guidance. Our 6-month goal is to have 50-100 survivors using the system with measurable outcomes. Our 12-month goal is to secure sustainable funding and expand to serve 500-1,000 survivors across multiple organizations. We're committed to this beyond the hackathon—this is a mission, not just a project."
+
+KEY TALKING POINTS FOR PRESENTATION
+
+Opening Hook: 
+"In the UK, a woman is killed by a current or former partner every four days. An estimated 2.4 million adults experience domestic abuse annually. Many survivors can't access therapy due to safety concerns, cost, or availability—with NHS waiting times often exceeding 18 weeks. We built a voice-to-voice AI therapist that provides 24/7 trauma-informed support, extends human therapist capacity, and could save 10,000+ tonnes of CO2 annually while serving thousands of survivors across England, Scotland, Wales, and Northern Ireland."
+
+Technical Differentiator: 
+"We use Amazon Nova Sonic 2's native voice-to-voice processing—no speech-to-text conversion, no latency, just natural conversation. This matters because survivors in crisis need immediate, empathetic response."
+
+Impact Statement: 
+"One therapist can effectively support 20-30 clients. With our solution providing continuity between sessions and crisis monitoring, that same therapist can support 50-100 clients. We're not replacing human care—we're amplifying it."
+
+Safety Emphasis: 
+"We have near real-time red flag detection. When the AI detects crisis indicators, human therapists are alerted within minutes. Privacy is paramount—even therapists only see progress metrics, not full conversations, unless survivors choose to share."
+
+Sustainability Angle: 
+"Every survivor we serve virtually instead of in-person saves 1,000+ kg of CO2 annually from eliminated travel. At scale, we're talking about the equivalent of taking thousands of cars off the road while expanding access to life-saving care. This aligns with the NHS's net zero 2040 commitment."
+
+Cost Efficiency:
+"Our infrastructure cost is just £0.20 per patient per month. Compare that to £80-150 per NHS therapy session. We can offer sustainable pricing to charities at £5-8 per patient per month while providing 24/7 support."
+
+Call to Action: 
+"Domestic violence is a crisis that affects millions across the UK. Technology can't solve it alone, but it can extend the reach of human compassion. We're building a solution that's clinically sound, technically innovative, and environmentally sustainable. Help us bring this to the survivors who need it most."
+
+QUICK REFERENCE: KEY STATISTICS
+
+UK Domestic Violence:
+• 2.4 million adults experience domestic abuse annually
+• 1.7 million women affected annually
+• One woman killed every four days by current/former partner
+• NHS waiting times: Often exceed 18 weeks for psychological therapies
+
+Technical:
+• AWS Bedrock with Amazon Nova Sonic 2 (native voice-to-voice)
+• LiveKit Agent Framework (WebRTC, sub-second latency)
+• AWS London region (data sovereignty)
+• £0.19 per session infrastructure cost
+
+Impact:
+• One therapist: 20-30 clients → 50-100 clients with AI support
+• 24/7 availability vs. limited clinic hours
+• Near real-time crisis detection and alerts
+
+Sustainability:
+• 1,000-1,500 kg CO2 saved per survivor annually
+• 10,000+ tonnes CO2 saved at 10,000 users
+• Aligns with NHS net zero 2040 target
+• <5% computational footprint vs. travel savings
+
+Compliance:
+• UK GDPR and Data Protection Act 2018
+• NHS Data Security and Protection Toolkit
+• Preparing for CQC registration
+• NICE guidelines alignment
+
+Organizations to Partner With:
+• Refuge, Women's Aid, SafeLives
+• National Domestic Abuse Helpline
+• NHS Trusts and IAPT services
+• Innovate UK, NHS England innovation programs
+
+PRACTICE TIPS
+Have specific numbers ready - Use the statistics provided above
+Prepare a 30-second demo - Show the voice interaction in action
+Know your crisis protocol - Judges will probe this heavily for a DV solution
+Be ready to discuss ethics - Privacy, consent, and safety are critical
+Show passion - This is mission-driven work; let that come through
+Emphasize collaboration - You're extending therapist capacity, not replacing them
+Highlight UK context - NHS challenges, UK regulations, local charities
+Quantify sustainability - Specific CO2 savings resonate with judges
+
+Document prepared for: Hackathon Q&A Session
+Date: January 14, 2026
+Solution: Voice-to-Voice Virtual Therapist for Domestic Violence Survivors (UK Market)
+Technology Stack: AWS Bedrock + Amazon Nova Sonic 2 + LiveKit Agent Framework

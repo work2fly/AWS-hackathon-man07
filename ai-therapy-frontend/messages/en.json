@@ -1,0 +1,343 @@
+{
+  "common": {
+    "appName": "AI Therapy Platform",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "close": "Close",
+    "back": "Back",
+    "next": "Next",
+    "submit": "Submit",
+    "search": "Search",
+    "filter": "Filter",
+    "export": "Export",
+    "refresh": "Refresh"
+  },
+  "nav": {
+    "home": "Home",
+    "about": "About",
+    "services": "Services",
+    "contact": "Contact",
+    "login": "Login",
+    "signup": "Sign Up",
+    "logout": "Logout",
+    "dashboard": "Dashboard",
+    "profile": "Profile"
+  },
+  "hero": {
+    "title": "Your Mental Wellness Journey Starts Here",
+    "subtitle": "Experience compassionate AI-powered therapy available 24/7 in your preferred language",
+    "cta": "Start Your Journey",
+    "tryDemo": "Try Demo"
+  },
+  "features": {
+    "title": "Why Choose Our Platform",
+    "ai": {
+      "title": "AI-Powered Support",
+      "description": "Advanced AI technology provides personalized therapeutic conversations"
+    },
+    "available": {
+      "title": "24/7 Availability",
+      "description": "Access support whenever you need it, day or night"
+    },
+    "multilingual": {
+      "title": "Multilingual Support",
+      "description": "Therapy sessions available in English, Arabic, Chinese, French, and Spanish"
+    },
+    "secure": {
+      "title": "Secure & Private",
+      "description": "Your conversations are encrypted and completely confidential"
+    }
+  },
+  "about": {
+    "title": "About Our Platform",
+    "description": "We combine cutting-edge AI technology with evidence-based therapeutic approaches to provide accessible mental health support. Our platform is designed to complement traditional therapy and provide immediate support when you need it most."
+  },
+  "services": {
+    "title": "Our Services",
+    "therapy": {
+      "title": "AI Therapy Sessions",
+      "description": "Engage in therapeutic conversations with our AI therapist trained in various therapeutic modalities"
+    },
+    "monitoring": {
+      "title": "Progress Monitoring",
+      "description": "Track your emotional well-being and therapeutic progress over time"
+    },
+    "crisis": {
+      "title": "Crisis Support",
+      "description": "Immediate support with automatic escalation to human professionals when needed"
+    }
+  },
+  "contact": {
+    "title": "Get in Touch",
+    "description": "Have questions? We're here to help you on your healing journey",
+    "email": "Email",
+    "phone": "Phone",
+    "address": "Address",
+    "available247": "Available 24/7",
+    "location": "Location",
+    "uk": "United Kingdom"
+  },
+  "demo": {
+    "mode": "Demo Mode",
+    "testing": "You're testing the platform as",
+    "exit": "Exit Demo",
+    "title": "Demo Mode",
+    "subtitle": "Test the platform without backend connection",
+    "enterAs": "Enter Demo as",
+    "info1": "Demo mode simulates authentication without AWS Cognito",
+    "info2": "Perfect for testing UI and functionality",
+    "roles": {
+      "client": {
+        "title": "Demo Client",
+        "description": "Experience the therapy session interface"
+      },
+      "therapist": {
+        "title": "Demo Therapist",
+        "description": "View therapist dashboard and monitoring"
+      },
+      "admin": {
+        "title": "Demo Admin",
+        "description": "Access system management panel"
+      }
+    }
+  },
+  "auth": {
+    "section": {
+      "title": "Ready to take control of your healing journey?",
+      "subtitle": "Be among the first to experience innovative AI therapy with powerful tools for recovery",
+      "joinNow": "Join Now",
+      "signIn": "Sign In",
+      "tryDemo": "Try Demo"
+    },
+    "login": {
+      "title": "Welcome Back",
+      "subtitle": "Continue your healing journey with Ally",
+      "email": "Email Address",
+      "password": "Password",
+      "rememberMe": "Remember me",
+      "forgotPassword": "Forgot password?",
+      "submit": "Sign In to Continue",
+      "submitting": "Signing In...",
+      "noAccount": "New to Ally?",
+      "signupLink": "Create your account"
+    },
+    "signup": {
+      "title": "Join Ally",
+      "subtitle": "Start your healing journey with innovative AI therapy",
+      "firstName": "First Name",
+      "lastName": "Last Name",
+      "email": "Email Address",
+      "password": "Password",
+      "confirmPassword": "Confirm Password",
+      "role": "I am a...",
+      "roleClient": "Client - Seeking Therapy Support",
+      "roleTherapist": "Therapist - Mental Health Professional",
+      "roleAdmin": "Admin - System Administrator",
+      "language": "Preferred Language",
+      "terms": "I agree to the Terms of Service and Privacy Policy",
+      "submit": "Start Your Healing Journey",
+      "submitting": "Creating Your Account...",
+      "hasAccount": "Already have an account?",
+      "loginLink": "Sign in here",
+      "confirm": {
+        "title": "Check Your Email",
+        "subtitle": "We sent a verification code to",
+        "code": "Verification Code",
+        "codePlaceholder": "Enter 6-digit code",
+        "instruction": "Check your email and enter the 6-digit code",
+        "submit": "Verify & Complete Registration",
+        "verifying": "Verifying...",
+        "resend": "Didn't receive the code? Resend",
+        "backToLogin": "Back to Sign In"
+      }
+    },
+    "errors": {
+      "invalidEmail": "Please enter a valid email address",
+      "passwordTooShort": "Password must be at least 8 characters",
+      "passwordMismatch": "Passwords do not match",
+      "loginFailed": "Invalid email or password",
+      "signupFailed": "Failed to create account. Please try again.",
+      "required": "This field is required"
+    }
+  },
+  "session": {
+    "title": "Your AI Therapy Session",
+    "welcome": "Welcome, {name}. Ready to continue your healing journey with our AI therapist?",
+    "start": "Start Your Session",
+    "end": "End Session",
+    "pause": "Pause",
+    "resume": "Resume",
+    "mute": "Mute",
+    "unmute": "Unmute",
+    "status": {
+      "connecting": "Connecting...",
+      "connected": "Connected to AI Therapist",
+      "disconnected": "Ready to Connect",
+      "active": "Active Session",
+      "paused": "Session Paused",
+      "sessionActive": "Your session is active and secure",
+      "establishing": "Establishing secure connection",
+      "clickStart": "Click \"Start Session\" when ready"
+    },
+    "duration": "Session Time",
+    "exchanges": "Exchanges",
+    "transcript": "Transcript",
+    "notes": "Session Notes",
+    "feedback": "How was your session?",
+    "endConfirm": "Are you sure you want to end this session?",
+    "therapist": {
+      "title": "Your AI Therapist",
+      "subtitle": "Powered by Amazon Nova Sonic 2 for natural, empathetic conversations",
+      "name": "Dr. AI Assistant",
+      "listening": "I'm here to listen and support you through your healing journey...",
+      "ready": "Ready to start a compassionate conversation whenever you are"
+    },
+    "privacy": "Your conversation will be private and secure",
+    "recording": "Recording",
+    "muted": "Muted",
+    "audio": {
+      "system": "Audio System",
+      "ready": "Ready",
+      "checking": "Checking...",
+      "microphone": "Microphone",
+      "standby": "Standby",
+      "voiceLevel": "Voice Level",
+      "listening": "Listening",
+      "silent": "Silent",
+      "connection": "Connection",
+      "secure": "Secure",
+      "error": "Audio System:"
+    }
+  },
+  "dashboard": {
+    "client": {
+      "title": "My Dashboard",
+      "welcome": "Welcome back, {name}",
+      "stats": {
+        "totalSessions": "Total Sessions",
+        "thisWeek": "This Week",
+        "avgDuration": "Avg Duration",
+        "lastSession": "Last Session"
+      },
+      "recentSessions": "Recent Sessions",
+      "upcomingSessions": "Upcoming Sessions",
+      "progress": "Your Progress",
+      "startNewSession": "Start New Session"
+    },
+    "therapist": {
+      "title": "Therapist Dashboard",
+      "subtitle": "Monitor client sessions and red flags",
+      "badge": "Professional Oversight",
+      "overview": "Overview",
+      "redFlags": "Red Flags",
+      "stats": {
+        "activeClients": "Active Clients",
+        "pendingFlags": "Pending Flags",
+        "resolvedToday": "Resolved Today",
+        "avgResponseTime": "Avg Response Time"
+      },
+      "flagDetails": {
+        "severity": "Severity",
+        "type": "Type",
+        "detected": "Detected",
+        "client": "Client",
+        "session": "Session",
+        "status": "Status",
+        "acknowledge": "Acknowledge",
+        "resolve": "Resolve",
+        "viewSession": "View Session"
+      },
+      "severityLevels": {
+        "critical": "Critical",
+        "high": "High",
+        "medium": "Medium",
+        "low": "Low"
+      },
+      "flagTypes": {
+        "selfHarm": "Self Harm",
+        "suicide": "Suicide Risk",
+        "violence": "Violence",
+        "substance": "Substance Abuse",
+        "crisis": "Crisis"
+      }
+    },
+    "admin": {
+      "title": "Admin Dashboard",
+      "overview": "Overview",
+      "users": "Users",
+      "sessions": "Sessions",
+      "redFlags": "Red Flags",
+      "system": "System Health",
+      "stats": {
+        "totalUsers": "Total Users",
+        "activeUsers": "Active Users",
+        "totalSessions": "Total Sessions",
+        "activeSessions": "Active Sessions",
+        "pendingFlags": "Pending Flags",
+        "systemHealth": "System Health"
+      },
+      "tables": {
+        "users": "Users Table",
+        "sessions": "Sessions Table",
+        "redFlags": "Red Flags Table",
+        "connections": "WebSocket Connections"
+      },
+      "userManagement": {
+        "addUser": "Add User",
+        "editUser": "Edit User",
+        "deleteUser": "Delete User",
+        "activateUser": "Activate",
+        "deactivateUser": "Deactivate"
+      }
+    }
+  },
+  "profile": {
+    "title": "My Profile",
+    "personalInfo": "Personal Information",
+    "preferences": "Preferences",
+    "security": "Security",
+    "language": "Language Preference",
+    "timezone": "Timezone",
+    "notifications": "Notifications",
+    "emailNotifications": "Email Notifications",
+    "pushNotifications": "Push Notifications",
+    "changePassword": "Change Password",
+    "currentPassword": "Current Password",
+    "newPassword": "New Password",
+    "confirmNewPassword": "Confirm New Password",
+    "updateProfile": "Update Profile",
+    "deleteAccount": "Delete Account",
+    "deleteAccountWarning": "This action cannot be undone. All your data will be permanently deleted."
+  },
+  "notifications": {
+    "title": "Notifications",
+    "markAllRead": "Mark all as read",
+    "noNotifications": "No notifications",
+    "types": {
+      "session": "Session",
+      "redFlag": "Red Flag Alert",
+      "system": "System",
+      "message": "Message"
+    }
+  },
+  "errors": {
+    "generic": "Something went wrong. Please try again.",
+    "network": "Network error. Please check your connection.",
+    "unauthorized": "You are not authorized to access this resource.",
+    "notFound": "The requested resource was not found.",
+    "serverError": "Server error. Please try again later.",
+    "sessionExpired": "Your session has expired. Please login again."
+  },
+  "footer": {
+    "copyright": "© 2026 AI Therapy Platform. All rights reserved.",
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Service",
+    "contact": "Contact Us",
+    "crisis": "Crisis Hotline: 988"
+  }
+}

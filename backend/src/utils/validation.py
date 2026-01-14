@@ -8,7 +8,7 @@ import html
 from typing import Any, Dict, List, Optional, Union
 from datetime import datetime
 from email_validator import validate_email, EmailNotValidError
-from ..utils.logger import get_logger
+from .logger import get_logger
 
 logger = get_logger(__name__)
 
