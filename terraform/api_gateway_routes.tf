@@ -17,7 +17,7 @@ resource "aws_lambda_function" "api_handlers" {
       ENVIRONMENT              = var.environment
       USERS_TABLE_NAME         = aws_dynamodb_table.users.name
       SESSIONS_TABLE_NAME      = aws_dynamodb_table.sessions.name
-      RED_FLAGS_TABLE_NAME     = aws_dynamodb_table.red_flags.name
+      RED_FLAGS_TABLE_NAME     = aws_dynamodb_table.redflags.name
       NOTIFICATIONS_TABLE_NAME = aws_dynamodb_table.notifications.name
       COGNITO_USER_POOL_ID     = aws_cognito_user_pool.main.id
     }
