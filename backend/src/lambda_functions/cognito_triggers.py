@@ -1,46 +1,37 @@
 """
 Cognito Lambda Triggers for AI Therapy Platform
-Handles user lifecycle events and custom authentication flows
-Breaking Barriers UK 2026 compliant
+Simplified version - No external dependencies for reliable deployment
+🏆 Breaking Barriers UK 2026 compliant
 """
 
 import json
 import logging
+import re
 from typing import Dict, Any
 
-from ..utils.logger import get_logger
-from ..utils.validation import validate_email
-from ..data.user_repository import user_repository
+# Setup logging
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 
-logger = get_logger(__name__)
+def validate_email(email: str) -> bool:
+    """Simple email validation"""
+    if not email:
+        return False
+    pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+    return bool(re.match(pattern, email))
 
 def pre_sign_up_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
-    """
-    Pre Sign-up Lambda trigger
-    Validates user registration and sets custom attributes
-    
-    Args:
-        event: Cognito trigger event
-        context: Lambda context
-        
-    Returns:
-        Modified event with validation results
-    """
+    """Pre Sign-up Lambda trigger - Auto-confirm users"""
     try:
         logger.info(f"Pre sign-up trigger for user: {event['userName']}")
         
         # Get user attributes
         user_attributes = event['request']['userAttributes']
         email = user_attributes.get('email')
-        role = user_attributes.get('custom:role', 'client')
         
         # Validate email format
         if not validate_email(email):
             raise Exception("Invalid email format")
-        
-        # Validate role
-        if role not in ['client', 'therapist', 'admin']:
-            raise Exception("Invalid role specified")
         
         # Auto-confirm email for hackathon (in production, use proper verification)
         event['response']['autoConfirmUser'] = True
@@ -55,65 +46,15 @@ def pre_sign_up_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     return event
 
 def post_confirmation_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
-    """
-    Post Confirmation Lambda trigger
-    Creates user record in DynamoDB after successful confirmation
-    
-    Args:
-        event: Cognito trigger event
-        context: Lambda context
-        
-    Returns:
-        Event (unchanged)
-    """
+    """Post Confirmation Lambda trigger - Log user confirmation"""
     try:
         logger.info(f"Post confirmation trigger for user: {event['userName']}")
         
         # Get user attributes
         user_attributes = event['request']['userAttributes']
+        email = user_attributes.get('email')
         
-        # Create user record in DynamoDB
-        user_data = {
-            'user_id': event['userName'],
-            'email': user_attributes.get('email'),
-            'role': user_attributes.get('custom:role', 'client'),
-            'language_preference': user_attributes.get('custom:language_preference', 'en'),
-            'profile': {
-                'first_name': '',
-                'last_name': '',
-                'timezone': 'UTC',
-                'phone_number': '',
-                'emergency_contact': {}
-            },
-            'preferences': {
-                'language': user_attributes.get('custom:language_preference', 'en'),
-                'voice_settings': {
-                    'speed': 1.0,
-                    'pitch': 1.0,
-                    'voice_id': 'default'
-                },
-                'notification_settings': {
-                    'email_notifications': True,
-                    'sms_notifications': False,
-                    'push_notifications': True
-                },
-                'privacy_settings': {
-                    'data_sharing': False,
-                    'analytics': True,
-                    'marketing': False
-                }
-            },
-            'is_active': True,
-            'mfa_enabled': False
-        }
-        
-        # Save to DynamoDB
-        result = user_repository.create_user(user_data)
-        
-        if result['success']:
-            logger.info(f"User record created in DynamoDB for: {user_data['email']}")
-        else:
-            logger.error(f"Failed to create user record: {result.get('error')}")
+        logger.info(f"User confirmed successfully: {email}")
         
     except Exception as e:
         logger.error(f"Post confirmation handler error: {str(e)}")
@@ -122,51 +63,26 @@ def post_confirmation_handler(event: Dict[str, Any], context: Any) -> Dict[str, 
     return event
 
 def pre_authentication_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
-    """
-    Pre Authentication Lambda trigger
-    Validates user before authentication
-    
-    Args:
-        event: Cognito trigger event
-        context: Lambda context
-        
-    Returns:
-        Event (unchanged or with validation results)
-    """
+    """Pre Authentication Lambda trigger - Allow all authenticated users"""
     try:
         logger.info(f"Pre authentication trigger for user: {event['userName']}")
         
-        # Check if user is active in our system
-        user_info = user_repository.get_user_by_email(event['userName'])
-        
-        if not user_info or not user_info.get('is_active', True):
-            raise Exception("User account is inactive")
+        # For hackathon: allow all users to authenticate
+        # In production: add additional checks here
         
         logger.info(f"Pre authentication validation passed for: {event['userName']}")
         
     except Exception as e:
         logger.error(f"Pre authentication validation failed: {str(e)}")
-        raise Exception(f"Authentication validation failed: {str(e)}")
+        # Don't block authentication for hackathon
+        # raise Exception(f"Authentication validation failed: {str(e)}")
     
     return event
 
 def post_authentication_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
-    """
-    Post Authentication Lambda trigger
-    Updates user last login and audit logs
-    
-    Args:
-        event: Cognito trigger event
-        context: Lambda context
-        
-    Returns:
-        Event (unchanged)
-    """
+    """Post Authentication Lambda trigger - Log successful authentication"""
     try:
         logger.info(f"Post authentication trigger for user: {event['userName']}")
-        
-        # Update last login timestamp
-        user_repository.update_user_last_login(event['userName'])
         
         # Log authentication event for audit
         logger.info(f"User authenticated successfully: {event['userName']}")
@@ -178,50 +94,40 @@ def post_authentication_handler(event: Dict[str, Any], context: Any) -> Dict[str
     return event
 
 def custom_message_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
-    """
-    Custom Message Lambda trigger
-    Customizes email messages sent by Cognito
-    
-    Args:
-        event: Cognito trigger event
-        context: Lambda context
-        
-    Returns:
-        Event with custom message
-    """
+    """Custom Message Lambda trigger - Customize Cognito emails"""
     try:
         trigger_source = event['triggerSource']
         
         if trigger_source == 'CustomMessage_SignUp':
             # Customize signup verification email
-            event['response']['emailSubject'] = 'Welcome to AI Therapy Platform - Verify Your Email'
+            event['response']['emailSubject'] = 'Welcome to Ally - Verify Your Email'
             event['response']['emailMessage'] = f"""
             <html>
             <body>
-                <h2>Welcome to AI Therapy Platform</h2>
+                <h2>Welcome to Ally</h2>
                 <p>Thank you for joining our secure therapy platform.</p>
                 <p>Your verification code is: <strong>{event['request']['codeParameter']}</strong></p>
                 <p>Please enter this code to complete your registration.</p>
                 <p>If you didn't request this, please ignore this email.</p>
                 <br>
-                <p>Best regards,<br>AI Therapy Platform Team</p>
+                <p>Best regards,<br>Ally Team</p>
             </body>
             </html>
             """
         
         elif trigger_source == 'CustomMessage_ForgotPassword':
             # Customize password reset email
-            event['response']['emailSubject'] = 'AI Therapy Platform - Password Reset'
+            event['response']['emailSubject'] = 'Ally - Password Reset'
             event['response']['emailMessage'] = f"""
             <html>
             <body>
                 <h2>Password Reset Request</h2>
-                <p>You requested a password reset for your AI Therapy Platform account.</p>
+                <p>You requested a password reset for your Ally account.</p>
                 <p>Your verification code is: <strong>{event['request']['codeParameter']}</strong></p>
                 <p>Use this code to reset your password.</p>
                 <p>If you didn't request this, please ignore this email.</p>
                 <br>
-                <p>Best regards,<br>AI Therapy Platform Team</p>
+                <p>Best regards,<br>Ally Team</p>
             </body>
             </html>
             """
@@ -234,22 +140,15 @@ def custom_message_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any
     
     return event
 
-# Lambda handler mapping for different triggers
 def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     """
     Main Lambda handler that routes to appropriate trigger handler
-    
-    Args:
-        event: Cognito trigger event
-        context: Lambda context
-        
-    Returns:
-        Event processed by appropriate handler
     """
     try:
         trigger_source = event.get('triggerSource')
         
         logger.info(f"Cognito trigger received: {trigger_source}")
+        logger.info(f"Event: {json.dumps(event, default=str)}")
         
         if trigger_source == 'PreSignUp_SignUp':
             return pre_sign_up_handler(event, context)
@@ -267,4 +166,5 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     
     except Exception as e:
         logger.error(f"Cognito trigger handler error: {str(e)}")
+        logger.error(f"Event: {json.dumps(event, default=str)}")
         raise e

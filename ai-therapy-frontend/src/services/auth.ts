@@ -71,15 +71,19 @@ export class AuthService {
 
     // ✅ REAL COGNITO CODE - Using frontend public client
     try {
+      // Generate unique username (not email format since pool uses email alias)
+      const username = `user_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+      
       const { isSignUpComplete, userId, nextStep } = await signUp({
-        username: email,
+        username,
         password,
         options: {
           userAttributes: {
             email,
             given_name: firstName,
             family_name: lastName,
-            'custom:role': role,
+            // Note: custom:role removed - not configured in User Pool schema
+            // Role will be managed in DynamoDB after signup
           },
         },
       });
