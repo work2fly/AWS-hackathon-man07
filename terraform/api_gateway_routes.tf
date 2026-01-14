@@ -1,6 +1,70 @@
 # API Gateway Routes for Frontend Integration
 # 🏆 Breaking Barriers UK 2026 compliant
 
+# HTTP API Gateway v2 for REST endpoints
+resource "aws_apigatewayv2_api" "main" {
+  name          = "${var.project_name}-${var.environment}-http-api"
+  protocol_type = "HTTP"
+  description   = "AI Therapy Platform HTTP API"
+
+  cors_configuration {
+    allow_origins     = ["*"]
+    allow_methods     = ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+    allow_headers     = ["Content-Type", "Authorization", "X-Amz-Date", "X-Api-Key"]
+    expose_headers    = ["Content-Type"]
+    max_age           = 300
+    allow_credentials = false
+  }
+
+  tags = {
+    Name        = "${var.project_name}-${var.environment}-http-api"
+    Environment = var.environment
+    Project     = var.project_name
+  }
+}
+
+# HTTP API Stage
+resource "aws_apigatewayv2_stage" "main" {
+  api_id      = aws_apigatewayv2_api.main.id
+  name        = var.environment
+  auto_deploy = true
+
+  access_log_settings {
+    destination_arn = aws_cloudwatch_log_group.api_handlers.arn
+    format = jsonencode({
+      requestId      = "$context.requestId"
+      ip             = "$context.identity.sourceIp"
+      requestTime    = "$context.requestTime"
+      httpMethod     = "$context.httpMethod"
+      routeKey       = "$context.routeKey"
+      status         = "$context.status"
+      responseLength = "$context.responseLength"
+    })
+  }
+
+  tags = {
+    Name        = "${var.project_name}-${var.environment}-http-api-stage"
+    Environment = var.environment
+    Project     = var.project_name
+  }
+}
+
+# Cognito JWT Authorizer for HTTP API
+resource "aws_apigatewayv2_authorizer" "cognito" {
+  api_id           = aws_apigatewayv2_api.main.id
+  authorizer_type  = "JWT"
+  identity_sources = ["$request.header.Authorization"]
+  name             = "cognito-authorizer"
+
+  jwt_configuration {
+    audience = [aws_cognito_user_pool_client.main.id]
+    issuer   = "https://cognito-idp.${data.aws_region.current.name}.amazonaws.com/${aws_cognito_user_pool.main.id}"
+  }
+}
+
+# Data source for current region
+data "aws_region" "current" {}
+
 # Lambda function for API handlers
 resource "aws_lambda_function" "api_handlers" {
   filename         = "${path.module}/../backend/lambda_packages/api_handlers.zip"
@@ -270,4 +334,14 @@ output "api_handlers_function_name" {
 output "api_handlers_function_arn" {
   description = "ARN of the API handlers Lambda function"
   value       = aws_lambda_function.api_handlers.arn
+}
+
+output "http_api_url" {
+  description = "URL of the HTTP API Gateway"
+  value       = aws_apigatewayv2_stage.main.invoke_url
+}
+
+output "http_api_id" {
+  description = "ID of the HTTP API Gateway"
+  value       = aws_apigatewayv2_api.main.id
 }
