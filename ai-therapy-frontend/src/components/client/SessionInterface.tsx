@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { BabylonAvatar } from '@/components/client/BabylonAvatar';
 import { 
   Mic, 
   MicOff, 
@@ -311,20 +312,19 @@ export function SessionInterface() {
         </CardHeader>
         <CardContent>
           <div className="flex flex-col items-center space-y-6">
-            {/* AI Avatar */}
-            <div className="relative">
-              <div className="w-40 h-40 rounded-full bg-gradient-to-br from-purple-400 via-purple-500 to-purple-600 flex items-center justify-center shadow-2xl">
-                <Heart className="w-16 h-16 text-white" />
-              </div>
+            {/* 3D AI Avatar - Babylon.js */}
+            <div className="relative w-full max-w-md h-96">
+              <BabylonAvatar
+                isActive={session.isActive}
+                isSpeaking={session.isActive && !isRecording && session.messageCount > 0}
+                isListening={session.isActive && isRecording}
+                volumeLevel={volumeLevel}
+                modelUrl="https://models.readyplayer.me/692c94887b7a88e1f63f3d82.glb?pose=A"
+              />
               
-              {/* Pulse animation when active */}
-              {session.isActive && (
-                <div className="absolute inset-0 rounded-full bg-purple-400 animate-ping opacity-20"></div>
-              )}
-              
-              {/* Volume indicator */}
+              {/* Volume indicator overlay */}
               {isRecording && (
-                <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2">
+                <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 z-10">
                   <div className="bg-white rounded-full px-4 py-2 shadow-lg">
                     <div className="flex items-center space-x-1">
                       {[...Array(5)].map((_, i) => (
