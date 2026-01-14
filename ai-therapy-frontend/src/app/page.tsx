@@ -376,14 +376,7 @@ export default function Home() {
       )}
 
       <main className="bg-gray-50 min-h-screen">
-        {currentUser?.role === 'client' && (
-          <>
-            {typeof window !== 'undefined' && window.location.pathname !== '/voice-real' && (
-              window.location.href = '/voice-real'
-            )}
-            <SessionInterface />
-          </>
-        )}
+        {currentUser?.role === 'client' && <SessionInterface />}
         
         {currentUser?.role === 'therapist' && <TherapistDashboard />}
         
