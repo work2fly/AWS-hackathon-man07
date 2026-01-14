@@ -27,18 +27,18 @@ export function BabylonAvatar({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
-  const [showControls, setShowControls] = useState(false);
-  const [shoulderDown, setShoulderDown] = useState(-0.05);
-  const [upperArmDown, setUpperArmDown] = useState(-0.15);
-  const [foreArmIn, setForeArmIn] = useState(0.15);
 
-  // Store arm values in a ref so loadExternalModel can access them
+  // Fixed arm position values (perfect pose)
   const armValuesRef = useRef({ shoulderDown: -0.05, upperArmDown: -0.15, foreArmIn: 0.15 });
 
-  // Update ref when state changes
+  // Track current animation state via refs (so render loop can access latest values)
+  const animPropsRef = useRef({ isSpeaking: false, isListening: false, volumeLevel: 0 });
+  
+  // Update refs when props change
   useEffect(() => {
-    armValuesRef.current = { shoulderDown, upperArmDown, foreArmIn };
-  }, [shoulderDown, upperArmDown, foreArmIn]);
+    animPropsRef.current = { isSpeaking, isListening, volumeLevel };
+    console.log('Animation props updated:', { isSpeaking, isListening, volumeLevel });
+  }, [isSpeaking, isListening, volumeLevel]);
 
   const sceneRef = useRef<{
     engine: BABYLON.Engine;
@@ -49,13 +49,27 @@ export function BabylonAvatar({
     skeleton: BABYLON.Skeleton | null;
     skinnedMesh: BABYLON.AbstractMesh | null;
     initialBoneRotations: Map<string, BABYLON.Vector3> | null;
+    // Morph targets for facial animation
+    faceMesh: BABYLON.Mesh | null;
+    mouthOpenTarget: BABYLON.MorphTarget | null;
+    leftEyeCloseTarget: BABYLON.MorphTarget | null;
+    rightEyeCloseTarget: BABYLON.MorphTarget | null;
   } | null>(null);
 
   const animationStateRef = useRef({
     blinkTimer: 0,
     talkTimer: 0,
     gestureTimer: 0,
-    lastGesture: 0
+    lastGesture: 0,
+    lastSpeaking: false,
+    lastListening: false,
+    animationAngle: 0,
+    // Store base rotations for animation
+    headBaseRotation: null as BABYLON.Vector3 | null,
+    neckBaseRotation: null as BABYLON.Vector3 | null,
+    leftArmBaseRotation: null as BABYLON.Vector3 | null,
+    rightArmBaseRotation: null as BABYLON.Vector3 | null,
+    initialized: false
   });
 
   useEffect(() => {
@@ -107,7 +121,11 @@ export function BabylonAvatar({
       allMeshes: [],
       skeleton: null,
       skinnedMesh: null,
-      initialBoneRotations: null
+      initialBoneRotations: null,
+      faceMesh: null,
+      mouthOpenTarget: null,
+      leftEyeCloseTarget: null,
+      rightEyeCloseTarget: null
     };
 
     if (modelUrl) {
@@ -122,9 +140,9 @@ export function BabylonAvatar({
           sceneRef.current.avatar,
           sceneRef.current.head,
           sceneRef.current.allMeshes,
-          isSpeaking,
-          isListening,
-          volumeLevel
+          animPropsRef.current.isSpeaking,
+          animPropsRef.current.isListening,
+          animPropsRef.current.volumeLevel
         );
       }
       scene.render();
@@ -252,6 +270,64 @@ export function BabylonAvatar({
 
         console.log('=== Total arm bones adjusted:', adjusted, '===');
 
+        // Find face mesh with morph targets for facial animation
+        let faceMesh: BABYLON.Mesh | null = null;
+        let mouthOpenTarget: BABYLON.MorphTarget | null = null;
+        let leftEyeCloseTarget: BABYLON.MorphTarget | null = null;
+        let rightEyeCloseTarget: BABYLON.MorphTarget | null = null;
+
+        // Search ALL meshes for morph targets
+        console.log('=== Searching for morph targets ===');
+        for (const mesh of meshes) {
+          const m = mesh as BABYLON.Mesh;
+          console.log(`Mesh: ${m.name}, hasMorphTargetManager: ${!!m.morphTargetManager}`);
+          
+          if (m.morphTargetManager && m.morphTargetManager.numTargets > 0) {
+            console.log(`  Found ${m.morphTargetManager.numTargets} morph targets on ${m.name}`);
+            
+            // List all morph targets
+            for (let i = 0; i < m.morphTargetManager.numTargets; i++) {
+              const target = m.morphTargetManager.getTarget(i);
+              console.log(`    [${i}] ${target.name} (influence: ${target.influence})`);
+              
+              // Find mouth-related morph targets
+              const name = target.name.toLowerCase();
+              if (!mouthOpenTarget && (name.includes('mouthopen') || name.includes('jawopen') || name === 'viseme_aa' || name === 'viseme_o' || name === 'a' || name === 'aa')) {
+                mouthOpenTarget = target;
+                faceMesh = m;
+                console.log(`    ✓ Selected "${target.name}" for MOUTH on mesh "${m.name}"`);
+              }
+              // Find eye blink targets
+              if (name.includes('eyeblinkleft') || (name.includes('eye') && name.includes('left') && name.includes('close'))) {
+                leftEyeCloseTarget = target;
+                console.log(`    ✓ Selected "${target.name}" for LEFT EYE`);
+              }
+              if (name.includes('eyeblinkright') || (name.includes('eye') && name.includes('right') && name.includes('close'))) {
+                rightEyeCloseTarget = target;
+                console.log(`    ✓ Selected "${target.name}" for RIGHT EYE`);
+              }
+            }
+          }
+        }
+
+        // If no mouth target found, try the first morph target on any mesh
+        if (!mouthOpenTarget) {
+          console.log('No specific mouth target found, trying first available morph target...');
+          for (const mesh of meshes) {
+            const m = mesh as BABYLON.Mesh;
+            if (m.morphTargetManager && m.morphTargetManager.numTargets > 0) {
+              mouthOpenTarget = m.morphTargetManager.getTarget(0);
+              faceMesh = m;
+              console.log(`Using first morph target: "${mouthOpenTarget.name}" on "${m.name}"`);
+              break;
+            }
+          }
+        }
+
+        console.log('=== Morph target search complete ===');
+        console.log('faceMesh:', faceMesh?.name);
+        console.log('mouthOpenTarget:', mouthOpenTarget?.name);
+
         if (sceneRef.current) {
           sceneRef.current.avatar = rootMesh as BABYLON.Mesh;
           sceneRef.current.head = (head || rootMesh) as BABYLON.Mesh;
@@ -259,6 +335,10 @@ export function BabylonAvatar({
           sceneRef.current.skeleton = skeleton;
           sceneRef.current.skinnedMesh = skinnedMesh;
           sceneRef.current.initialBoneRotations = null;
+          sceneRef.current.faceMesh = faceMesh;
+          sceneRef.current.mouthOpenTarget = mouthOpenTarget;
+          sceneRef.current.leftEyeCloseTarget = leftEyeCloseTarget;
+          sceneRef.current.rightEyeCloseTarget = rightEyeCloseTarget;
         }
       } else {
         console.log('No skeleton found, cannot adjust arms.');
@@ -472,86 +552,182 @@ export function BabylonAvatar({
     volume: number
   ) {
     const time = Date.now() * 0.001;
-    const deltaTime = 0.016;
     const state = animationStateRef.current;
 
-    state.blinkTimer += deltaTime;
-    state.talkTimer += deltaTime;
-    state.gestureTimer += deltaTime;
+    // Debug log every 2 seconds
+    state.talkTimer += 0.016;
+    if (state.talkTimer > 2) {
+      state.talkTimer = 0;
+      console.log('Animation state:', { speaking, listening, hasMouthTarget: !!sceneRef.current?.mouthOpenTarget });
+    }
 
-    if (!head) return;
-
-    const breathingIntensity = 0.008;
-    const breathingSpeed = 1.2;
+    // Breathing animation - always active on root mesh
+    const breathingIntensity = 0.006;
+    const breathingSpeed = 1.5;
     avatar.position.y = Math.sin(time * breathingSpeed) * breathingIntensity;
 
+    // Get skeleton for bone animations
+    const skeleton = sceneRef.current?.skeleton;
+    
+    if (skeleton) {
+      // Find bones
+      const headBone = skeleton.bones.find(b => b.name === 'Head');
+      const neckBone = skeleton.bones.find(b => b.name === 'Neck');
+      const leftArmBone = skeleton.bones.find(b => b.name === 'LeftArm');
+      const rightArmBone = skeleton.bones.find(b => b.name === 'RightArm');
+      
+      // Store base rotations on first run
+      if (!state.initialized) {
+        if (headBone?.getTransformNode()) {
+          state.headBaseRotation = headBone.getTransformNode()!.rotation.clone();
+        }
+        if (neckBone?.getTransformNode()) {
+          state.neckBaseRotation = neckBone.getTransformNode()!.rotation.clone();
+        }
+        if (leftArmBone?.getTransformNode()) {
+          state.leftArmBaseRotation = leftArmBone.getTransformNode()!.rotation.clone();
+        }
+        if (rightArmBone?.getTransformNode()) {
+          state.rightArmBaseRotation = rightArmBone.getTransformNode()!.rotation.clone();
+        }
+        state.initialized = true;
+        console.log('Animation initialized with base rotations');
+      }
+      
+      // Calculate animation offsets based on state
+      let headOffsetX = 0, headOffsetY = 0, headOffsetZ = 0;
+      let neckOffsetX = 0;
+      let armOffsetX = 0;
+      
+      if (speaking) {
+        // Speaking: Active head movement and arm gestures
+        headOffsetX = Math.sin(time * 3.5) * 0.15;
+        headOffsetY = Math.sin(time * 2.8) * 0.12;
+        headOffsetZ = Math.sin(time * 2.0) * 0.08;
+        neckOffsetX = Math.sin(time * 2.5) * 0.06;
+        armOffsetX = Math.sin(time * 1.8) * 0.08;
+      } else if (listening) {
+        // Listening: Attentive nodding
+        headOffsetX = 0.08 + Math.sin(time * 1.5) * 0.06; // Forward lean + nod
+        headOffsetY = Math.sin(time * 0.8) * 0.05;
+        neckOffsetX = Math.sin(time * 1.2) * 0.03;
+      } else {
+        // Idle: Subtle micro-movements
+        headOffsetX = Math.sin(time * 0.5) * 0.02;
+        headOffsetY = Math.sin(time * 0.4) * 0.025;
+      }
+      
+      // Apply head animation
+      if (headBone && state.headBaseRotation) {
+        const headNode = headBone.getTransformNode();
+        if (headNode) {
+          headNode.rotation.x = state.headBaseRotation.x + headOffsetX;
+          headNode.rotation.y = state.headBaseRotation.y + headOffsetY;
+          headNode.rotation.z = state.headBaseRotation.z + headOffsetZ;
+        }
+      }
+      
+      // Apply neck animation
+      if (neckBone && state.neckBaseRotation) {
+        const neckNode = neckBone.getTransformNode();
+        if (neckNode) {
+          neckNode.rotation.x = state.neckBaseRotation.x + neckOffsetX;
+        }
+      }
+      
+      // Apply arm animation (only when speaking)
+      if (speaking) {
+        if (leftArmBone && state.leftArmBaseRotation) {
+          const leftArmNode = leftArmBone.getTransformNode();
+          if (leftArmNode) {
+            leftArmNode.rotation.x = state.leftArmBaseRotation.x + armOffsetX;
+          }
+        }
+        if (rightArmBone && state.rightArmBaseRotation) {
+          const rightArmNode = rightArmBone.getTransformNode();
+          if (rightArmNode) {
+            rightArmNode.rotation.x = state.rightArmBaseRotation.x + Math.sin(time * 2.2) * 0.08;
+          }
+        }
+      }
+    }
+    
+    // Body sway animation on root mesh - MORE VISIBLE
     if (speaking) {
-      const talkIntensity = Math.max(0.3, volume / 100);
-
-      if (head.name.toLowerCase().includes('head') && !head.name.toLowerCase().includes('eye')) {
-        head.rotation.y = Math.sin(time * 1.8) * 0.1 * talkIntensity;
-        head.rotation.x = Math.sin(time * 2.2) * 0.08 * talkIntensity;
-        head.rotation.z = Math.sin(time * 1.5) * 0.05 * talkIntensity;
-      }
-
-      avatar.rotation.y = Math.sin(time * 0.8) * 0.03 * talkIntensity;
+      // Obvious body movement while talking
+      avatar.rotation.y = Math.sin(time * 1.5) * 0.12;
+      avatar.position.x = Math.sin(time * 2) * 0.015;
+      // Add slight forward/back lean
+      avatar.rotation.x = Math.sin(time * 1.8) * 0.03;
     } else if (listening) {
-      const listenIntensity = 0.5;
-
-      if (head.name.toLowerCase().includes('head') && !head.name.toLowerCase().includes('eye')) {
-        head.rotation.x = Math.sin(time * 0.6) * 0.06 * listenIntensity;
-        head.rotation.y = Math.sin(time * 0.4) * 0.05 * listenIntensity;
-      }
-
-      avatar.rotation.x = Math.sin(time * 0.5) * 0.02;
+      // Attentive lean forward
+      avatar.rotation.x = 0.06 + Math.sin(time * 0.8) * 0.025;
+      avatar.rotation.y = Math.sin(time * 0.6) * 0.04;
+      avatar.position.x = 0;
     } else {
-      const idleIntensity = 0.3;
+      // Subtle idle movement
+      avatar.rotation.y = Math.sin(time * 0.4) * 0.025;
+      avatar.rotation.x = Math.sin(time * 0.3) * 0.01;
+      avatar.position.x = 0;
+    }
 
-      if (head.name.toLowerCase().includes('head') && !head.name.toLowerCase().includes('eye')) {
-        head.rotation.y = Math.sin(time * 0.3) * 0.03 * idleIntensity;
-        head.rotation.x = Math.sin(time * 0.4) * 0.02 * idleIntensity;
+    // Morph target animations (mouth movement, blinking)
+    const mouthTarget = sceneRef.current?.mouthOpenTarget;
+    const leftEyeTarget = sceneRef.current?.leftEyeCloseTarget;
+    const rightEyeTarget = sceneRef.current?.rightEyeCloseTarget;
+    const faceMesh = sceneRef.current?.faceMesh;
+    const scene = sceneRef.current?.scene;
+
+    // Mouth animation when speaking - directly set influence
+    if (mouthTarget && faceMesh && scene) {
+      if (speaking) {
+        // Animate mouth open/close rapidly to simulate talking
+        // Use a combination of sine waves for more natural movement
+        const fastWave = Math.sin(time * 12); // Fast open/close
+        const slowWave = Math.sin(time * 3); // Slower variation
+        const mouthValue = Math.max(0, (fastWave * 0.5 + 0.5) * (slowWave * 0.3 + 0.7));
+        
+        // DIRECTLY set the influence on the morph target
+        mouthTarget.influence = mouthValue;
+        
+        // Also try setting via the manager index
+        const manager = faceMesh.morphTargetManager;
+        if (manager) {
+          for (let i = 0; i < manager.numTargets; i++) {
+            if (manager.getTarget(i) === mouthTarget) {
+              manager.getTarget(i).influence = mouthValue;
+              break;
+            }
+          }
+        }
+        
+        // Debug log
+        if (state.talkTimer < 0.05) {
+          console.log(`Mouth: ${mouthValue.toFixed(2)} on ${faceMesh.name}/${mouthTarget.name}`);
+        }
+      } else {
+        // Close mouth when not speaking
+        if (mouthTarget.influence > 0.02) {
+          mouthTarget.influence *= 0.85; // Smooth decay
+        } else {
+          mouthTarget.influence = 0;
+        }
       }
-
-      avatar.rotation.y = Math.sin(time * 0.25) * 0.01;
-    }
-  }
-
-  function reapplyArmRotations() {
-    console.log('=== Reloading model with new arm values ===');
-    console.log('New values from state:', { shoulderDown, upperArmDown, foreArmIn });
-    
-    // Update the ref BEFORE reloading
-    armValuesRef.current = { shoulderDown, upperArmDown, foreArmIn };
-    console.log('Updated armValuesRef to:', armValuesRef.current);
-    
-    if (!sceneRef.current?.scene || !modelUrl) {
-      console.error('Missing scene or modelUrl');
-      return;
     }
 
-    // Remove existing meshes
-    console.log('Disposing', sceneRef.current.allMeshes.length, 'meshes');
-    sceneRef.current.allMeshes.forEach((mesh) => {
-      mesh.dispose();
-    });
-    
-    // Clear skeleton
-    if (sceneRef.current.skeleton) {
-      console.log('Disposing skeleton');
-      sceneRef.current.skeleton.dispose();
+    // Eye blinking animation (random blinks)
+    state.blinkTimer += 0.016;
+    if (state.blinkTimer > 3 + Math.random() * 4) {
+      state.blinkTimer = 0;
+      if (leftEyeTarget) leftEyeTarget.influence = 1;
+      if (rightEyeTarget) rightEyeTarget.influence = 1;
     }
-
-    // Reset refs
-    sceneRef.current.allMeshes = [];
-    sceneRef.current.avatar = null;
-    sceneRef.current.head = null;
-    sceneRef.current.skeleton = null;
-    sceneRef.current.skinnedMesh = null;
-
-    // Reload the model with new values
-    console.log('Starting model reload...');
-    setIsLoading(true);
-    loadExternalModel(sceneRef.current.scene, modelUrl);
+    if (leftEyeTarget && leftEyeTarget.influence > 0) {
+      leftEyeTarget.influence = Math.max(0, leftEyeTarget.influence - 0.12);
+    }
+    if (rightEyeTarget && rightEyeTarget.influence > 0) {
+      rightEyeTarget.influence = Math.max(0, rightEyeTarget.influence - 0.12);
+    }
   }
 
   if (loadError && !modelUrl) {
@@ -568,7 +744,7 @@ export function BabylonAvatar({
   }
 
   return (
-    <div className="relative w-full h-full">
+    <div className="relative w-full h-full overflow-visible">
       {isLoading && (
         <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg z-10">
           <div className="text-center">
@@ -597,8 +773,8 @@ export function BabylonAvatar({
       )}
 
       {!isLoading && (
-        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-20">
-          <div className="bg-white/95 backdrop-blur-sm rounded-full px-4 py-2 shadow-lg border border-purple-100">
+        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-[100]">
+          <div className="bg-white backdrop-blur-sm rounded-full px-4 py-2 shadow-2xl border-2 border-purple-200">
             <div className="flex items-center space-x-2">
               <div
                 className={`w-2.5 h-2.5 rounded-full ${
@@ -619,87 +795,6 @@ export function BabylonAvatar({
 
       {isActive && !isLoading && (
         <div className="absolute inset-0 rounded-lg bg-purple-400 animate-ping opacity-5 pointer-events-none"></div>
-      )}
-
-      {/* Arm Position Controls */}
-      {modelUrl && !isLoading && (
-        <div className="absolute top-4 right-4 z-20">
-          <button
-            onClick={() => setShowControls(!showControls)}
-            className="bg-white/95 backdrop-blur-sm rounded-lg px-3 py-2 shadow-lg border border-purple-100 hover:bg-purple-50 transition-colors"
-          >
-            <span className="text-xs font-medium text-gray-700">⚙️ Adjust Arms</span>
-          </button>
-
-          {showControls && (
-            <div className="mt-2 bg-white/95 backdrop-blur-sm rounded-lg p-4 shadow-lg border border-purple-100 min-w-[240px]">
-              <div className="space-y-3">
-                <div>
-                  <label className="text-xs font-medium text-gray-700 block mb-1">
-                    Shoulder Down: {shoulderDown.toFixed(2)}
-                  </label>
-                  <input
-                    type="range"
-                    min="-1"
-                    max="1"
-                    step="0.05"
-                    value={shoulderDown}
-                    onChange={(e) => setShoulderDown(parseFloat(e.target.value))}
-                    className="w-full h-2 bg-purple-200 rounded-lg appearance-none cursor-pointer"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-xs font-medium text-gray-700 block mb-1">
-                    Upper Arm Down: {upperArmDown.toFixed(2)}
-                  </label>
-                  <input
-                    type="range"
-                    min="-1.5"
-                    max="1.5"
-                    step="0.05"
-                    value={upperArmDown}
-                    onChange={(e) => setUpperArmDown(parseFloat(e.target.value))}
-                    className="w-full h-2 bg-purple-200 rounded-lg appearance-none cursor-pointer"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-xs font-medium text-gray-700 block mb-1">
-                    Forearm In: {foreArmIn.toFixed(2)}
-                  </label>
-                  <input
-                    type="range"
-                    min="-0.5"
-                    max="0.5"
-                    step="0.05"
-                    value={foreArmIn}
-                    onChange={(e) => setForeArmIn(parseFloat(e.target.value))}
-                    className="w-full h-2 bg-purple-200 rounded-lg appearance-none cursor-pointer"
-                  />
-                </div>
-
-                <button
-                  onClick={() => {
-                    console.log('Apply Changes button clicked');
-                    reapplyArmRotations();
-                    // Visual feedback
-                    const btn = document.activeElement as HTMLButtonElement;
-                    if (btn) {
-                      btn.textContent = 'Applied!';
-                      setTimeout(() => {
-                        btn.textContent = 'Apply Changes';
-                      }, 1000);
-                    }
-                  }}
-                  className="w-full bg-purple-600 hover:bg-purple-700 text-white text-xs font-medium py-2 px-3 rounded-lg transition-colors"
-                >
-                  Apply Changes
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
       )}
     </div>
   );
