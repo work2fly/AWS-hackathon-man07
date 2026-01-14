@@ -24,7 +24,7 @@ export default function VoiceSimplePage() {
 
   const API_URL = 'https://xi8ekw0fj6.execute-api.us-west-2.amazonaws.com/dev';
   const SILENCE_THRESHOLD = 2000; // 2 seconds
-  const VOLUME_THRESHOLD = 15;
+  const VOLUME_THRESHOLD = 5; // Lower threshold for better detection
 
   const addMessage = (msg: string) => {
     setMessages(prev => [...prev, `${new Date().toLocaleTimeString()}: ${msg}`]);
@@ -185,19 +185,22 @@ export default function VoiceSimplePage() {
       });
       
       if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        const errorText = await response.text();
+        console.error('API Error Response:', errorText);
+        throw new Error(`HTTP ${response.status}: ${errorText.substring(0, 100)}`);
       }
       
       const result = await response.json();
       addMessage('✅ AI response received');
       
-      // Play AI response
-      if (result.audioData) {
-        await playAudio(result.audioData, result.format || 'wav');
-      }
-      
+      // Display AI text response
       if (result.text) {
         addMessage(`💬 AI: ${result.text}`);
+        
+        // Use Web Speech API for text-to-speech (REAL!)
+        if (result.useTTS && 'speechSynthesis' in window) {
+          await speakText(result.text);
+        }
       }
       
       setStatus('✅ Ready for next input');
@@ -208,7 +211,85 @@ export default function VoiceSimplePage() {
     }
   };
 
-  // Play audio response
+  // Speak text using Web Speech API (Natural Voice!)
+  const speakText = async (text: string) => {
+    return new Promise<void>((resolve, reject) => {
+      try {
+        addMessage('🔊 Speaking response...');
+        setStatus('🔊 Speaking...');
+        
+        // Cancel any ongoing speech
+        window.speechSynthesis.cancel();
+        
+        const utterance = new SpeechSynthesisUtterance(text);
+        
+        // Get available voices and select a natural one
+        const voices = window.speechSynthesis.getVoices();
+        
+        // Try to find a natural/premium voice (Google, Microsoft, or Apple)
+        const preferredVoices = [
+          'Google US English',
+          'Microsoft Zira - English (United States)',
+          'Samantha', // macOS
+          'Karen', // macOS
+          'Moira', // macOS
+          'Tessa', // macOS
+          'Alex', // macOS
+          'Google UK English Female',
+          'Microsoft David - English (United States)'
+        ];
+        
+        let selectedVoice = voices.find(voice => 
+          preferredVoices.some(pv => voice.name.includes(pv))
+        );
+        
+        // Fallback: any English voice that's not default
+        if (!selectedVoice) {
+          selectedVoice = voices.find(voice => 
+            voice.lang.startsWith('en') && !voice.default
+          );
+        }
+        
+        // Fallback: any English voice
+        if (!selectedVoice) {
+          selectedVoice = voices.find(voice => voice.lang.startsWith('en'));
+        }
+        
+        if (selectedVoice) {
+          utterance.voice = selectedVoice;
+          addMessage(`🎤 Using voice: ${selectedVoice.name}`);
+        }
+        
+        utterance.lang = 'en-US';
+        utterance.rate = 0.95; // Slightly slower for natural feel
+        utterance.pitch = 1.0;
+        utterance.volume = 1.0;
+        
+        utterance.onend = () => {
+          addMessage('✅ Speech finished');
+          setStatus('✅ Ready');
+          resolve();
+        };
+        
+        utterance.onerror = (error) => {
+          addMessage(`❌ Speech error: ${error}`);
+          setStatus('❌ Speech Error');
+          reject(error);
+        };
+        
+        // Small delay to ensure voices are loaded
+        setTimeout(() => {
+          window.speechSynthesis.speak(utterance);
+        }, 100);
+      } catch (error) {
+        addMessage(`❌ TTS error: ${error}`);
+        setStatus('❌ Error');
+        reject(error);
+      }
+    });
+  };
+
+  // Play audio response (fallback - not used with Web Speech API)
   const playAudio = async (base64Audio: string, format: string) => {
     try {
       addMessage(`🔊 Playing AI response...`);
@@ -325,6 +406,14 @@ export default function VoiceSimplePage() {
             >
               🛑 Stop Session
             </button>
+            
+            <button
+              onClick={processAudio}
+              disabled={!isRecording || audioChunksRef.current.length === 0}
+              className="px-12 py-6 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl font-bold text-xl hover:from-blue-600 hover:to-blue-700 disabled:from-gray-400 disabled:to-gray-400 disabled:cursor-not-allowed shadow-lg transform transition hover:scale-105"
+            >
+              📤 Send Now
+            </button>
           </div>
           
           {/* Volume indicator */}
@@ -377,14 +466,14 @@ export default function VoiceSimplePage() {
           <ol className="list-decimal list-inside space-y-2 text-blue-800">
             <li className="font-medium">Click <strong>"Start Session"</strong> to begin</li>
             <li className="font-medium">Speak clearly into your microphone</li>
-            <li className="font-medium">Stop speaking for <strong>2 seconds</strong></li>
+            <li className="font-medium">Click <strong>"Send Now"</strong> button OR wait 2 seconds of silence</li>
             <li className="font-medium">AI will process and respond with voice</li>
             <li className="font-medium">Continue the conversation naturally</li>
           </ol>
           <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
             <p className="text-sm text-yellow-800">
-              <strong>💡 Tip:</strong> Speak naturally and pause between sentences. 
-              The AI needs 2 seconds of silence to know you're done speaking.
+              <strong>💡 Tip:</strong> Speak naturally then click "Send Now" button to process immediately, 
+              or wait 2 seconds for automatic detection.
             </p>
           </div>
         </div>
