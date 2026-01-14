@@ -54,7 +54,14 @@ export function SignUpForm({ onBackToLogin }: SignUpFormProps) {
     });
 
     if (result.success) {
-      setStep('confirm');
+      // Check if user is already confirmed (auto-confirm by Lambda)
+      if (result.isSignUpComplete) {
+        // User is auto-confirmed, go directly to login
+        onBackToLogin();
+      } else {
+        // User needs to confirm with code
+        setStep('confirm');
+      }
     }
   };
 
