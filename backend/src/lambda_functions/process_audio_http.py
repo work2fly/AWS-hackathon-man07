@@ -1,8 +1,8 @@
 """
-HTTP Audio Processing Handler - REAL AI Integration with Transcribe
+HTTP Audio Processing Handler - REAL AI Integration with Polly Neural TTS
 🏆 Breaking Barriers UK 2026 compliant
-Pipeline: Audio → S3 → Transcribe → Claude 3.5 Sonnet → Text Response
-Frontend handles text-to-speech with Web Speech API
+Pipeline: Text → Claude 3.5 Sonnet → Amazon Polly Neural Voice → Audio
+Frontend uses Web Speech Recognition for input
 """
 
 import json
@@ -16,9 +16,43 @@ import uuid
 s3_client = boto3.client('s3', region_name='us-west-2')
 transcribe_client = boto3.client('transcribe', region_name='us-west-2')
 bedrock_runtime = boto3.client('bedrock-runtime', region_name='us-west-2')
+polly_client = boto3.client('polly', region_name='us-west-2')
 
 # S3 bucket for temporary audio storage
-S3_BUCKET = 'ai-therapy-platform-dev-audio-temp'  # We'll create this
+S3_BUCKET = 'ai-therapy-platform-dev-audio-temp'
+
+def synthesize_speech_polly(text):
+    """
+    Convert text to speech using Amazon Polly Neural voices
+    🏆 Uses permitted AWS service (Polly)
+    Neural voices sound VERY natural!
+    """
+    try:
+        print("🔊 Synthesizing speech with Amazon Polly Neural...")
+        
+        # Use Joanna Neural voice (very natural female voice)
+        response = polly_client.synthesize_speech(
+            Text=text,
+            OutputFormat='mp3',
+            VoiceId='Joanna',  # Natural female US English
+            Engine='neural',   # Neural engine for best quality!
+            LanguageCode='en-US'
+        )
+        
+        # Read audio stream
+        audio_data = response['AudioStream'].read()
+        
+        # Convert to base64
+        audio_base64 = base64.b64encode(audio_data).decode('utf-8')
+        
+        print(f"✅ Polly Neural speech synthesized: {len(audio_base64)} bytes (base64)")
+        return audio_base64
+        
+    except Exception as e:
+        print(f"❌ Polly error: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return None  # We'll create this
 
 def transcribe_audio_real(audio_data_base64, session_id):
     """
@@ -299,15 +333,35 @@ def lambda_handler(event, context):
         
         ai_text = ai_response
         
-        print("✅ Returning AI response (text only - frontend will speak it)")
+        # Step 3: Synthesize speech with Amazon Polly Neural (NATURAL VOICE!)
+        print("🔊 Step 3: Synthesizing speech with Polly Neural...")
+        ai_audio = synthesize_speech_polly(ai_text)
+        
+        if not ai_audio:
+            # Fallback: return text only
+            print("⚠️ Polly failed, returning text only")
+            return {
+                'statusCode': 200,
+                'headers': headers,
+                'body': json.dumps({
+                    'text': ai_text,
+                    'sessionId': session_id,
+                    'timestamp': datetime.utcnow().isoformat(),
+                    'useTTS': True  # Frontend will use Web Speech as fallback
+                })
+            }
+        
+        print("✅ Returning AI response with Polly Neural audio")
         return {
             'statusCode': 200,
             'headers': headers,
             'body': json.dumps({
                 'text': ai_text,
+                'audioData': ai_audio,
+                'format': 'mp3',
+                'voiceEngine': 'polly-neural',
                 'sessionId': session_id,
-                'timestamp': datetime.utcnow().isoformat(),
-                'useTTS': True  # Signal frontend to use Web Speech API
+                'timestamp': datetime.utcnow().isoformat()
             })
         }
         

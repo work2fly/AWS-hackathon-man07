@@ -171,8 +171,12 @@ export default function VoiceRealPage() {
       if (result.text) {
         addMessage(`💬 AI: ${result.text}`);
         
-        // Use Web Speech API for text-to-speech
-        if ('speechSynthesis' in window) {
+        // Check if we have Polly Neural audio
+        if (result.audioData && result.voiceEngine === 'polly-neural') {
+          addMessage('🔊 Playing Amazon Polly Neural voice...');
+          await playPollyAudio(result.audioData, result.format || 'mp3');
+        } else if (result.useTTS && 'speechSynthesis' in window) {
+          // Fallback to Web Speech API
           await speakText(result.text);
         }
       }
@@ -183,6 +187,46 @@ export default function VoiceRealPage() {
       addMessage(`❌ Processing error: ${error}`);
       setStatus('❌ Error');
     }
+  };
+
+  // Play Polly audio
+  const playPollyAudio = async (base64Audio: string, format: string) => {
+    return new Promise<void>((resolve, reject) => {
+      try {
+        setStatus('🔊 Playing Polly Neural voice...');
+        
+        // Decode base64
+        const binaryString = atob(base64Audio);
+        const bytes = new Uint8Array(binaryString.length);
+        for (let i = 0; i < binaryString.length; i++) {
+          bytes[i] = binaryString.charCodeAt(i);
+        }
+        
+        // Create blob and play
+        const blob = new Blob([bytes], { type: `audio/${format}` });
+        const audioUrl = URL.createObjectURL(blob);
+        const audio = new Audio(audioUrl);
+        
+        audio.onended = () => {
+          URL.revokeObjectURL(audioUrl);
+          addMessage('✅ Polly playback finished');
+          setStatus('✅ Ready - Click "Start Talking" to continue');
+          resolve();
+        };
+        
+        audio.onerror = (error) => {
+          addMessage(`❌ Playback error: ${error}`);
+          setStatus('❌ Playback Error');
+          reject(error);
+        };
+        
+        audio.play();
+      } catch (error) {
+        addMessage(`❌ Play error: ${error}`);
+        setStatus('❌ Error');
+        reject(error);
+      }
+    });
   };
 
   // Speak text using Web Speech API (Consistent Natural Voice)
