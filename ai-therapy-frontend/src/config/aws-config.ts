@@ -11,13 +11,14 @@ export const awsConfig = {
     websocketApi: 'wss://yqv4v90gj9.execute-api.us-west-2.amazonaws.com'
   },
   
-  // Cognito configuration from terraform state
+  // Cognito configuration - Frontend Public Client (no secret)
+  // Created by: backend/scripts/create_public_cognito_client.py
   cognito: {
     userPoolId: 'us-west-2_ASOPUuOOV',
-    userPoolWebClientId: 'krm7gidi0n5ikqvemtd79oql1',
+    userPoolWebClientId: '50bh1stem2eqiatfi4cg382rj8', // ✅ Frontend public client (no secret)
     region: 'us-west-2',
-    // Note: Client secret not available in frontend for security
-    // Backend integration will handle secret hash generation
+    // Note: This is a public client without secret - safe for frontend use
+    // Uses SRP authentication for secure password exchange
   },
   
   // Bedrock model configuration

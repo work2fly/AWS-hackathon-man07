@@ -2,13 +2,13 @@
 // 🏆 Breaking Barriers UK 2026 compliant
 
 import { Amplify } from 'aws-amplify';
-// import { signIn, signUp, signOut, getCurrentUser, confirmSignUp, resendSignUpCode } from 'aws-amplify/auth';
+import { signIn, signUp, signOut, getCurrentUser, confirmSignUp, resendSignUpCode } from 'aws-amplify/auth';
 import { awsConfig } from '@/config/aws-config';
 import type { User } from '@/types';
 import { MockAuthService } from './mock-auth';
 
-// TEMPORARY: Use mock auth until backend team fixes Cognito client secret issue
-const USE_MOCK_AUTH = true;
+// ✅ REAL AUTHENTICATION ENABLED - Frontend public Cognito client configured
+const USE_MOCK_AUTH = false;
 
 // Configure Amplify with Cognito settings (ready for when backend is fixed)
 Amplify.configure({
@@ -69,8 +69,7 @@ export class AuthService {
       return MockAuthService.signUp({ email, password, firstName, lastName, role });
     }
 
-    // REAL COGNITO CODE (COMMENTED OUT - BACKEND TEAM NEEDS TO FIX CLIENT SECRET ISSUE)
-    /*
+    // ✅ REAL COGNITO CODE - Using frontend public client
     try {
       const { isSignUpComplete, userId, nextStep } = await signUp({
         username: email,
@@ -98,12 +97,6 @@ export class AuthService {
         error: error instanceof Error ? error.message : 'Sign up failed',
       };
     }
-    */
-    
-    return {
-      success: false,
-      error: 'Real Cognito integration not available yet',
-    };
   }
 
   /**
@@ -114,8 +107,7 @@ export class AuthService {
       return MockAuthService.confirmSignUp(email, confirmationCode);
     }
 
-    // REAL COGNITO CODE (COMMENTED OUT - BACKEND TEAM NEEDS TO FIX CLIENT SECRET ISSUE)
-    /*
+    // ✅ REAL COGNITO CODE - Using frontend public client
     try {
       const { isSignUpComplete, nextStep } = await confirmSignUp({
         username: email,
@@ -134,12 +126,6 @@ export class AuthService {
         error: error instanceof Error ? error.message : 'Confirmation failed',
       };
     }
-    */
-    
-    return {
-      success: false,
-      error: 'Real Cognito integration not available yet',
-    };
   }
 
   /**
@@ -150,8 +136,7 @@ export class AuthService {
       return MockAuthService.resendConfirmationCode(email);
     }
 
-    // REAL COGNITO CODE (COMMENTED OUT - BACKEND TEAM NEEDS TO FIX CLIENT SECRET ISSUE)
-    /*
+    // ✅ REAL COGNITO CODE - Using frontend public client
     try {
       await resendSignUpCode({ username: email });
       return { success: true };
@@ -162,12 +147,6 @@ export class AuthService {
         error: error instanceof Error ? error.message : 'Resend failed',
       };
     }
-    */
-    
-    return {
-      success: false,
-      error: 'Real Cognito integration not available yet',
-    };
   }
 
   /**
@@ -185,8 +164,7 @@ export class AuthService {
       return result;
     }
 
-    // REAL COGNITO CODE (COMMENTED OUT - BACKEND TEAM NEEDS TO FIX CLIENT SECRET ISSUE)
-    /*
+    // ✅ REAL COGNITO CODE - Using frontend public client with SRP auth
     try {
       const { isSignedIn, nextStep } = await signIn({
         username: email,
@@ -214,12 +192,6 @@ export class AuthService {
         error: error instanceof Error ? error.message : 'Sign in failed',
       };
     }
-    */
-    
-    return {
-      success: false,
-      error: 'Real Cognito integration not available yet',
-    };
   }
 
   /**
@@ -231,8 +203,7 @@ export class AuthService {
       return MockAuthService.signOut();
     }
 
-    // REAL COGNITO CODE (COMMENTED OUT - BACKEND TEAM NEEDS TO FIX CLIENT SECRET ISSUE)
-    /*
+    // ✅ REAL COGNITO CODE - Using frontend public client
     try {
       await signOut();
       return { success: true };
@@ -243,12 +214,6 @@ export class AuthService {
         error: error instanceof Error ? error.message : 'Sign out failed',
       };
     }
-    */
-    
-    return {
-      success: false,
-      error: 'Real Cognito integration not available yet',
-    };
   }
 
   /**
@@ -259,8 +224,7 @@ export class AuthService {
       return MockAuthService.getCurrentUser();
     }
 
-    // REAL COGNITO CODE (COMMENTED OUT - BACKEND TEAM NEEDS TO FIX CLIENT SECRET ISSUE)
-    /*
+    // ✅ REAL COGNITO CODE - Using frontend public client
     try {
       const { username, userId, signInDetails } = await getCurrentUser();
       
@@ -314,9 +278,6 @@ export class AuthService {
       console.error('Get current user error:', error);
       return null;
     }
-    */
-    
-    return null;
   }
 
   /**
@@ -327,16 +288,12 @@ export class AuthService {
       return MockAuthService.isAuthenticated();
     }
 
-    // REAL COGNITO CODE (COMMENTED OUT - BACKEND TEAM NEEDS TO FIX CLIENT SECRET ISSUE)
-    /*
+    // ✅ REAL COGNITO CODE - Using frontend public client
     try {
       await getCurrentUser();
       return true;
     } catch {
       return false;
     }
-    */
-    
-    return false;
   }
 }
