@@ -34,13 +34,6 @@ export class WebSocketService {
    * Connect to WebSocket server
    */
   async connect(token?: string): Promise<boolean> {
-    // TEMPORARY: Skip WebSocket connection in demo mode
-    // BACKEND TEAM: WebSocket endpoint needs authentication setup
-    console.log('WebSocket connection skipped in demo mode');
-    return true;
-
-    // REAL WEBSOCKET CODE (COMMENTED OUT - BACKEND TEAM NEEDS TO SETUP WEBSOCKET AUTH)
-    /*
     if (this.isConnecting || (this.ws && this.ws.readyState === WebSocket.OPEN)) {
       return true;
     }
@@ -51,6 +44,7 @@ export class WebSocketService {
       const wsUrl = getWebSocketUrl();
       const urlWithAuth = token ? `${wsUrl}?token=${encodeURIComponent(token)}` : wsUrl;
       
+      console.log('Connecting to WebSocket:', wsUrl);
       this.ws = new WebSocket(urlWithAuth);
 
       return new Promise((resolve, reject) => {
@@ -60,7 +54,7 @@ export class WebSocketService {
         }
 
         this.ws.onopen = () => {
-          console.log('WebSocket connected');
+          console.log('✅ WebSocket connected');
           this.isConnecting = false;
           this.reconnectAttempts = 0;
           this.reconnectDelay = 1000;
@@ -103,7 +97,6 @@ export class WebSocketService {
       console.error('WebSocket connection error:', error);
       return false;
     }
-    */
   }
 
   /**
@@ -128,12 +121,6 @@ export class WebSocketService {
    * Send message through WebSocket
    */
   send(message: WebSocketMessage): boolean {
-    // TEMPORARY: Mock WebSocket send in demo mode
-    console.log('Mock WebSocket send:', message.type);
-    return true;
-
-    // REAL WEBSOCKET CODE (COMMENTED OUT - BACKEND TEAM NEEDS TO SETUP WEBSOCKET)
-    /*
     if (!this.isConnected()) {
       console.error('WebSocket not connected');
       return false;
@@ -146,17 +133,23 @@ export class WebSocketService {
       console.error('Failed to send WebSocket message:', error);
       return false;
     }
-    */
   }
 
   /**
    * Send audio data
    */
   sendAudio(audioData: ArrayBuffer, format: 'webm' | 'wav' | 'mp3' = 'webm', sampleRate: number = 44100): boolean {
+    // Convert ArrayBuffer to base64 for transmission
+    const uint8Array = new Uint8Array(audioData);
+    const binaryString = Array.from(uint8Array)
+      .map(byte => String.fromCharCode(byte))
+      .join('');
+    const base64Audio = btoa(binaryString);
+    
     const message: AudioMessage = {
       type: 'audio',
       payload: {
-        audioData,
+        audioData: base64Audio as any, // Send as base64 string
         format,
         sampleRate,
       },
@@ -164,6 +157,7 @@ export class WebSocketService {
       sessionId: this.sessionId || undefined,
     };
 
+    console.log(`📤 Sending audio: ${base64Audio.length} bytes (base64), format: ${format}`);
     return this.send(message);
   }
 

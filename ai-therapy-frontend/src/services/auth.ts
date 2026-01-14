@@ -2,7 +2,7 @@
 // 🏆 Breaking Barriers UK 2026 compliant
 
 import { Amplify } from 'aws-amplify';
-import { signIn, signUp, signOut, getCurrentUser, confirmSignUp, resendSignUpCode } from 'aws-amplify/auth';
+import { signIn, signUp, signOut, getCurrentUser, confirmSignUp, resendSignUpCode, fetchAuthSession } from 'aws-amplify/auth';
 import { awsConfig } from '@/config/aws-config';
 import type { User } from '@/types';
 import { MockAuthService } from './mock-auth';
@@ -317,6 +317,25 @@ export class AuthService {
       return true;
     } catch {
       return false;
+    }
+  }
+
+  /**
+   * Get authentication token for WebSocket connection
+   */
+  static async getAuthToken(): Promise<string | null> {
+    if (USE_MOCK_AUTH) {
+      return 'mock-token';
+    }
+
+    // ✅ REAL COGNITO CODE - Get ID token from session
+    try {
+      const session = await fetchAuthSession();
+      const idToken = session.tokens?.idToken?.toString();
+      return idToken || null;
+    } catch (error) {
+      console.error('Get auth token error:', error);
+      return null;
     }
   }
 }

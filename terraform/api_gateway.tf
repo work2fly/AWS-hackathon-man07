@@ -586,7 +586,9 @@ resource "aws_apigatewayv2_route" "connect" {
   route_key = "$connect"
   target    = "integrations/${aws_apigatewayv2_integration.connect.id}"
 
-  authorization_type = "AWS_IAM"
+  # Changed from AWS_IAM to NONE for hackathon testing
+  # Authorization will be handled in Lambda function via token validation
+  authorization_type = "NONE"
 }
 
 resource "aws_apigatewayv2_route" "disconnect" {

@@ -36,6 +36,19 @@ interface SessionState {
 export function SessionInterface() {
   const { user } = useAuth();
   const { t } = useLanguage();
+  
+  // Get auth token for WebSocket connection
+  const [authToken, setAuthToken] = useState<string | null>(null);
+  
+  useEffect(() => {
+    const getToken = async () => {
+      const { AuthService } = await import('@/services/auth');
+      const token = await AuthService.getAuthToken();
+      setAuthToken(token);
+    };
+    getToken();
+  }, []);
+  
   const { 
     isConnected, 
     connect, 
@@ -44,7 +57,7 @@ export function SessionInterface() {
     sendControl, 
     addEventListener, 
     removeEventListener 
-  } = useWebSocket();
+  } = useWebSocket(authToken || undefined);
   
   const {
     isInitialized,
