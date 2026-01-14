@@ -2,16 +2,23 @@
 WebSocket Default Handler - Entry Point  
 🏆 Breaking Barriers UK 2026 compliant
 Handles all WebSocket messages and integrates with Bedrock Nova Sonic 2
+Supports continuous audio streaming with voice activity detection
 """
 
 import json
 import boto3
 import base64
 from datetime import datetime
+from collections import defaultdict
 
 # Initialize AWS clients
 bedrock_runtime = boto3.client('bedrock-runtime', region_name='us-west-2')
+dynamodb = boto3.resource('dynamodb')
 apigateway_management = None
+
+# Store audio chunks per connection (in-memory buffer)
+# In production, use DynamoDB or S3 for persistence
+audio_buffers = defaultdict(list)
 
 def get_apigateway_client(domain_name, stage):
     """Get API Gateway Management client for sending messages"""
@@ -157,62 +164,19 @@ def lambda_handler(event, context):
         
         # Handle different message types
         if message_type == 'audio':
-            # Audio message - send to Nova Sonic 2
+            # Audio message - accumulate chunks for continuous listening
             audio_data = message.get('payload', {}).get('audioData')
             
             if audio_data:
-                print(f"🎤 Processing audio with Nova Sonic 2 (data length: {len(audio_data) if audio_data else 0})...")
+                # Store audio chunk in buffer
+                audio_buffers[connection_id].append(audio_data)
+                print(f"🎤 Audio chunk received: {len(audio_data)} bytes, total chunks: {len(audio_buffers[connection_id])}")
                 
-                # Audio data should be base64 encoded
-                # If it's already base64 string, use it directly
-                # If it's binary, encode it
-                if isinstance(audio_data, str):
-                    audio_base64 = audio_data
-                else:
-                    audio_base64 = base64.b64encode(audio_data).decode('utf-8')
-                
-                # Invoke Bedrock Nova Sonic 2
-                ai_response = invoke_bedrock_nova_sonic(audio_base64)
-                
-                if ai_response and ai_response.get('audio'):
-                    # Send AI audio response back
-                    response_message = {
-                        'type': 'audio',
-                        'payload': {
-                            'audioData': ai_response.get('audio'),
-                            'format': ai_response.get('format', 'wav'),
-                            'isFromAI': True
-                        },
-                        'timestamp': datetime.utcnow().isoformat()
-                    }
-                    
-                    send_message(connection_id, response_message, domain_name, stage)
-                    print("✅ AI audio response sent")
-                    
-                    # Also send text transcript if available
-                    if ai_response.get('text'):
-                        text_message = {
-                            'type': 'text',
-                            'payload': {
-                                'text': ai_response.get('text'),
-                                'isFromAI': True
-                            },
-                            'timestamp': datetime.utcnow().isoformat()
-                        }
-                        send_message(connection_id, text_message, domain_name, stage)
-                        print("✅ AI text transcript sent")
-                else:
-                    # Send error message
-                    error_message = {
-                        'type': 'error',
-                        'payload': {'message': 'AI processing failed - no audio response'},
-                        'timestamp': datetime.utcnow().isoformat()
-                    }
-                    send_message(connection_id, error_message, domain_name, stage)
-                    print("❌ No audio in AI response")
+                # Don't process immediately - wait for pause signal
+                # This allows continuous listening without interrupting the user
             
         elif message_type == 'control':
-            # Control message (start/end session)
+            # Control message (start/end session, pause for processing)
             action = message.get('payload', {}).get('action')
             print(f"🎮 Control action: {action}")
             
@@ -226,19 +190,82 @@ def lambda_handler(event, context):
             
             # If starting session, send welcome message
             if action == 'start_session':
-                print("🎤 Sending welcome audio response...")
+                print("🎤 Session started - ready for continuous listening")
                 
-                # Send a text response (avatar will speak it)
+                # Clear any existing audio buffer
+                audio_buffers[connection_id] = []
+                
+                # Send welcome message
                 welcome_message = {
                     'type': 'text',
                     'payload': {
-                        'text': 'Hello! I am Ally, your AI therapy companion. How are you feeling today?',
+                        'text': 'Hello! I am Ally, your AI therapy companion. I\'m listening - please share what\'s on your mind.',
                         'isFromAI': True
                     },
                     'timestamp': datetime.utcnow().isoformat()
                 }
                 send_message(connection_id, welcome_message, domain_name, stage)
                 print("✅ Welcome message sent")
+            
+            elif action == 'pause':
+                # User stopped speaking - process accumulated audio
+                print(f"🤫 User paused - processing {len(audio_buffers[connection_id])} audio chunks")
+                
+                if audio_buffers[connection_id]:
+                    # Combine all audio chunks
+                    combined_audio = ''.join(audio_buffers[connection_id])
+                    print(f"📦 Combined audio: {len(combined_audio)} bytes (base64)")
+                    
+                    # Clear buffer
+                    audio_buffers[connection_id] = []
+                    
+                    # Process with Nova Sonic 2
+                    ai_response = invoke_bedrock_nova_sonic(combined_audio)
+                    
+                    if ai_response and ai_response.get('audio'):
+                        # Send AI audio response back
+                        response_message = {
+                            'type': 'audio',
+                            'payload': {
+                                'audioData': ai_response.get('audio'),
+                                'format': ai_response.get('format', 'wav'),
+                                'isFromAI': True
+                            },
+                            'timestamp': datetime.utcnow().isoformat()
+                        }
+                        
+                        send_message(connection_id, response_message, domain_name, stage)
+                        print("✅ AI audio response sent")
+                        
+                        # Also send text transcript if available
+                        if ai_response.get('text'):
+                            text_message = {
+                                'type': 'text',
+                                'payload': {
+                                    'text': ai_response.get('text'),
+                                    'isFromAI': True
+                                },
+                                'timestamp': datetime.utcnow().isoformat()
+                            }
+                            send_message(connection_id, text_message, domain_name, stage)
+                            print("✅ AI text transcript sent")
+                    else:
+                        # Send error message
+                        error_message = {
+                            'type': 'error',
+                            'payload': {'message': 'AI processing failed - no audio response'},
+                            'timestamp': datetime.utcnow().isoformat()
+                        }
+                        send_message(connection_id, error_message, domain_name, stage)
+                        print("❌ No audio in AI response")
+                else:
+                    print("⚠️ No audio chunks to process")
+            
+            elif action == 'end_session':
+                # Clear audio buffer on session end
+                if connection_id in audio_buffers:
+                    del audio_buffers[connection_id]
+                print("🔚 Session ended - buffer cleared")
             
         else:
             print(f"⚠️ Unknown message type: {message_type}")

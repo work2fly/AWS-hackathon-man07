@@ -85,6 +85,12 @@ export function SessionInterface() {
   const [isMuted, setIsMuted] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState<'disconnected' | 'connecting' | 'connected'>('disconnected');
   
+  // Voice Activity Detection state
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [silenceTimer, setSilenceTimer] = useState<NodeJS.Timeout | null>(null);
+  const SILENCE_THRESHOLD = 1500; // 1.5 seconds of silence before sending to AI
+  const VOLUME_THRESHOLD = 15; // Minimum volume to consider as speech
+  
   // Manual control states for when audio doesn't work
   const [manualSpeaking, setManualSpeaking] = useState(false);
   const [manualListening, setManualListening] = useState(false);
@@ -95,12 +101,52 @@ export function SessionInterface() {
     // Audio will be initialized when user clicks "Start Session"
   }, []);
 
+  // Voice Activity Detection - detect when user stops speaking
+  useEffect(() => {
+    if (!session.isActive || !isRecording) return;
+    
+    // User is speaking if volume is above threshold
+    if (volumeLevel > VOLUME_THRESHOLD) {
+      setIsSpeaking(true);
+      
+      // Clear any existing silence timer
+      if (silenceTimer) {
+        clearTimeout(silenceTimer);
+        setSilenceTimer(null);
+      }
+    } else if (isSpeaking) {
+      // Volume dropped below threshold - start silence timer
+      if (!silenceTimer) {
+        const timer = setTimeout(() => {
+          console.log('🤫 Silence detected - user stopped speaking');
+          setIsSpeaking(false);
+          
+          // Send end-of-speech signal to backend
+          // Backend will process accumulated audio and respond
+          sendControl('pause'); // Signal that user finished speaking
+          
+          setSilenceTimer(null);
+        }, SILENCE_THRESHOLD);
+        
+        setSilenceTimer(timer);
+      }
+    }
+    
+    return () => {
+      if (silenceTimer) {
+        clearTimeout(silenceTimer);
+      }
+    };
+  }, [volumeLevel, session.isActive, isRecording, isSpeaking, silenceTimer, sendControl]);
+
   // Setup audio data streaming only when session is active
+  // Continuous listening: send audio chunks as they come
   useEffect(() => {
     if (session.isActive && isInitialized) {
       setOnAudioData((audioData) => {
-        if (isConnected && !isMuted) {
+        if (isConnected && !isMuted && isRecording) {
           const format = audioData.format as 'webm' | 'wav' | 'mp3';
+          console.log(`📤 Sending audio chunk: ${audioData.data.byteLength} bytes`);
           sendAudio(audioData.data, format);
         }
       });
@@ -108,7 +154,7 @@ export function SessionInterface() {
       // Clear audio data handler when session is not active
       setOnAudioData(() => {});
     }
-  }, [session.isActive, isInitialized, isConnected, isMuted, setOnAudioData, sendAudio]);
+  }, [session.isActive, isInitialized, isConnected, isMuted, isRecording, setOnAudioData, sendAudio]);
 
   // Setup WebSocket event listeners
   useEffect(() => {
