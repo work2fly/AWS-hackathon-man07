@@ -62,9 +62,6 @@ resource "aws_apigatewayv2_authorizer" "cognito" {
   }
 }
 
-# Data source for current region
-data "aws_region" "current" {}
-
 # Lambda function for API handlers
 resource "aws_lambda_function" "api_handlers" {
   filename         = "${path.module}/../backend/lambda_packages/api_handlers.zip"
