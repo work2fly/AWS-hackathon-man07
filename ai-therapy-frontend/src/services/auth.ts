@@ -191,6 +191,23 @@ export class AuthService {
       };
     } catch (error) {
       console.error('Sign in error:', error);
+      
+      // If error is "user already authenticated", try to get current user
+      if (error instanceof Error && error.message.includes('already')) {
+        try {
+          const user = await this.getCurrentUser();
+          if (user) {
+            return {
+              success: true,
+              user,
+              isSignedIn: true,
+            };
+          }
+        } catch (e) {
+          // Ignore and return original error
+        }
+      }
+      
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Sign in failed',
@@ -232,23 +249,17 @@ export class AuthService {
     try {
       const { username, userId, signInDetails } = await getCurrentUser();
       
-      // Get user attributes from Cognito
-      const userAttributes = signInDetails?.loginId ? {
-        email: signInDetails.loginId,
-        // Note: In a real implementation, you'd fetch full user profile from your API
-        // For hackathon, we'll use mock data structure
-      } : null;
+      // Get user email from signInDetails
+      const email = signInDetails?.loginId || username;
 
-      if (!userAttributes) return null;
-
-      // Mock user object - in production, fetch from your API
+      // Return user object with email as display name
       const user: User = {
         userId: userId || username,
-        email: userAttributes.email,
+        email: email,
         role: 'client', // This would come from custom attributes or your API
         profile: {
-          firstName: '[firstName]', // Placeholder for compliance
-          lastName: '[lastName]',   // Placeholder for compliance
+          firstName: email, // Use email as display name for hackathon
+          lastName: '',
           timezone: 'UTC',
         },
         preferences: {

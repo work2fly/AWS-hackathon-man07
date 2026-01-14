@@ -3,7 +3,7 @@
 // AI Therapy Platform - Main Page
 // 🏆 Breaking Barriers UK 2026 compliant
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/hooks/useAuth';
 import { Navbar } from '@/components/layout/Navbar';
@@ -31,6 +31,13 @@ export default function Home() {
   const aboutRef = useRef<HTMLDivElement>(null);
   const contactRef = useRef<HTMLDivElement>(null);
   const authRef = useRef<HTMLDivElement>(null);
+
+  // Scroll to home when user logs out
+  useEffect(() => {
+    if (!isAuthenticated && !demoUser && !loading) {
+      homeRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [isAuthenticated, demoUser, loading]);
 
   const handleNavigation = (section: string) => {
     const refs: { [key: string]: React.RefObject<HTMLDivElement | null> } = {
@@ -91,6 +98,9 @@ export default function Home() {
   const currentUser = demoUser || user;
   const isUserAuthenticated = isAuthenticated || !!demoUser;
 
+  // Force re-render when auth state changes
+  const authKey = `${isAuthenticated}-${!!demoUser}-${user?.userId || 'none'}`;
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -104,7 +114,7 @@ export default function Home() {
 
   if (!isUserAuthenticated) {
     return (
-      <div className="min-h-screen bg-white">
+      <div key={authKey} className="min-h-screen bg-white">
         {/* Navigation */}
         <Navbar onNavigate={handleNavigation} />
 
@@ -339,7 +349,7 @@ export default function Home() {
 
   // Authenticated user - show appropriate interface based on role
   return (
-    <div className="min-h-screen bg-white">
+    <div key={authKey} className="min-h-screen bg-white">
       <Navbar onNavigate={handleNavigation} />
       
       {demoUser && (

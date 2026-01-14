@@ -136,6 +136,12 @@ export function useAuth() {
           loading: false,
           error: null,
         });
+        
+        // Force page reload to ensure clean state
+        setTimeout(() => {
+          window.location.href = '/';
+        }, 100);
+        
         return result;
       } else if (result.success && result.nextStep) {
         // Handle MFA or other next steps
@@ -170,6 +176,11 @@ export function useAuth() {
           loading: false,
           error: null,
         });
+        
+        // Force page reload to ensure clean state
+        setTimeout(() => {
+          window.location.href = '/';
+        }, 100);
       } else {
         setAuthState(prev => ({ 
           ...prev, 

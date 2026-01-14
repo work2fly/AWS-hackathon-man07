@@ -33,11 +33,11 @@ def pre_sign_up_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         if not validate_email(email):
             raise Exception("Invalid email format")
         
-        # Auto-confirm email for hackathon (in production, use proper verification)
+        # Auto-confirm user and email for hackathon (skip email verification)
         event['response']['autoConfirmUser'] = True
         event['response']['autoVerifyEmail'] = True
         
-        logger.info(f"Pre sign-up validation passed for: {email}")
+        logger.info(f"Pre sign-up validation passed and auto-confirmed for: {email}")
         
     except Exception as e:
         logger.error(f"Pre sign-up validation failed: {str(e)}")
