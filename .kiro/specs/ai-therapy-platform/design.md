@@ -8,13 +8,18 @@ The platform supports three user types (clients, therapists, admins) with role-b
 
 ## Architecture
 
-### High-Level Architecture
+### High-Level Architecture (LiveKit-Enhanced)
 
 ```mermaid
 graph TB
     subgraph "Client Layer"
-        REACT[React + TypeScript App]
+        REACT[React + LiveKit SDK]
         UNITY[Unity Prototype Integration]
+    end
+    
+    subgraph "LiveKit Infrastructure - AWS Hosted"
+        LIVEKIT[LiveKit Server<br/>ECS/EC2]
+        AGENT[LiveKit Agent<br/>Nova Sonic Plugin]
     end
     
     subgraph "AWS Infrastructure"
@@ -23,33 +28,23 @@ graph TB
             MFA[Multi-Factor Auth]
         end
         
-        subgraph "API Gateway & Load Balancing"
-            ALB[Application Load Balancer]
-            APIGW[API Gateway]
+        subgraph "API Gateway"
+            APIGW[API Gateway REST]
         end
         
         subgraph "Application Layer"
-            LAMBDA[Lambda Functions]
+            LAMBDA[Lambda Functions<br/>Session Management]
         end
         
         subgraph "AI & Agent Services"
             AGENTCORE[AWS AgentCore Runtime]
-            STRANDS[Strands Agent SDK]
             MEMORY[AgentCore Memory]
-        end
-        
-        subgraph "Real-Time Communication"
-            WEBSOCKET[API Gateway WebSockets]
-        end
-        
-        subgraph "Audio Processing"
             NOVA2[Amazon Nova Sonic 2]
         end
         
         subgraph "Data Layer"
             DYNAMODB[DynamoDB]
             S3[S3 Storage]
-            REDIS[ElastiCache Redis]
         end
         
         subgraph "Monitoring & Security"
@@ -59,29 +54,22 @@ graph TB
         end
     end
     
-    subgraph "External Services"
-        ELEVENLABS[ElevenLabs API]
-        OPENAI[OpenAI API]
-    end
-    
-    REACT --> ALB
-    UNITY --> ALB
-    ALB --> APIGW
-    APIGW --> LAMBDA
+    REACT -->|WebRTC Audio| LIVEKIT
+    REACT -->|REST API| APIGW
+    LIVEKIT -->|Audio Stream| AGENT
+    AGENT -->|Speech-to-Speech| NOVA2
+    AGENT -->|Session Context| LAMBDA
     LAMBDA --> AGENTCORE
-    LAMBDA --> STRANDS
     AGENTCORE --> MEMORY
-    LAMBDA --> WEBSOCKET
-    WEBSOCKET --> NOVA2
     LAMBDA --> DYNAMODB
     LAMBDA --> S3
-    LAMBDA --> REDIS
-    LAMBDA --> ELEVENLABS
-    LAMBDA --> OPENAI
-    COGNITO --> MFA
-    WAF --> ALB
+    APIGW --> LAMBDA
+    COGNITO --> LAMBDA
+    WAF --> LIVEKIT
     KMS --> DYNAMODB
     KMS --> S3
+    CLOUDWATCH -.Monitor.- LIVEKIT
+    CLOUDWATCH -.Monitor.- AGENT
 ```
 
 ### Regional Deployment
@@ -90,101 +78,152 @@ graph TB
 - **Multi-AZ Deployment**: High availability across availability zones
 - **Note**: GDPR compliance features commented out for hackathon scope
 
-### Nova Sonic 2 Integration Details (Hackathon Simplified)
+### LiveKit + Nova Sonic 2 Integration (Official AWS Pattern)
 
-**Amazon Nova Sonic 2** is the latest speech-to-speech generative AI model, providing all audio processing capabilities in a single service. For the hackathon AI Therapy Platform:
+**LiveKit** is an open-source platform for building real-time voice, video, and AI applications. AWS has officially integrated Amazon Nova Sonic 2 with LiveKit Agents framework, providing a production-ready solution for voice AI applications.
 
-**Key Capabilities**:
-- **All-in-One Processing**: Speech-to-speech, language detection, and synthesis in one model
-- **Real-time Performance**: Optimized for sub-200ms latency
-- **Therapeutic Context**: Advanced system prompts for therapy-specific responses
-- **Multi-language Native**: Built-in support for multiple languages and accents
+**Key Benefits**:
+- **Official AWS Integration**: Documented in [AWS Machine Learning Blog](https://aws.amazon.com/blogs/machine-learning/build-real-time-conversational-ai-experiences-using-amazon-nova-sonic-and-livekit/)
+- **WebRTC-Based**: Industry-standard protocol for low-latency audio
+- **Full-Duplex Audio**: Simultaneous speaking and listening
+- **Built-in Features**: Voice activity detection, noise suppression, turn detection
+- **No Custom Audio Pipelines**: LiveKit handles all audio routing and encoding
+- **Open Source**: Can self-host on AWS (ECS/EC2) with no licensing fees
 
-**Simplified Integration Architecture**:
+**LiveKit Architecture**:
 ```mermaid
 graph LR
-    CLIENT[Client Audio] --> APIGW[API Gateway WebSocket]
-    APIGW --> LAMBDA[Lambda Function]
-    LAMBDA --> NOVA2[Nova Sonic 2]
-    NOVA2 --> AGENTCORE[AgentCore Memory]
-    NOVA2 --> GUARDRAILS[Safety Guardrails]
-    NOVA2 --> LAMBDA
-    LAMBDA --> APIGW
-    APIGW --> CLIENT
+    CLIENT[React Client<br/>LiveKit SDK] -->|WebRTC| SERVER[LiveKit Server<br/>ECS/EC2]
+    SERVER -->|Audio Stream| AGENT[LiveKit Agent<br/>Python Process]
+    AGENT -->|Nova Plugin| NOVA[Nova Sonic 2<br/>Bedrock]
+    AGENT -->|Context API| BACKEND[Lambda Functions<br/>AgentCore Memory]
+    BACKEND --> DYNAMO[DynamoDB<br/>Session Data]
 ```
 
-**Hackathon Benefits**:
-- **Single Integration Point**: Only one AI service to configure and deploy
-- **Reduced Complexity**: No need for separate transcription, translation, or synthesis
-- **Faster Development**: Simplified architecture means faster implementation
-- **Built-in Features**: Language detection, cultural adaptation, and therapeutic context included
+**What LiveKit Provides**:
+1. **Client SDKs**: React, TypeScript, mobile (iOS/Android)
+2. **Server Infrastructure**: WebRTC SFU (Selective Forwarding Unit)
+3. **Agent Framework**: Python-based agent orchestration
+4. **Nova Sonic Plugin**: Official AWS Bedrock integration
+5. **Session Management**: Automatic room and participant handling
+6. **Audio Processing**: VAD, noise suppression, echo cancellation
 
-**Configuration**:
-- API Gateway WebSocket routes for connection management
-- Lambda functions for session orchestration
-- Therapeutic system prompts for appropriate responses
-- Safety guardrails integrated into the model
-- AgentCore memory integration for session continuity
-- Real-time streaming configuration for audio processing
+**What We Still Build**:
+1. **Therapeutic Logic**: AgentCore memory, session continuity
+2. **Safety Features**: Red flag detection, guardrails
+3. **User Management**: Cognito authentication, RBAC
+4. **Data Persistence**: DynamoDB, session metadata
+5. **Therapist Dashboard**: Notifications, sentiment summaries
 
-### Hackathon Architecture Benefits
+**Deployment Options**:
+- **Self-Hosted on AWS**: Deploy LiveKit server on ECS/EC2 (recommended for hackathon)
+- **LiveKit Cloud**: Managed service (alternative, but self-hosted gives more control)
 
-**Serverless-First Approach**:
-- **API Gateway WebSockets**: Managed WebSocket connections with automatic scaling
-- **Lambda Functions**: Serverless compute for session management and processing
-- **No Infrastructure Management**: Focus on business logic, not server maintenance
-- **Rapid Development**: Quick deployment and iteration cycles
+**Integration Flow**:
+1. Client connects to LiveKit server via WebRTC
+2. LiveKit agent starts with Nova Sonic plugin
+3. Agent loads therapeutic context from Lambda/AgentCore
+4. Audio streams through LiveKit → Agent → Nova Sonic
+5. Agent applies safety guardrails and red flag detection
+6. Session data persists to DynamoDB via Lambda
+7. Therapist notifications trigger on red flags
+
+### Hackathon Architecture Benefits (LiveKit-Enhanced)
+
+**LiveKit Advantages**:
+- **Production-Ready**: Battle-tested at scale by thousands of applications
+- **Official AWS Support**: Documented integration with Nova Sonic 2
+- **WebRTC Optimized**: Superior audio quality vs WebSocket-based solutions
+- **Built-in Features**: VAD, noise suppression, turn detection included
+- **Faster Development**: No need to build custom audio infrastructure
+- **Open Source**: Self-host on AWS with full control
 
 **Simplified Service Stack**:
-- **Single Audio Service**: Nova Sonic 2 handles all audio processing
-- **Managed Authentication**: AWS Cognito for user management
-- **Serverless Backend**: Lambda functions for all business logic
-- **Serverless Database**: DynamoDB with automatic scaling
+- **LiveKit Server**: Handles all WebRTC audio routing (ECS/EC2)
+- **LiveKit Agent**: Python process with Nova Sonic plugin
+- **Nova Sonic 2**: Speech-to-speech AI model (Bedrock)
+- **AgentCore Memory**: Session continuity and context
+- **Lambda Functions**: Business logic and orchestration
+- **DynamoDB**: Session metadata and user data
+- **Cognito**: Authentication and user management
 
 **Development Speed Optimizations**:
-- **React + TypeScript**: Fast component development with type safety
-- **Material-UI/Tailwind**: Pre-built components for rapid UI development
-- **WebSocket Libraries**: Simplified real-time communication
-- **Fewer integration points**: Focus on core therapeutic functionality
-- **Serverless services**: Auto-scaling without infrastructure management
-- **Managed services**: Reduced operational complexity
+- **React + LiveKit SDK**: Pre-built audio components
+- **No Custom WebSockets**: LiveKit handles all real-time communication
+- **No Audio Pipeline**: LiveKit manages encoding/decoding
+- **Focus on Therapeutic Features**: Spend time on what matters
+- **Fewer Integration Points**: Simpler architecture = faster development
+- **Managed Services**: Auto-scaling without infrastructure complexity
 
-### React Frontend Architecture
+**Time Savings vs Custom Implementation**:
+- ❌ **Eliminated**: Custom WebSocket handlers (~8 hours)
+- ❌ **Eliminated**: Audio streaming protocol design (~6 hours)
+- ❌ **Eliminated**: Audio buffering/chunking logic (~4 hours)
+- ❌ **Eliminated**: Connection management complexity (~4 hours)
+- ✅ **Retained**: All therapeutic AI logic (your core value)
+- ✅ **Retained**: Safety and red flag detection
+- ✅ **Retained**: Memory and session continuity
+
+**Estimated Time Saved**: 20-25 hours of audio infrastructure work
+
+### React Frontend Architecture (LiveKit-Enhanced)
 
 **Component Structure**:
 ```
 src/
 ├── components/
-│   ├── auth/           # Login, registration, MFA
-│   ├── client/         # Client session interface
-│   ├── therapist/      # Therapist dashboard
-│   ├── admin/          # Admin management panel
-│   ├── audio/          # Audio capture/playback components
-│   └── shared/         # Reusable UI components
+│   ├── auth/              # Login, registration, MFA
+│   ├── client/            # Client session interface
+│   │   └── LiveKitRoom.tsx  # LiveKit audio room component
+│   ├── therapist/         # Therapist dashboard
+│   ├── admin/             # Admin management panel
+│   └── shared/            # Reusable UI components
 ├── hooks/
-│   ├── useWebSocket.ts # WebSocket connection management
-│   ├── useAudio.ts     # Audio capture and playback
-│   └── useAuth.ts      # Authentication state
+│   ├── useLiveKit.ts      # LiveKit room and connection management
+│   ├── useAuth.ts         # Authentication state
+│   └── useSession.ts      # Session state management
 ├── services/
-│   ├── api.ts          # API client configuration
-│   ├── websocket.ts    # WebSocket service
-│   └── audio.ts        # Audio processing utilities
+│   ├── api.ts             # REST API client
+│   ├── livekit.ts         # LiveKit service wrapper
+│   └── agentcore.ts       # AgentCore integration
 └── types/
-    └── index.ts        # TypeScript type definitions
+    └── index.ts           # TypeScript type definitions
 ```
 
-**Key React Hooks for Real-time Audio**:
-- **useWebSocket**: Manages API Gateway WebSocket connections
-- **useAudio**: Handles microphone access and audio streaming
-- **useSession**: Manages therapy session state and Nova Sonic 2 integration
-- **useAuth**: Handles Cognito authentication and role-based access
+**Key React Hooks with LiveKit**:
+- **useLiveKit**: Manages LiveKit room connections and audio state
+- **useAuth**: Handles Cognito authentication and LiveKit token generation
+- **useSession**: Manages therapy session state and AgentCore integration
+- **useParticipant**: Tracks AI agent and user participation
+
+**LiveKit React Components**:
+```typescript
+import { LiveKitRoom, useVoiceAssistant } from '@livekit/components-react';
+
+// Simple therapy session component
+function TherapySession() {
+  const { token, roomName } = useLiveKitToken();
+  
+  return (
+    <LiveKitRoom
+      token={token}
+      serverUrl="wss://your-livekit-server.com"
+      connect={true}
+      audio={true}
+      video={false}
+    >
+      <VoiceAssistantUI />
+    </LiveKitRoom>
+  );
+}
+```
 
 **Hackathon Development Benefits**:
-- **Component Reusability**: Shared components across user types
-- **Type Safety**: TypeScript prevents runtime errors
+- **Pre-built Components**: LiveKit provides audio UI components
+- **Type Safety**: TypeScript + LiveKit SDK types
 - **Hot Reloading**: Fast development iteration
-- **Rich Ecosystem**: Extensive library support for audio and WebSockets
-- **Team Familiarity**: Popular framework with good documentation
+- **No WebSocket Code**: LiveKit SDK handles everything
+- **Focus on UX**: Spend time on therapeutic interface, not audio plumbing
 
 ## Components and Interfaces
 
@@ -207,64 +246,149 @@ src/
 
 ### 2. Web Application Frontend
 
-**Technology**: React + TypeScript with WebRTC and WebSocket support
+**Technology**: React + TypeScript with LiveKit SDK
 
 **Responsibilities**:
 - User interface for all three user types (client, therapist, admin)
-- Real-time audio communication setup and management
-- WebSocket connection handling for Nova Sonic 2 integration
+- Real-time audio communication via LiveKit WebRTC
 - Session management and history display
 - Role-specific dashboards and controls
 
 **Key Libraries for Hackathon**:
 - **React**: Component-based UI development
 - **TypeScript**: Type safety for faster development
-- **WebSocket Client**: Real-time communication with API Gateway
-- **Web Audio API**: Audio capture and playback
+- **@livekit/components-react**: Pre-built LiveKit UI components
+- **@livekit/rtc-client**: LiveKit WebRTC client
 - **React Router**: Client-side routing
 - **Material-UI or Tailwind CSS**: Rapid UI development
 - **React Query**: API state management
 
 **Key Components**:
-- **Client Interface**: Session initiation, audio controls, conversation history
+- **Client Interface**: LiveKit room, audio controls, conversation history
 - **Therapist Dashboard**: Sentiment summaries, red flag notifications, client monitoring
 - **Admin Panel**: User management, system configuration, analytics
-- **Audio Components**: Microphone access, speaker output, connection status
+- **LiveKit Room**: WebRTC audio session with AI agent
 - **Unity Integration**: Wrapper components for existing Unity prototype elements
 
-### 3. API Gateway and Load Balancer
+### 3. LiveKit Server Infrastructure
 
-**Technology**: AWS Application Load Balancer + API Gateway
+**Technology**: LiveKit Server (self-hosted on AWS ECS/EC2)
 
 **Responsibilities**:
-- Request routing and load distribution
-- SSL/TLS termination
-- Rate limiting and throttling
-- API versioning and documentation
-- CORS handling for web clients
+- WebRTC SFU (Selective Forwarding Unit) for audio routing
+- Room and participant management
+- Connection state management
+- Audio quality optimization
+- Load balancing across multiple agents
+
+**Deployment**:
+- **ECS Fargate**: Containerized LiveKit server (recommended)
+- **EC2**: Alternative for more control
+- **Auto-scaling**: Based on concurrent sessions
+- **Health Checks**: CloudWatch monitoring
+
+**Configuration**:
+```yaml
+# livekit.yaml
+port: 7880
+rtc:
+  port_range_start: 50000
+  port_range_end: 60000
+  use_external_ip: true
+redis:
+  address: your-elasticache-endpoint:6379
+keys:
+  api_key: your-api-key
+  api_secret: your-api-secret
+```
+
+### 4. LiveKit Agent with Nova Sonic Plugin
+
+**Technology**: Python + LiveKit Agents SDK + AWS Bedrock Plugin
+
+**Responsibilities**:
+- Voice AI agent orchestration
+- Nova Sonic 2 integration for speech-to-speech
+- Therapeutic context loading from AgentCore
+- Safety guardrails and red flag detection
+- Session state management
+
+**Agent Structure**:
+```python
+from livekit.agents import AutoSubscribe, JobContext, WorkerOptions, cli
+from livekit.plugins import aws
+
+async def entrypoint(ctx: JobContext):
+    # Load therapeutic context from AgentCore
+    context = await load_therapeutic_context(ctx.room.name)
+    
+    # Initialize Nova Sonic with therapeutic prompts
+    assistant = aws.VoiceAssistant(
+        model="amazon.nova-sonic-v1:0",
+        system_prompt=context.therapeutic_prompt,
+        temperature=0.7
+    )
+    
+    # Apply safety guardrails
+    assistant.on("speech", lambda text: check_red_flags(text))
+    
+    # Start the assistant
+    assistant.start(ctx.room)
+    
+    # Persist session data
+    await ctx.wait_for_participant()
+    await persist_session_data(ctx.room.name)
+```
+
+**Key Features**:
+- **Turn Detection**: Automatic detection of when user stops speaking
+- **Context Management**: Loads/saves AgentCore memory
+- **Safety Monitoring**: Real-time red flag detection
+- **Multi-language**: Automatic language detection via Nova Sonic
+- **Therapeutic Prompts**: Custom system prompts for therapy context
+
+### 5. API Gateway (REST)
+
+**Technology**: AWS API Gateway REST API
+
+**Responsibilities**:
+- REST API endpoints for session management
+- LiveKit token generation
+- User profile management
+- Therapist dashboard APIs
+- Admin management endpoints
+
+**Key Endpoints**:
+- `POST /sessions/create` - Create new therapy session and LiveKit room
+- `GET /sessions/{id}` - Get session details and history
+- `POST /livekit/token` - Generate LiveKit access token
+- `GET /therapist/notifications` - Get red flag notifications
+- `POST /admin/users` - User management
 
 **Security Features**:
 - AWS WAF integration for DDoS protection
+- Cognito authorizer for JWT validation
+- Rate limiting per user/IP
 - Request validation and sanitization
-- API key management for external services
 
-### 4. Application Backend (Serverless)
+### 6. Application Backend (Serverless)
 
 **Technology**: AWS Lambda Functions + API Gateway
 
 **Responsibilities**:
-- WebSocket connection management
-- Session orchestration and coordination
-- Red flag detection and alerting
+- Session orchestration and metadata management
+- LiveKit room creation and token generation
+- Red flag notification dispatch
 - Sentiment analysis processing
-- External API integration (OpenAI, ElevenLabs - if needed)
+- AgentCore memory coordination
 
 **Key Lambda Functions**:
-- Connection handler (connect/disconnect)
-- Message router and processor
-- Session management service
-- Notification service
-- Analytics and reporting service
+- **Session Manager**: Creates LiveKit rooms, manages session lifecycle
+- **Token Generator**: Issues LiveKit access tokens with proper permissions
+- **Context Loader**: Loads therapeutic context for LiveKit agent
+- **Red Flag Handler**: Processes red flag events from agent
+- **Notification Service**: Sends alerts to therapists
+- **Analytics Service**: Generates session summaries
 
 **Benefits for Hackathon**:
 - **Serverless**: No infrastructure management
@@ -272,14 +396,14 @@ src/
 - **Fast deployment**: Quick iteration and updates
 - **Cost-effective**: Pay per execution
 
-### 5. AI Agent Integration
+### 7. AI Agent Integration
 
-**Technology**: AWS AgentCore Runtime + Strands Agent SDK
+**Technology**: AWS AgentCore Runtime + LiveKit Agents
 
 **Responsibilities**:
-- AI agent lifecycle management
-- Conversation context persistence
-- Therapeutic response generation
+- AI agent lifecycle management via LiveKit
+- Conversation context persistence in AgentCore
+- Therapeutic response generation via Nova Sonic
 - Guardrails and safety filtering
 
 **AgentCore Memory Integration**:
@@ -288,66 +412,21 @@ src/
 - Personalized response adaptation
 - Long-term memory management
 
-### 6. Real-Time Communication (Simplified)
-
-**Technology**: API Gateway WebSockets
-
-**Responsibilities**:
-- Persistent WebSocket connections for real-time audio streaming
-- Connection management and routing to backend services
-- Message broadcasting and client state management
-- Automatic scaling and connection handling
-
-**Benefits for Hackathon**:
-- **Serverless**: No infrastructure management required
-- **Auto-scaling**: Handles connection scaling automatically
-- **Simple Integration**: Direct integration with Lambda functions
-- **Cost-effective**: Pay per connection and message
-- **Fast Setup**: Minimal configuration required
-
-**WebSocket Flow**:
-1. Client connects to API Gateway WebSocket endpoint
-2. Connection routed to Lambda function for session management
-3. Audio data streamed through WebSocket to Nova Sonic 2
-4. Real-time responses streamed back to client
-5. Connection state managed automatically
-
-### 7. Audio Processing Pipeline (Simplified for Hackathon)
-
-**Technology**: Amazon Nova Sonic 2 (Primary and Only)
-
-**Nova Sonic 2 Integration**:
-- Latest speech-to-speech AI model with enhanced capabilities
-- Real-time audio processing with therapeutic context awareness
-- Built-in multi-language support and cultural sensitivity
-- Direct integration with AgentCore for memory and context
-
-**Simplified Processing Flow**:
-1. Client audio input → WebSocket → Nova Sonic 2
-2. Nova Sonic 2 processes with therapeutic prompts and AgentCore memory
-3. Real-time speech response → WebSocket → Client audio output
-4. Session context automatically stored in AgentCore memory
-
-**Benefits for Hackathon**:
-- Single service reduces complexity and integration points
-- Faster development and deployment
-- Built-in language processing eliminates need for separate services
-- Real-time performance optimized for therapy sessions
-
 ### 8. Data Storage and Management (Serverless)
 
-**Technology**: Amazon DynamoDB + Amazon S3 + ElastiCache Redis
+**Technology**: Amazon DynamoDB + Amazon S3
 
 **Data Architecture**:
 - **DynamoDB**: User profiles, session metadata, sentiment summaries, red flags
-- **S3**: Audio recordings (encrypted), system logs, backups
-- **Redis**: Session state, real-time data, WebSocket connection caching
+- **S3**: Session recordings (encrypted), system logs, backups
+- **ElastiCache Redis** (optional): LiveKit room state caching
 
 **DynamoDB Table Design**:
 - **Users Table**: User profiles, roles, preferences (PK: userId)
-- **Sessions Table**: Session metadata, sentiment summaries (PK: sessionId, SK: timestamp)
+- **Sessions Table**: Session metadata, LiveKit room info, sentiment summaries (PK: sessionId, SK: timestamp)
 - **RedFlags Table**: Safety incidents and notifications (PK: sessionId, SK: flagId)
 - **Notifications Table**: Therapist and admin alerts (PK: recipientId, SK: timestamp)
+- **LiveKitRooms Table**: Active room tracking (PK: roomName, TTL for auto-cleanup)
 
 **Hackathon Benefits**:
 - **Serverless**: No database management or provisioning
@@ -358,7 +437,7 @@ src/
 
 **Encryption**:
 - Data at rest: AES-256 encryption (DynamoDB and S3)
-- Data in transit: TLS 1.3
+- Data in transit: TLS 1.3 (LiveKit WebRTC is encrypted)
 - Key management: AWS KMS
 
 <!-- GDPR Compliance Features (commented out for hackathon):
@@ -369,6 +448,21 @@ src/
 -->
 
 ## Data Models (DynamoDB Optimized)
+
+### LiveKitRooms Table (New)
+```typescript
+interface LiveKitRoom {
+  roomName: string;         // Partition Key (format: session_{sessionId})
+  sessionId: string;
+  clientId: string;
+  agentId: string;
+  status: 'active' | 'completed';
+  createdAt: string;        // ISO timestamp
+  ttl: number;              // Unix timestamp for auto-cleanup (24 hours)
+  livekitToken: string;     // Encrypted token
+  participantCount: number;
+}
+```
 
 ### Users Table
 ```typescript

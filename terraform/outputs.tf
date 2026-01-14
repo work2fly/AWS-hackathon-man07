@@ -43,6 +43,10 @@ output "dynamodb_tables" {
       name = aws_dynamodb_table.notifications.name
       arn  = aws_dynamodb_table.notifications.arn
     }
+    livekit_rooms_table = {
+      name = aws_dynamodb_table.livekit_rooms.name
+      arn  = aws_dynamodb_table.livekit_rooms.arn
+    }
   }
 }
 
@@ -128,6 +132,46 @@ output "kms_key" {
   }
 }
 
+# LiveKit Infrastructure Outputs
+output "livekit_infrastructure" {
+  description = "LiveKit infrastructure information"
+  value = {
+    alb_dns_name = aws_lb.livekit.dns_name
+    nlb_dns_name = aws_lb.livekit_webrtc.dns_name
+    ecs_cluster_name = aws_ecs_cluster.livekit.name
+    ecs_service_name = aws_ecs_service.livekit.name
+    redis_endpoint = aws_elasticache_cluster.livekit.cache_nodes[0].address
+    redis_port = aws_elasticache_cluster.livekit.cache_nodes[0].port
+  }
+}
+
+output "livekit_api_credentials" {
+  description = "LiveKit API credentials (stored in Secrets Manager)"
+  value = {
+    api_key_secret_arn = aws_secretsmanager_secret.livekit_api_key.arn
+    api_secret_secret_arn = aws_secretsmanager_secret.livekit_api_secret.arn
+  }
+  sensitive = true
+}
+
+output "livekit_connection_info" {
+  description = "LiveKit connection information for clients"
+  value = {
+    server_url = "ws://${aws_lb.livekit.dns_name}:7880"
+    server_url_secure = "wss://${aws_lb.livekit.dns_name}:7881"
+  }
+}
+
+# VPC Outputs
+output "vpc_info" {
+  description = "VPC information"
+  value = {
+    vpc_id = aws_vpc.main.id
+    public_subnet_ids = aws_subnet.public[*].id
+    private_subnet_ids = aws_subnet.private[*].id
+  }
+}
+
 # Environment Configuration for Applications
 output "environment_config" {
   description = "Environment configuration for applications"
@@ -141,6 +185,7 @@ output "environment_config" {
     SESSIONS_TABLE_NAME      = aws_dynamodb_table.sessions.name
     REDFLAGS_TABLE_NAME      = aws_dynamodb_table.redflags.name
     NOTIFICATIONS_TABLE_NAME = aws_dynamodb_table.notifications.name
+    LIVEKIT_ROOMS_TABLE_NAME = aws_dynamodb_table.livekit_rooms.name
     
     # Cognito
     COGNITO_USER_POOL_ID     = aws_cognito_user_pool.main.id
@@ -149,6 +194,12 @@ output "environment_config" {
     # API Gateway
     WEBSOCKET_API_ENDPOINT   = aws_apigatewayv2_api.websocket.api_endpoint
     REST_API_ENDPOINT        = "https://${aws_api_gateway_rest_api.main.id}.execute-api.${local.region}.amazonaws.com/${var.api_gateway_stage_name}"
+    
+    # LiveKit
+    LIVEKIT_SERVER_URL       = "ws://${aws_lb.livekit.dns_name}:7880"
+    LIVEKIT_API_KEY_SECRET   = aws_secretsmanager_secret.livekit_api_key.arn
+    LIVEKIT_API_SECRET_SECRET = aws_secretsmanager_secret.livekit_api_secret.arn
+    REDIS_ENDPOINT           = aws_elasticache_cluster.livekit.cache_nodes[0].address
     
     # Security
     KMS_KEY_ID               = aws_kms_key.main.id

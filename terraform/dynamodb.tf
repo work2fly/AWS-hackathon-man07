@@ -276,3 +276,65 @@ resource "aws_dynamodb_table" "websocket_connections" {
     Name = "${local.name_prefix}-websocket-connections-table"
   })
 }
+
+# LiveKit Rooms Table
+resource "aws_dynamodb_table" "livekit_rooms" {
+  name           = "${local.name_prefix}-livekit-rooms"
+  billing_mode   = var.dynamodb_billing_mode
+  hash_key       = "roomName"
+  
+  attribute {
+    name = "roomName"
+    type = "S"
+  }
+  
+  attribute {
+    name = "sessionId"
+    type = "S"
+  }
+  
+  attribute {
+    name = "clientId"
+    type = "S"
+  }
+  
+  # GSI for session-based queries
+  global_secondary_index {
+    name     = "SessionIndex"
+    hash_key = "sessionId"
+    
+    projection_type = "ALL"
+  }
+  
+  # GSI for client-based queries
+  global_secondary_index {
+    name     = "ClientIndex"
+    hash_key = "clientId"
+    
+    projection_type = "ALL"
+  }
+  
+  # TTL for automatic cleanup (24 hours)
+  ttl {
+    attribute_name = "ttl"
+    enabled        = true
+  }
+  
+  # Enable encryption at rest
+  server_side_encryption {
+    enabled     = var.enable_encryption
+    kms_key_arn = var.enable_encryption ? aws_kms_key.main.arn : null
+  }
+  
+  # Enable point-in-time recovery
+  point_in_time_recovery {
+    enabled = var.dynamodb_point_in_time_recovery
+  }
+  
+  # Deletion protection
+  deletion_protection_enabled = var.enable_deletion_protection
+  
+  tags = merge(local.common_tags, {
+    Name = "${local.name_prefix}-livekit-rooms-table"
+  })
+}
