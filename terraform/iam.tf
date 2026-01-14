@@ -103,6 +103,25 @@ resource "aws_iam_policy" "lambda_execution_policy" {
           }
         }
       },
+      # Polly Access for text-to-speech (Breaking Barriers UK 2026 compliant)
+      {
+        Effect = "Allow"
+        Action = [
+          "polly:SynthesizeSpeech",
+          "polly:DescribeVoices"
+        ]
+        Resource = "*"
+      },
+      # Transcribe Access for speech-to-text (Breaking Barriers UK 2026 compliant)
+      {
+        Effect = "Allow"
+        Action = [
+          "transcribe:StartStreamTranscription",
+          "transcribe:StartTranscriptionJob",
+          "transcribe:GetTranscriptionJob"
+        ]
+        Resource = "*"
+      },
       # KMS Access
       {
         Effect = "Allow"

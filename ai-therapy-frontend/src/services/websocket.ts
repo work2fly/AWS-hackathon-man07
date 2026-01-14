@@ -34,14 +34,8 @@ export class WebSocketService {
    * Connect to WebSocket server
    */
   async connect(token?: string): Promise<boolean> {
-    // TEMPORARY: Skip WebSocket connection in demo mode
-    // BACKEND TEAM: WebSocket endpoint needs authentication setup
-    console.log('WebSocket connection skipped in demo mode');
-    return true;
-
-    // REAL WEBSOCKET CODE (COMMENTED OUT - BACKEND TEAM NEEDS TO SETUP WEBSOCKET AUTH)
-    /*
     if (this.isConnecting || (this.ws && this.ws.readyState === WebSocket.OPEN)) {
+      console.log('WebSocket already connecting or connected');
       return true;
     }
 
@@ -50,6 +44,9 @@ export class WebSocketService {
     try {
       const wsUrl = getWebSocketUrl();
       const urlWithAuth = token ? `${wsUrl}?token=${encodeURIComponent(token)}` : wsUrl;
+      
+      console.log('Attempting WebSocket connection to:', wsUrl);
+      console.log('Full URL:', urlWithAuth);
       
       this.ws = new WebSocket(urlWithAuth);
 
@@ -60,7 +57,7 @@ export class WebSocketService {
         }
 
         this.ws.onopen = () => {
-          console.log('WebSocket connected');
+          console.log('✅ WebSocket connected successfully');
           this.isConnecting = false;
           this.reconnectAttempts = 0;
           this.reconnectDelay = 1000;
@@ -69,7 +66,15 @@ export class WebSocketService {
         };
 
         this.ws.onclose = (event) => {
-          console.log('WebSocket disconnected:', event.code, event.reason);
+          console.log('❌ WebSocket disconnected:', event.code, event.reason);
+          
+          // If we were still connecting, reject the promise
+          if (this.isConnecting) {
+            this.isConnecting = false;
+            reject(new Error(`Connection closed during handshake: ${event.code} ${event.reason}`));
+            return;
+          }
+          
           this.isConnecting = false;
           this.emit('disconnect', { code: event.code, reason: event.reason });
           
@@ -80,19 +85,21 @@ export class WebSocketService {
         };
 
         this.ws.onerror = (error) => {
-          console.error('WebSocket error:', error);
+          console.error('❌ WebSocket error:', error);
           this.isConnecting = false;
           this.emit('error', error);
           reject(error);
         };
 
         this.ws.onmessage = (event) => {
+          console.log('📨 WebSocket message received:', event.data);
           this.handleMessage(event);
         };
 
         // Timeout for connection
         setTimeout(() => {
           if (this.isConnecting) {
+            console.error('⏱️ WebSocket connection timeout after 10 seconds');
             this.isConnecting = false;
             reject(new Error('WebSocket connection timeout'));
           }
@@ -103,7 +110,6 @@ export class WebSocketService {
       console.error('WebSocket connection error:', error);
       return false;
     }
-    */
   }
 
   /**
@@ -128,12 +134,6 @@ export class WebSocketService {
    * Send message through WebSocket
    */
   send(message: WebSocketMessage): boolean {
-    // TEMPORARY: Mock WebSocket send in demo mode
-    console.log('Mock WebSocket send:', message.type);
-    return true;
-
-    // REAL WEBSOCKET CODE (COMMENTED OUT - BACKEND TEAM NEEDS TO SETUP WEBSOCKET)
-    /*
     if (!this.isConnected()) {
       console.error('WebSocket not connected');
       return false;
@@ -146,7 +146,6 @@ export class WebSocketService {
       console.error('Failed to send WebSocket message:', error);
       return false;
     }
-    */
   }
 
   /**

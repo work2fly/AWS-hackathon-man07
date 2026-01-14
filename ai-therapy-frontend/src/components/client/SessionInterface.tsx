@@ -3,11 +3,12 @@
 // Client session interface with avatar and audio
 // 🏆 Breaking Barriers UK 2026 compliant
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useWebSocket } from '@/hooks/useWebSocket';
 import { useAudio } from '@/hooks/useAudio';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -21,7 +22,8 @@ import {
   VolumeX,
   Activity,
   Heart,
-  MessageCircle
+  MessageCircle,
+  Send
 } from 'lucide-react';
 
 interface SessionState {
@@ -32,13 +34,22 @@ interface SessionState {
   messageCount: number;
 }
 
+interface ChatMessage {
+  id: string;
+  text: string;
+  isFromAI: boolean;
+  timestamp: Date;
+}
+
 export function SessionInterface() {
   const { user } = useAuth();
   const { 
     isConnected, 
     connect, 
     disconnect, 
-    sendAudio, 
+    sendAudio,
+    sendText,
+    sendMessage,
     sendControl, 
     addEventListener, 
     removeEventListener 
@@ -69,6 +80,10 @@ export function SessionInterface() {
 
   const [isMuted, setIsMuted] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState<'disconnected' | 'connecting' | 'connected'>('disconnected');
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const [messageInput, setMessageInput] = useState('');
+  const [isSendingMessage, setIsSendingMessage] = useState(false);
+  const chatEndRef = useRef<HTMLDivElement>(null);
 
   // Initialize audio and WebSocket
   useEffect(() => {
@@ -95,15 +110,44 @@ export function SessionInterface() {
   useEffect(() => {
     const handleAudioMessage = (message: any) => {
       if (message.payload?.audioData) {
+        // Decode base64 audio data to ArrayBuffer
+        const audioData = message.payload.audioData;
+        let arrayBuffer: ArrayBuffer;
+        
+        if (typeof audioData === 'string') {
+          // Base64 string from backend - decode it
+          const binaryString = atob(audioData);
+          const bytes = new Uint8Array(binaryString.length);
+          for (let i = 0; i < binaryString.length; i++) {
+            bytes[i] = binaryString.charCodeAt(i);
+          }
+          arrayBuffer = bytes.buffer;
+        } else {
+          // Already an ArrayBuffer
+          arrayBuffer = audioData;
+        }
+        
         // Play received audio from AI
-        playAudio(message.payload.audioData, message.payload.format || 'webm');
+        playAudio(arrayBuffer, message.payload.format || 'mp3');
         setSession(prev => ({ ...prev, messageCount: prev.messageCount + 1 }));
       }
     };
 
     const handleTextMessage = (message: any) => {
-      if (message.payload?.isFromAI) {
-        setSession(prev => ({ ...prev, messageCount: prev.messageCount + 1 }));
+      if (message.payload?.text) {
+        // Add AI message to chat
+        const newMessage: ChatMessage = {
+          id: `msg_${Date.now()}_${Math.random()}`,
+          text: message.payload.text,
+          isFromAI: message.payload.isFromAI || false,
+          timestamp: new Date()
+        };
+        
+        setChatMessages(prev => [...prev, newMessage]);
+        
+        if (message.payload.isFromAI) {
+          setSession(prev => ({ ...prev, messageCount: prev.messageCount + 1 }));
+        }
       }
     };
 
@@ -115,6 +159,11 @@ export function SessionInterface() {
       removeEventListener('text', handleTextMessage);
     };
   }, [addEventListener, removeEventListener, playAudio]);
+  
+  // Auto-scroll chat to bottom
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [chatMessages]);
 
   // Update connection status
   useEffect(() => {
@@ -147,66 +196,98 @@ export function SessionInterface() {
     try {
       setConnectionStatus('connecting');
       
-      // Initialize audio first when starting session
+      // Try to initialize audio, but don't fail if it doesn't work (for demo)
       if (!isInitialized) {
         console.log('Initializing audio...');
-        const audioInitialized = await initializeAudio();
-        if (!audioInitialized) {
-          console.error('Audio initialization failed');
-          setConnectionStatus('disconnected');
-          return;
+        try {
+          const audioInitialized = await initializeAudio();
+          if (audioInitialized) {
+            console.log('Audio initialized successfully');
+          } else {
+            console.warn('Audio initialization failed - continuing without audio for demo');
+          }
+        } catch (audioError) {
+          console.warn('Audio initialization error - continuing without audio for demo:', audioError);
         }
-        console.log('Audio initialized successfully');
       }
       
       // Connect to WebSocket if not connected
       if (!isConnected) {
         console.log('Connecting to WebSocket...');
-        await connect();
-        console.log('WebSocket connected');
+        
+        const connected = await connect();
+        
+        if (!connected) {
+          console.error('WebSocket connection failed');
+          setConnectionStatus('disconnected');
+          return;
+        }
+        
+        console.log('✅ WebSocket connected successfully');
       }
+      
+      console.log('Proceeding to create session...');
       
       // Generate session ID
       const sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
       console.log('Starting session:', sessionId);
       
-      // Send start session control message
-      const success = sendControl('start_session', sessionId);
+      // Wait a moment to ensure WebSocket is ready
+      await new Promise(resolve => setTimeout(resolve, 500));
       
-      if (success) {
-        setSession({
-          isActive: true,
-          sessionId,
-          startTime: new Date(),
-          duration: 0,
-          messageCount: 0,
-        });
-        
-        console.log('Session started successfully');
-        
-        // Start recording after a small delay to ensure everything is ready
+      // Send join_session message
+      const joinMessage = {
+        type: 'join_session',
+        session_id: sessionId,
+        timestamp: new Date().toISOString()
+      };
+      
+      console.log('Sending join_session message:', joinMessage);
+      const success = sendMessage(joinMessage);
+      
+      if (!success) {
+        console.error('Failed to send join session message');
+        setConnectionStatus('disconnected');
+        return;
+      }
+      
+      console.log('Join session message sent successfully');
+      
+      // Set session as active
+      setSession({
+        isActive: true,
+        sessionId,
+        startTime: new Date(),
+        duration: 0,
+        messageCount: 0,
+      });
+      
+      console.log('✅ Session started successfully!');
+      
+      // Try to start recording if audio is available
+      if (canRecord && isInitialized) {
         setTimeout(async () => {
-          if (canRecord) {
-            console.log('Starting audio recording...');
+          console.log('Starting audio recording...');
+          try {
             const recordingStarted = await startRecording();
             if (recordingStarted) {
               console.log('Audio recording started');
             } else {
-              console.error('Failed to start audio recording');
+              console.warn('Failed to start audio recording - demo will work without audio');
             }
-          } else {
-            console.warn('Cannot record - audio not ready');
+          } catch (recordError) {
+            console.warn('Audio recording error - demo will work without audio:', recordError);
           }
         }, 500);
       } else {
-        console.error('Failed to send start session control');
-        setConnectionStatus('disconnected');
+        console.log('Audio not available - demo running in text-only mode');
       }
+      
     } catch (error) {
       console.error('Failed to start session:', error);
       setConnectionStatus('disconnected');
     }
-  }, [isConnected, connect, sendControl, isInitialized, initializeAudio, canRecord, startRecording]);
+  }, [isConnected, connect, sendMessage, isInitialized, initializeAudio, canRecord, startRecording]);
 
   const endSession = useCallback(() => {
     if (session.sessionId) {
@@ -225,9 +306,54 @@ export function SessionInterface() {
       messageCount: 0,
     });
     
+    // Clear chat messages
+    setChatMessages([]);
+    setMessageInput('');
+    
     disconnect();
     setConnectionStatus('disconnected');
   }, [session.sessionId, sendControl, stopRecording, cleanup, disconnect]);
+
+  const sendTextMessage = useCallback(async () => {
+    if (!messageInput.trim() || !session.isActive || isSendingMessage) {
+      return;
+    }
+    
+    setIsSendingMessage(true);
+    
+    try {
+      // Add user message to chat immediately
+      const userMessage: ChatMessage = {
+        id: `msg_${Date.now()}_${Math.random()}`,
+        text: messageInput.trim(),
+        isFromAI: false,
+        timestamp: new Date()
+      };
+      
+      setChatMessages(prev => [...prev, userMessage]);
+      
+      // Send to backend
+      const success = sendText(messageInput.trim());
+      
+      if (!success) {
+        console.error('Failed to send text message');
+      }
+      
+      // Clear input
+      setMessageInput('');
+    } catch (error) {
+      console.error('Error sending message:', error);
+    } finally {
+      setIsSendingMessage(false);
+    }
+  }, [messageInput, session.isActive, isSendingMessage, sendText]);
+  
+  const handleKeyPress = useCallback((e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendTextMessage();
+    }
+  }, [sendTextMessage]);
 
   const toggleMute = useCallback(() => {
     setIsMuted(prev => !prev);
@@ -422,6 +548,81 @@ export function SessionInterface() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Chat Interface - Only show when session is active */}
+      {session.isActive && (
+        <Card className="mb-8 border-0 shadow-lg">
+          <CardHeader>
+            <CardTitle className="flex items-center text-xl text-gray-900">
+              <MessageCircle className="mr-2 h-5 w-5 text-purple-600" />
+              Chat with Your AI Therapist
+            </CardTitle>
+            <CardDescription>
+              Type your thoughts and feelings - your AI therapist is here to listen
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {/* Chat Messages */}
+            <div className="bg-gray-50 rounded-lg p-4 mb-4 h-96 overflow-y-auto">
+              {chatMessages.length === 0 ? (
+                <div className="flex items-center justify-center h-full text-gray-500">
+                  <div className="text-center">
+                    <MessageCircle className="h-12 w-12 mx-auto mb-2 text-gray-400" />
+                    <p>Start the conversation by typing a message below</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {chatMessages.map((msg) => (
+                    <div
+                      key={msg.id}
+                      className={`flex ${msg.isFromAI ? 'justify-start' : 'justify-end'}`}
+                    >
+                      <div
+                        className={`max-w-[80%] rounded-lg px-4 py-3 ${
+                          msg.isFromAI
+                            ? 'bg-white border border-purple-200 text-gray-900'
+                            : 'bg-purple-600 text-white'
+                        }`}
+                      >
+                        <p className="text-sm whitespace-pre-wrap">{msg.text}</p>
+                        <p className={`text-xs mt-1 ${msg.isFromAI ? 'text-gray-500' : 'text-purple-200'}`}>
+                          {msg.timestamp.toLocaleTimeString()}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                  <div ref={chatEndRef} />
+                </div>
+              )}
+            </div>
+
+            {/* Message Input */}
+            <div className="flex space-x-2">
+              <Input
+                type="text"
+                placeholder="Type your message here..."
+                value={messageInput}
+                onChange={(e) => setMessageInput(e.target.value)}
+                onKeyPress={handleKeyPress}
+                disabled={!session.isActive || isSendingMessage}
+                className="flex-1"
+              />
+              <Button
+                onClick={sendTextMessage}
+                disabled={!messageInput.trim() || !session.isActive || isSendingMessage}
+                className="bg-purple-600 hover:bg-purple-700 text-white"
+              >
+                {isSendingMessage ? (
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                ) : (
+                  <Send className="h-5 w-5" />
+                )}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* System Status */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">

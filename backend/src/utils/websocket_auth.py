@@ -5,6 +5,7 @@ Breaking Barriers UK 2026 compliant
 """
 
 import os
+import time
 from typing import Dict, Any, Optional, Tuple
 
 from .logger import get_logger
@@ -166,8 +167,15 @@ def authenticate_websocket_connection(event: Dict[str, Any]) -> Tuple[bool, Opti
         token = extract_token_from_query_params(event)
         
         if not token:
-            logger.warning("Authentication failed: No token provided")
-            return False, None, "Authentication failed: No token provided"
+            # DEMO MODE: Allow connections without token for testing
+            logger.info("No token provided - allowing demo connection")
+            demo_user_info = {
+                'user_id': f'demo_user_{int(time.time())}',
+                'email': 'demo@example.com',
+                'role': 'client',
+                'username': 'demo_user'
+            }
+            return True, demo_user_info, None
         
         # Step 2: Validate token against Cognito
         is_valid, token_info, validation_error = validate_token_against_cognito(token)

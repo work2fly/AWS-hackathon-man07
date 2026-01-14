@@ -144,35 +144,29 @@ resource "aws_ecs_task_definition" "livekit" {
       name      = "livekit"
       image     = "livekit/livekit-server:latest"
       essential = true
-
+      
       portMappings = [
         {
           containerPort = 7880
+          hostPort      = 7880
           protocol      = "tcp"
           name          = "http"
         },
         {
           containerPort = 7881
+          hostPort      = 7881
           protocol      = "tcp"
           name          = "https"
         },
         {
           containerPort = 50000
-          hostPort      = 60000
+          hostPort      = 50000
           protocol      = "udp"
           name          = "webrtc-udp"
         }
       ]
 
       environment = [
-        {
-          name  = "REDIS_HOST"
-          value = aws_elasticache_cluster.livekit.cache_nodes[0].address
-        },
-        {
-          name  = "REDIS_PORT"
-          value = "6379"
-        },
         {
           name  = "LIVEKIT_PORT"
           value = "7880"
@@ -184,6 +178,10 @@ resource "aws_ecs_task_definition" "livekit" {
         {
           name  = "LIVEKIT_RTC_PORT_RANGE_END"
           value = "60000"
+        },
+        {
+          name  = "REDIS_HOST"
+          value = "${aws_elasticache_cluster.livekit.cache_nodes[0].address}:6379"
         }
       ]
 

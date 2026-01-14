@@ -23,9 +23,15 @@ export function useWebSocket(token?: string) {
   const handlersRef = useRef<Map<WebSocketEventType, (data?: any) => void>>(new Map());
 
   // Initialize WebSocket connection
-  const connect = useCallback(async () => {
-    if (state.isConnecting || state.isConnected) {
-      return;
+  const connect = useCallback(async (): Promise<boolean> => {
+    if (state.isConnected) {
+      console.log('Already connected');
+      return true;
+    }
+    
+    if (state.isConnecting) {
+      console.log('Already connecting');
+      return false;
     }
 
     setState(prev => ({ ...prev, isConnecting: true, error: null }));
@@ -39,12 +45,14 @@ export function useWebSocket(token?: string) {
           isConnecting: false,
           error: null 
         }));
+        return true;
       } else {
         setState(prev => ({ 
           ...prev, 
           isConnecting: false,
           error: 'Failed to connect to WebSocket' 
         }));
+        return false;
       }
     } catch (error) {
       setState(prev => ({ 
@@ -52,6 +60,7 @@ export function useWebSocket(token?: string) {
         isConnecting: false,
         error: error instanceof Error ? error.message : 'Connection failed' 
       }));
+      return false;
     }
   }, [token, state.isConnecting, state.isConnected]);
 

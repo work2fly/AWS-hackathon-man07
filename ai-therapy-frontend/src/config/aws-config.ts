@@ -8,7 +8,7 @@ export const awsConfig = {
   // API Gateway endpoints from terraform state
   apiGateway: {
     restApi: 'https://xi8ekw0fj6.execute-api.us-west-2.amazonaws.com/dev',
-    websocketApi: 'wss://yqv4v90gj9.execute-api.us-west-2.amazonaws.com'
+    websocketApi: 'wss://yqv4v90gj9.execute-api.us-west-2.amazonaws.com/dev'
   },
   
   // Cognito configuration from terraform state

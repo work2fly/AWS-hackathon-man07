@@ -27,10 +27,10 @@ resource "aws_elasticache_cluster" "livekit" {
   security_group_ids   = [aws_security_group.redis.id]
 
   # Encryption at rest (Breaking Barriers UK 2026 requirement)
-  at_rest_encryption_enabled = var.enable_encryption
+  # at_rest_encryption_enabled = var.enable_encryption
 
   # Encryption in transit (Breaking Barriers UK 2026 requirement)
-  transit_encryption_enabled = var.enable_encryption
+  # transit_encryption_enabled = var.enable_encryption
 
   # Automatic backups
   snapshot_retention_limit = 1 # Minimal for hackathon

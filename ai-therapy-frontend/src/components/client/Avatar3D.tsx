@@ -50,7 +50,7 @@ function AvatarModel({
       mixerRef.current = new THREE.AnimationMixer(scene);
       
       animations.forEach((clip) => {
-        const action = mixerRef.current!.clip(clip);
+        const action = mixerRef.current!.clipAction(clip);
         actionsRef.current[clip.name] = action;
       });
     }
