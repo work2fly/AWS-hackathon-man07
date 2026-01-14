@@ -1,0 +1,341 @@
+{
+  "common": {
+    "appName": "Platformă de Terapie AI",
+    "loading": "Se încarcă...",
+    "error": "Eroare",
+    "success": "Succes",
+    "cancel": "Anulează",
+    "save": "Salvează",
+    "delete": "Șterge",
+    "edit": "Editează",
+    "close": "Închide",
+    "back": "Înapoi",
+    "next": "Următorul",
+    "submit": "Trimite",
+    "search": "Caută",
+    "filter": "Filtrează",
+    "export": "Exportă",
+    "refresh": "Reîmprospătează"
+  },
+  "nav": {
+    "home": "Acasă",
+    "about": "Despre",
+    "services": "Servicii",
+    "contact": "Contact",
+    "login": "Autentificare",
+    "signup": "Înregistrare",
+    "logout": "Deconectare",
+    "dashboard": "Tablou de bord",
+    "profile": "Profil"
+  },
+  "hero": {
+    "title": "Călătoria Ta Către Sănătate Mentală Începe Aici",
+    "subtitle": "Experimentează terapie compassionată alimentată de AI, disponibilă 24/7 în limba ta preferată",
+    "cta": "Începe Călătoria",
+    "tryDemo": "Încearcă Demo"
+  },
+  "features": {
+    "title": "De Ce Să Alegi Platforma Noastră",
+    "ai": {
+      "title": "Suport Alimentat de AI",
+      "description": "Tehnologia AI avansată oferă conversații terapeutice personalizate"
+    },
+    "available": {
+      "title": "Disponibilitate 24/7",
+      "description": "Accesează suport oricând ai nevoie, zi sau noapte"
+    },
+    "multilingual": {
+      "title": "Suport Multilingv",
+      "description": "Sesiuni de terapie disponibile în engleză, arabă, chineză, franceză, spaniolă și română"
+    },
+    "secure": {
+      "title": "Sigur și Privat",
+      "description": "Conversațiile tale sunt criptate și complet confidențiale"
+    }
+  },
+  "about": {
+    "title": "Despre Platforma Noastră",
+    "description": "Combinăm tehnologia AI de ultimă generație cu abordări terapeutice bazate pe dovezi pentru a oferi suport accesibil pentru sănătatea mentală. Platforma noastră este concepută să completeze terapia tradițională și să ofere suport imediat când ai cea mai mare nevoie."
+  },
+  "services": {
+    "title": "Serviciile Noastre",
+    "therapy": {
+      "title": "Sesiuni de Terapie AI",
+      "description": "Participă la conversații terapeutice cu terapeutul nostru AI instruit în diverse modalități terapeutice"
+    },
+    "monitoring": {
+      "title": "Monitorizarea Progresului",
+      "description": "Urmărește-ți bunăstarea emoțională și progresul terapeutic în timp"
+    },
+    "crisis": {
+      "title": "Suport în Criză",
+      "description": "Suport imediat cu escaladare automată către profesioniști umani când este necesar"
+    }
+  },
+  "contact": {
+    "title": "Intră în Legătură",
+    "description": "Ai întrebări? Suntem aici să te ajutăm în călătoria ta de vindecare",
+    "email": "Email",
+    "phone": "Telefon",
+    "address": "Adresă",
+    "available247": "Disponibil 24/7",
+    "location": "Locație",
+    "uk": "Regatul Unit"
+  },
+  "demo": {
+    "mode": "Mod Demo",
+    "testing": "Testezi platforma ca",
+    "exit": "Ieși din Demo",
+    "title": "Mod Demo",
+    "subtitle": "Testează platforma fără conexiune backend",
+    "enterAs": "Intră în demo ca",
+    "info1": "Modul demo simulează autentificarea fără AWS Cognito",
+    "info2": "Perfect pentru testarea interfeței și funcționalității",
+    "roles": {
+      "client": {
+        "title": "Client Demo",
+        "description": "Experimentează interfața sesiunii de terapie"
+      },
+      "therapist": {
+        "title": "Terapeut Demo",
+        "description": "Vezi tabloul de bord și monitorizarea terapeutului"
+      },
+      "admin": {
+        "title": "Admin Demo",
+        "description": "Accesează panoul de management al sistemului"
+      }
+    }
+  },
+  "auth": {
+    "section": {
+      "title": "Gata să preiei controlul călătoriei tale de vindecare?",
+      "subtitle": "Fii printre primii care experimentează terapia AI inovatoare cu instrumente puternice pentru recuperare",
+      "joinNow": "Alătură-te Acum",
+      "signIn": "Autentifică-te",
+      "tryDemo": "Încearcă Demo"
+    },
+    "login": {
+      "title": "Bine ai Revenit",
+      "subtitle": "Continuă călătoria ta de vindecare cu Ally",
+      "email": "Adresă de Email",
+      "password": "Parolă",
+      "rememberMe": "Ține-mă minte",
+      "forgotPassword": "Ai uitat parola?",
+      "submit": "Autentifică-te pentru a Continua",
+      "submitting": "Se autentifică...",
+      "noAccount": "Nou pe Ally?",
+      "signupLink": "Creează-ți contul"
+    },
+    "signup": {
+      "title": "Alătură-te Ally",
+      "subtitle": "Începe călătoria ta de vindecare cu terapie AI inovatoare",
+      "firstName": "Prenume",
+      "lastName": "Nume de Familie",
+      "email": "Adresă de Email",
+      "password": "Parolă",
+      "confirmPassword": "Confirmă Parola",
+      "role": "Sunt...",
+      "roleClient": "Client - Caut Suport Terapeutic",
+      "roleTherapist": "Terapeut - Profesionist în Sănătate Mentală",
+      "roleAdmin": "Administrator - Administrator de Sistem",
+      "language": "Limba Preferată",
+      "terms": "Sunt de acord cu Termenii și Condițiile și Politica de Confidențialitate",
+      "submit": "Începe Călătoria Ta de Vindecare",
+      "submitting": "Se creează contul...",
+      "hasAccount": "Ai deja un cont?",
+      "loginLink": "Autentifică-te aici",
+      "confirm": {
+        "title": "Verifică-ți Emailul",
+        "subtitle": "Am trimis un cod de verificare la",
+        "code": "Cod de Verificare",
+        "codePlaceholder": "Introdu codul de 6 cifre",
+        "instruction": "Verifică-ți emailul și introdu codul de 6 cifre",
+        "submit": "Verifică și Finalizează Înregistrarea",
+        "verifying": "Se verifică...",
+        "resend": "Nu ai primit codul? Retrimite",
+        "backToLogin": "Înapoi la Autentificare"
+      }
+    },
+    "errors": {
+      "invalidEmail": "Te rugăm să introduci o adresă de email validă",
+      "passwordTooShort": "Parola trebuie să aibă cel puțin 8 caractere",
+      "passwordMismatch": "Parolele nu se potrivesc",
+      "loginFailed": "Email sau parolă invalidă",
+      "signupFailed": "Crearea contului a eșuat. Te rugăm să încerci din nou.",
+      "required": "Acest câmp este obligatoriu"
+    }
+  },
+  "session": {
+    "title": "Sesiunea Ta de Terapie AI",
+    "welcome": "Bine ai venit, {name}. Gata să continui călătoria ta de vindecare cu terapeutul nostru AI?",
+    "start": "Începe Sesiunea",
+    "end": "Încheie Sesiunea",
+    "pause": "Pauză",
+    "resume": "Reia",
+    "mute": "Dezactivează Sunetul",
+    "unmute": "Activează Sunetul",
+    "status": {
+      "connecting": "Se conectează...",
+      "connected": "Conectat la Terapeutul AI",
+      "disconnected": "Gata de Conectare",
+      "active": "Sesiune Activă",
+      "paused": "Sesiune în Pauză",
+      "sessionActive": "Sesiunea ta este activă și sigură",
+      "establishing": "Se stabilește conexiune sigură",
+      "clickStart": "Apasă \"Începe Sesiunea\" când ești gata"
+    },
+    "duration": "Durata Sesiunii",
+    "exchanges": "Schimburi",
+    "transcript": "Transcriere",
+    "notes": "Notițe de Sesiune",
+    "feedback": "Cum a fost sesiunea ta?",
+    "endConfirm": "Ești sigur că vrei să închei această sesiune?",
+    "therapist": {
+      "title": "Terapeutul Tău AI",
+      "subtitle": "Alimentat de Amazon Nova Sonic 2 pentru conversații naturale și empatice",
+      "name": "Dr. Asistent AI",
+      "listening": "Sunt aici să ascult și să te susțin în călătoria ta de vindecare...",
+      "ready": "Gata să încep o conversație compassionată oricând ești pregătit"
+    },
+    "privacy": "Conversația ta va fi privată și sigură",
+    "recording": "Se înregistrează",
+    "muted": "Sunet dezactivat",
+    "audio": {
+      "system": "Sistem Audio",
+      "ready": "Gata",
+      "checking": "Se verifică...",
+      "microphone": "Microfon",
+      "standby": "În așteptare",
+      "voiceLevel": "Nivel Voce",
+      "listening": "Ascultă",
+      "silent": "Tăcut",
+      "connection": "Conexiune",
+      "secure": "Sigur",
+      "error": "Sistem Audio:"
+    }
+  },
+  "dashboard": {
+    "client": {
+      "title": "Tabloul Meu de Bord",
+      "welcome": "Bine ai revenit, {name}",
+      "stats": {
+        "totalSessions": "Total Sesiuni",
+        "thisWeek": "Săptămâna Aceasta",
+        "avgDuration": "Durată Medie",
+        "lastSession": "Ultima Sesiune"
+      },
+      "recentSessions": "Sesiuni Recente",
+      "upcomingSessions": "Sesiuni Viitoare",
+      "progress": "Progresul Tău",
+      "startNewSession": "Începe Sesiune Nouă"
+    },
+    "therapist": {
+      "title": "Tablou de Bord Terapeut",
+      "overview": "Prezentare Generală",
+      "redFlags": "Semnale de Alarmă",
+      "stats": {
+        "activeClients": "Clienți Activi",
+        "pendingFlags": "Semnale în Așteptare",
+        "resolvedToday": "Rezolvate Astăzi",
+        "avgResponseTime": "Timp Mediu de Răspuns"
+      },
+      "flagDetails": {
+        "severity": "Severitate",
+        "type": "Tip",
+        "detected": "Detectat",
+        "client": "Client",
+        "session": "Sesiune",
+        "status": "Status",
+        "acknowledge": "Confirmă",
+        "resolve": "Rezolvă",
+        "viewSession": "Vezi Sesiunea"
+      },
+      "severityLevels": {
+        "critical": "Critic",
+        "high": "Ridicat",
+        "medium": "Mediu",
+        "low": "Scăzut"
+      },
+      "flagTypes": {
+        "selfHarm": "Autoagresiune",
+        "suicide": "Risc de Suicid",
+        "violence": "Violență",
+        "substance": "Abuz de Substanțe",
+        "crisis": "Criză"
+      }
+    },
+    "admin": {
+      "title": "Tablou de Bord Administrator",
+      "overview": "Prezentare Generală",
+      "users": "Utilizatori",
+      "sessions": "Sesiuni",
+      "redFlags": "Semnale de Alarmă",
+      "system": "Starea Sistemului",
+      "stats": {
+        "totalUsers": "Total Utilizatori",
+        "activeUsers": "Utilizatori Activi",
+        "totalSessions": "Total Sesiuni",
+        "activeSessions": "Sesiuni Active",
+        "pendingFlags": "Semnale în Așteptare",
+        "systemHealth": "Starea Sistemului"
+      },
+      "tables": {
+        "users": "Tabel Utilizatori",
+        "sessions": "Tabel Sesiuni",
+        "redFlags": "Tabel Semnale de Alarmă",
+        "connections": "Conexiuni WebSocket"
+      },
+      "userManagement": {
+        "addUser": "Adaugă Utilizator",
+        "editUser": "Editează Utilizator",
+        "deleteUser": "Șterge Utilizator",
+        "activateUser": "Activează",
+        "deactivateUser": "Dezactivează"
+      }
+    }
+  },
+  "profile": {
+    "title": "Profilul Meu",
+    "personalInfo": "Informații Personale",
+    "preferences": "Preferințe",
+    "security": "Securitate",
+    "language": "Limba Preferată",
+    "timezone": "Fus Orar",
+    "notifications": "Notificări",
+    "emailNotifications": "Notificări Email",
+    "pushNotifications": "Notificări Push",
+    "changePassword": "Schimbă Parola",
+    "currentPassword": "Parola Curentă",
+    "newPassword": "Parolă Nouă",
+    "confirmNewPassword": "Confirmă Parola Nouă",
+    "updateProfile": "Actualizează Profilul",
+    "deleteAccount": "Șterge Contul",
+    "deleteAccountWarning": "Această acțiune nu poate fi anulată. Toate datele tale vor fi șterse permanent."
+  },
+  "notifications": {
+    "title": "Notificări",
+    "markAllRead": "Marchează toate ca citite",
+    "noNotifications": "Nicio notificare",
+    "types": {
+      "session": "Sesiune",
+      "redFlag": "Alertă Semnal de Alarmă",
+      "system": "Sistem",
+      "message": "Mesaj"
+    }
+  },
+  "errors": {
+    "generic": "Ceva nu a mers bine. Te rugăm să încerci din nou.",
+    "network": "Eroare de rețea. Te rugăm să verifici conexiunea.",
+    "unauthorized": "Nu ești autorizat să accesezi această resursă.",
+    "notFound": "Resursa solicitată nu a fost găsită.",
+    "serverError": "Eroare de server. Te rugăm să încerci mai târziu.",
+    "sessionExpired": "Sesiunea ta a expirat. Te rugăm să te autentifici din nou."
+  },
+  "footer": {
+    "copyright": "© 2026 Platformă de Terapie AI. Toate drepturile rezervate.",
+    "privacy": "Politica de Confidențialitate",
+    "terms": "Termeni și Condiții",
+    "contact": "Contactează-ne",
+    "crisis": "Linie de Criză: 988"
+  }
+}

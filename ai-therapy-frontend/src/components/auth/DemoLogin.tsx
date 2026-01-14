@@ -4,6 +4,7 @@
 // 🏆 Breaking Barriers UK 2026 compliant
 
 import { useState } from 'react';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -14,27 +15,28 @@ interface DemoLoginProps {
 }
 
 export function DemoLogin({ onDemoLogin }: DemoLoginProps) {
+  const { t } = useLanguage();
   const [selectedRole, setSelectedRole] = useState<'client' | 'therapist' | 'admin'>('client');
 
   const roles = [
     {
       id: 'client' as const,
-      title: 'Demo Client',
-      description: 'Experience the therapy session interface',
+      title: t('demo.roles.client.title'),
+      description: t('demo.roles.client.description'),
       icon: User,
       color: 'text-blue-500',
     },
     {
       id: 'therapist' as const,
-      title: 'Demo Therapist',
-      description: 'View therapist dashboard and monitoring',
+      title: t('demo.roles.therapist.title'),
+      description: t('demo.roles.therapist.description'),
       icon: UserCheck,
       color: 'text-green-500',
     },
     {
       id: 'admin' as const,
-      title: 'Demo Admin',
-      description: 'Access system management panel',
+      title: t('demo.roles.admin.title'),
+      description: t('demo.roles.admin.description'),
       icon: Shield,
       color: 'text-purple-500',
     },
@@ -43,9 +45,9 @@ export function DemoLogin({ onDemoLogin }: DemoLoginProps) {
   return (
     <Card className="w-full max-w-md mx-auto">
       <CardHeader className="space-y-1">
-        <CardTitle className="text-2xl font-bold text-center">Demo Mode</CardTitle>
+        <CardTitle className="text-2xl font-bold text-center">{t('demo.title')}</CardTitle>
         <CardDescription className="text-center">
-          Test the platform without backend connection
+          {t('demo.subtitle')}
         </CardDescription>
         <Badge variant="secondary" className="mx-auto">
           🏆 Breaking Barriers UK 2026 - Demo
@@ -87,12 +89,12 @@ export function DemoLogin({ onDemoLogin }: DemoLoginProps) {
           className="w-full"
           size="lg"
         >
-          Enter Demo as {roles.find(r => r.id === selectedRole)?.title}
+          {t('demo.enterAs')} {roles.find(r => r.id === selectedRole)?.title}
         </Button>
 
         <div className="text-center text-xs text-muted-foreground">
-          <p>Demo mode simulates authentication without AWS Cognito</p>
-          <p>Perfect for testing UI and functionality</p>
+          <p>{t('demo.info1')}</p>
+          <p>{t('demo.info2')}</p>
         </div>
       </CardContent>
     </Card>

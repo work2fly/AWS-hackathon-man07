@@ -1,0 +1,327 @@
+{
+  "common": {
+    "appName": "AI治疗平台",
+    "loading": "加载中...",
+    "error": "错误",
+    "success": "成功",
+    "cancel": "取消",
+    "save": "保存",
+    "delete": "删除",
+    "edit": "编辑",
+    "close": "关闭",
+    "back": "返回",
+    "next": "下一步",
+    "submit": "提交",
+    "search": "搜索",
+    "filter": "筛选",
+    "export": "导出",
+    "refresh": "刷新"
+  },
+  "nav": {
+    "home": "首页",
+    "about": "关于我们",
+    "services": "服务",
+    "contact": "联系我们",
+    "login": "登录",
+    "signup": "注册",
+    "logout": "退出",
+    "dashboard": "仪表板",
+    "profile": "个人资料"
+  },
+  "hero": {
+    "title": "您的心理健康之旅从这里开始",
+    "subtitle": "体验富有同情心的AI驱动治疗，全天候提供您首选的语言服务",
+    "cta": "开始您的旅程",
+    "tryDemo": "试用演示"
+  },
+  "features": {
+    "title": "为什么选择我们的平台",
+    "ai": {
+      "title": "AI驱动支持",
+      "description": "先进的AI技术提供个性化的治疗对话"
+    },
+    "available": {
+      "title": "全天候可用",
+      "description": "随时随地获得支持，无论白天还是黑夜"
+    },
+    "multilingual": {
+      "title": "多语言支持",
+      "description": "提供英语、阿拉伯语、中文、法语和西班牙语的治疗会话"
+    },
+    "secure": {
+      "title": "安全私密",
+      "description": "您的对话经过加密，完全保密"
+    }
+  },
+  "about": {
+    "title": "关于我们的平台",
+    "description": "我们将尖端的AI技术与循证治疗方法相结合，提供可及的心理健康支持。我们的平台旨在补充传统治疗，并在您最需要时提供即时支持。"
+  },
+  "services": {
+    "title": "我们的服务",
+    "therapy": {
+      "title": "AI治疗会话",
+      "description": "与我们训练有素的AI治疗师进行各种治疗模式的对话"
+    },
+    "monitoring": {
+      "title": "进度监测",
+      "description": "随时跟踪您的情绪健康和治疗进展"
+    },
+    "crisis": {
+      "title": "危机支持",
+      "description": "在需要时自动升级至人工专业人员的即时支持"
+    }
+  },
+  "contact": {
+    "title": "联系我们",
+    "description": "有问题吗？我们在这里帮助您的康复之旅",
+    "email": "电子邮件",
+    "phone": "电话",
+    "address": "地址",
+    "available247": "全天候服务",
+    "location": "位置",
+    "uk": "英国"
+  },
+  "demo": {
+    "mode": "演示模式",
+    "testing": "您正在以以下身份测试平台",
+    "exit": "退出演示",
+    "title": "演示模式",
+    "subtitle": "无需后端连接即可测试平台",
+    "enterAs": "以以下身份进入演示",
+    "info1": "演示模式模拟无需AWS Cognito的身份验证",
+    "info2": "非常适合测试UI和功能",
+    "roles": {
+      "client": {
+        "title": "演示客户",
+        "description": "体验治疗会话界面"
+      },
+      "therapist": {
+        "title": "演示治疗师",
+        "description": "查看治疗师仪表板和监控"
+      },
+      "admin": {
+        "title": "演示管理员",
+        "description": "访问系统管理面板"
+      }
+    }
+  },
+  "auth": {
+    "section": {
+      "title": "准备好掌控您的康复之旅了吗？",
+      "subtitle": "成为首批体验创新AI治疗和强大康复工具的用户",
+      "joinNow": "立即加入",
+      "signIn": "登录",
+      "tryDemo": "试用演示"
+    },
+    "login": {
+      "title": "欢迎回来",
+      "subtitle": "继续您的Ally康复之旅",
+      "email": "电子邮件地址",
+      "password": "密码",
+      "rememberMe": "记住我",
+      "forgotPassword": "忘记密码？",
+      "submit": "登录继续",
+      "submitting": "正在登录...",
+      "noAccount": "初次使用Ally？",
+      "signupLink": "创建您的账户"
+    },
+    "signup": {
+      "title": "加入Ally",
+      "subtitle": "通过创新的AI治疗开始您的康复之旅",
+      "firstName": "名字",
+      "lastName": "姓氏",
+      "email": "电子邮件地址",
+      "password": "密码",
+      "confirmPassword": "确认密码",
+      "role": "我是...",
+      "roleClient": "客户 - 寻求治疗支持",
+      "roleTherapist": "治疗师 - 心理健康专业人士",
+      "roleAdmin": "管理员 - 系统管理员",
+      "language": "首选语言",
+      "terms": "我同意服务条款和隐私政策",
+      "submit": "开始您的康复之旅",
+      "submitting": "正在创建您的账户...",
+      "hasAccount": "已有账户？",
+      "loginLink": "在此登录",
+      "confirm": {
+        "title": "检查您的电子邮件",
+        "subtitle": "我们已将验证码发送至",
+        "code": "验证码",
+        "codePlaceholder": "输入6位数字代码",
+        "instruction": "检查您的电子邮件并输入6位数字代码",
+        "submit": "验证并完成注册",
+        "verifying": "正在验证...",
+        "resend": "没有收到代码？重新发送",
+        "backToLogin": "返回登录"
+      }
+    },
+    "errors": {
+      "invalidEmail": "请输入有效的电子邮件地址",
+      "passwordTooShort": "密码必须至少8个字符",
+      "passwordMismatch": "密码不匹配",
+      "loginFailed": "电子邮件或密码无效",
+      "signupFailed": "创建账户失败。请重试。",
+      "required": "此字段为必填项"
+    }
+  },
+  "session": {
+    "title": "治疗会话",
+    "start": "开始会话",
+    "end": "结束会话",
+    "pause": "暂停",
+    "resume": "继续",
+    "status": {
+      "connecting": "连接中...",
+      "connected": "已连接",
+      "disconnected": "已断开",
+      "active": "会话进行中",
+      "paused": "会话已暂停"
+    },
+    "duration": "持续时间",
+    "transcript": "记录",
+    "notes": "会话笔记",
+    "feedback": "您的会话体验如何？",
+    "endConfirm": "您确定要结束此会话吗？",
+    "privacy": "您的对话将是私密且安全的",
+    "recording": "录音中",
+    "muted": "已静音",
+    "audio": {
+      "system": "音频系统",
+      "ready": "就绪",
+      "checking": "检查中...",
+      "microphone": "麦克风",
+      "standby": "待机",
+      "voiceLevel": "音量级别",
+      "listening": "聆听中",
+      "silent": "静音",
+      "connection": "连接",
+      "secure": "安全",
+      "error": "音频系统:"
+    }
+  },
+  "dashboard": {
+    "client": {
+      "title": "我的仪表板",
+      "welcome": "欢迎回来，{name}",
+      "stats": {
+        "totalSessions": "总会话数",
+        "thisWeek": "本周",
+        "avgDuration": "平均时长",
+        "lastSession": "上次会话"
+      },
+      "recentSessions": "最近的会话",
+      "upcomingSessions": "即将到来的会话",
+      "progress": "您的进展",
+      "startNewSession": "开始新会话"
+    },
+    "therapist": {
+      "title": "治疗师仪表板",
+      "overview": "概览",
+      "redFlags": "危险信号",
+      "stats": {
+        "activeClients": "活跃客户",
+        "pendingFlags": "待处理标记",
+        "resolvedToday": "今日已解决",
+        "avgResponseTime": "平均响应时间"
+      },
+      "flagDetails": {
+        "severity": "严重程度",
+        "type": "类型",
+        "detected": "检测时间",
+        "client": "客户",
+        "session": "会话",
+        "status": "状态",
+        "acknowledge": "确认",
+        "resolve": "解决",
+        "viewSession": "查看会话"
+      },
+      "severityLevels": {
+        "critical": "危急",
+        "high": "高",
+        "medium": "中",
+        "low": "低"
+      },
+      "flagTypes": {
+        "selfHarm": "自我伤害",
+        "suicide": "自杀风险",
+        "violence": "暴力",
+        "substance": "药物滥用",
+        "crisis": "危机"
+      }
+    },
+    "admin": {
+      "title": "管理员仪表板",
+      "overview": "概览",
+      "users": "用户",
+      "sessions": "会话",
+      "redFlags": "危险信号",
+      "system": "系统健康",
+      "stats": {
+        "totalUsers": "总用户数",
+        "activeUsers": "活跃用户",
+        "totalSessions": "总会话数",
+        "activeSessions": "活跃会话",
+        "pendingFlags": "待处理标记",
+        "systemHealth": "系统健康"
+      },
+      "tables": {
+        "users": "用户表",
+        "sessions": "会话表",
+        "redFlags": "危险信号表",
+        "connections": "WebSocket连接"
+      },
+      "userManagement": {
+        "addUser": "添加用户",
+        "editUser": "编辑用户",
+        "deleteUser": "删除用户",
+        "activateUser": "激活",
+        "deactivateUser": "停用"
+      }
+    }
+  },
+  "profile": {
+    "title": "我的个人资料",
+    "personalInfo": "个人信息",
+    "preferences": "偏好设置",
+    "security": "安全",
+    "language": "语言偏好",
+    "timezone": "时区",
+    "notifications": "通知",
+    "emailNotifications": "电子邮件通知",
+    "pushNotifications": "推送通知",
+    "changePassword": "更改密码",
+    "currentPassword": "当前密码",
+    "newPassword": "新密码",
+    "confirmNewPassword": "确认新密码",
+    "updateProfile": "更新个人资料",
+    "deleteAccount": "删除账户",
+    "deleteAccountWarning": "此操作无法撤消。您的所有数据将被永久删除。"
+  },
+  "notifications": {
+    "title": "通知",
+    "markAllRead": "全部标记为已读",
+    "noNotifications": "无通知",
+    "types": {
+      "session": "会话",
+      "redFlag": "危险信号警报",
+      "system": "系统",
+      "message": "消息"
+    }
+  },
+  "errors": {
+    "generic": "出了点问题。请重试。",
+    "network": "网络错误。请检查您的连接。",
+    "unauthorized": "您无权访问此资源。",
+    "notFound": "未找到请求的资源。",
+    "serverError": "服务器错误。请稍后重试。",
+    "sessionExpired": "您的会话已过期。请重新登录。"
+  },
+  "footer": {
+    "copyright": "© 2026 AI治疗平台。保留所有权利。",
+    "privacy": "隐私政策",
+    "terms": "服务条款",
+    "contact": "联系我们",
+    "crisis": "危机热线：988"
+  }
+}

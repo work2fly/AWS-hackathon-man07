@@ -5,6 +5,7 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { ApiService } from '@/services/api';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -25,6 +26,7 @@ import type { RedFlag, TherapySession, Notification } from '@/types';
 
 export function TherapistDashboard() {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState<'overview' | 'redflags' | 'sessions' | 'clients'>('overview');
   const [redFlags, setRedFlags] = useState<RedFlag[]>([]);
   const [sessions, setSessions] = useState<TherapySession[]>([]);
@@ -245,11 +247,11 @@ export function TherapistDashboard() {
       <div className="mb-8">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Therapist Dashboard</h1>
-            <p className="text-gray-600">Monitor client sessions and red flags</p>
+            <h1 className="text-3xl font-bold text-gray-900">{t('dashboard.therapist.title')}</h1>
+            <p className="text-gray-600">{t('dashboard.therapist.subtitle')}</p>
           </div>
           <Badge variant="secondary" className="bg-green-100 text-green-800">
-            🏆 Professional Oversight
+            🏆 {t('dashboard.therapist.badge')}
           </Badge>
         </div>
       </div>

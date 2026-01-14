@@ -5,6 +5,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { useWebSocket } from '@/hooks/useWebSocket';
 import { useAudio } from '@/hooks/useAudio';
 import { Button } from '@/components/ui/button';
@@ -33,6 +34,7 @@ interface SessionState {
 
 export function SessionInterface() {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const { 
     isConnected, 
     connect, 
@@ -256,10 +258,10 @@ export function SessionInterface() {
       {/* Hero Section */}
       <section className="text-center mb-12">
         <h1 className="text-4xl font-bold text-gray-900 mb-4">
-          Your AI Therapy Session
+          {t('session.title')}
         </h1>
         <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-          Welcome, {user?.profile.firstName || '[firstName]'}. Ready to continue your healing journey with our AI therapist?
+          {t('session.welcome').replace('{name}', user?.profile.firstName || '[firstName]')}
         </p>
       </section>
 
@@ -304,9 +306,9 @@ export function SessionInterface() {
       {/* AI Therapist Section */}
       <Card className="mb-8 border-0 shadow-lg">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl text-gray-900">Your AI Therapist</CardTitle>
+          <CardTitle className="text-2xl text-gray-900">{t('session.therapist.title')}</CardTitle>
           <CardDescription className="text-gray-600">
-            Powered by Amazon Nova Sonic 2 for natural, empathetic conversations
+            {t('session.therapist.subtitle')}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -342,11 +344,11 @@ export function SessionInterface() {
             </div>
             
             <div className="text-center">
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">Dr. AI Assistant</h3>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">{t('session.therapist.name')}</h3>
               <p className="text-gray-600 max-w-md">
                 {session.isActive 
-                  ? 'I\'m here to listen and support you through your healing journey...' 
-                  : 'Ready to start a compassionate conversation whenever you are'
+                  ? t('session.therapist.listening')
+                  : t('session.therapist.ready')
                 }
               </p>
             </div>
@@ -374,12 +376,12 @@ export function SessionInterface() {
                   ) : (
                     <>
                       <Heart className="mr-3 h-6 w-6" />
-                      Start Your Session
+                      {t('session.start')}
                     </>
                   )}
                 </Button>
                 <p className="text-sm text-gray-600">
-                  Your conversation will be private and secure
+                  {t('session.privacy')}
                 </p>
                 {audioError && (
                   <p className="text-sm text-red-600">
@@ -430,9 +432,9 @@ export function SessionInterface() {
             <div className="text-3xl mb-2">
               {audioReady ? '✅' : '❌'}
             </div>
-            <div className="text-sm font-medium text-gray-900">Audio System</div>
+            <div className="text-sm font-medium text-gray-900">{t('session.audio.system')}</div>
             <div className="text-xs text-gray-600">
-              {audioReady ? 'Ready' : 'Checking...'}
+              {audioReady ? t('session.audio.ready') : t('session.audio.checking')}
             </div>
           </CardContent>
         </Card>
@@ -442,16 +444,16 @@ export function SessionInterface() {
             <div className="text-3xl mb-2">
               {isRecording ? '🎤' : '🔇'}
             </div>
-            <div className="text-sm font-medium text-gray-900">Microphone</div>
+            <div className="text-sm font-medium text-gray-900">{t('session.audio.microphone')}</div>
             <div className="text-xs text-gray-600">
-              {isRecording ? 'Recording' : 'Standby'}
+              {isRecording ? t('session.recording') : t('session.audio.standby')}
             </div>
           </CardContent>
         </Card>
         
         <Card className="border-0 shadow-md">
           <CardContent className="pt-6 text-center">
-            <div className="text-sm font-medium text-gray-900 mb-2">Voice Level</div>
+            <div className="text-sm font-medium text-gray-900 mb-2">{t('session.audio.voiceLevel')}</div>
             <div className="w-full bg-gray-200 rounded-full h-3 mb-2">
               <div 
                 className="bg-gradient-to-r from-green-400 to-green-600 h-3 rounded-full transition-all duration-150"
@@ -459,7 +461,7 @@ export function SessionInterface() {
               />
             </div>
             <div className="text-xs text-gray-600">
-              {session.isActive && isRecording ? 'Listening' : 'Silent'}
+              {session.isActive && isRecording ? t('session.audio.listening') : t('session.audio.silent')}
             </div>
           </CardContent>
         </Card>
@@ -469,9 +471,9 @@ export function SessionInterface() {
             <div className="text-3xl mb-2">
               {isConnected ? '🔗' : '📡'}
             </div>
-            <div className="text-sm font-medium text-gray-900">Connection</div>
+            <div className="text-sm font-medium text-gray-900">{t('session.audio.connection')}</div>
             <div className="text-xs text-gray-600">
-              {isConnected ? 'Secure' : 'Standby'}
+              {isConnected ? t('session.audio.secure') : t('session.audio.standby')}
             </div>
           </CardContent>
         </Card>
@@ -486,11 +488,11 @@ export function SessionInterface() {
         </Alert>
       )}
 
-      {/* UKind Branding Footer */}
+      {/* Ally Branding Footer */}
       <div className="text-center py-8 border-t border-gray-200">
         <div className="flex items-center justify-center mb-4">
           <Heart className="h-5 w-5 text-purple-600 mr-2" />
-          <span className="text-gray-600">Powered by UKind Therapy & AWS Innovation</span>
+          <span className="text-gray-600">Powered by Ally & AWS Innovation</span>
         </div>
         <Badge variant="secondary" className="bg-purple-100 text-purple-800">
           🏆 Breaking Barriers UK 2026 - Empowering Healing Through Technology

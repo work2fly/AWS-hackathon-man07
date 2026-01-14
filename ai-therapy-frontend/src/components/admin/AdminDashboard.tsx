@@ -4,6 +4,7 @@
 // 🏆 Breaking Barriers UK 2026 compliant
 
 import { useState, useEffect } from 'react';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { ApiService } from '@/services/api';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -29,6 +30,7 @@ interface AdminStats {
 }
 
 export function AdminDashboard() {
+  const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'sessions' | 'redflags' | 'system'>('overview');
   const [stats, setStats] = useState<AdminStats>({
     totalUsers: 156,

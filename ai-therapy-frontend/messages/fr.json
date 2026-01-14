@@ -1,0 +1,330 @@
+{
+  "common": {
+    "appName": "Plateforme de Thérapie IA",
+    "loading": "Chargement...",
+    "error": "Erreur",
+    "success": "Succès",
+    "cancel": "Annuler",
+    "save": "Enregistrer",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "close": "Fermer",
+    "back": "Retour",
+    "next": "Suivant",
+    "submit": "Soumettre",
+    "search": "Rechercher",
+    "filter": "Filtrer",
+    "export": "Exporter",
+    "refresh": "Actualiser"
+  },
+  "nav": {
+    "home": "Accueil",
+    "about": "À propos",
+    "services": "Services",
+    "contact": "Contact",
+    "login": "Connexion",
+    "signup": "S'inscrire",
+    "logout": "Déconnexion",
+    "dashboard": "Tableau de bord",
+    "profile": "Profil"
+  },
+  "hero": {
+    "title": "Votre parcours de bien-être mental commence ici",
+    "subtitle": "Découvrez une thérapie compassionnelle alimentée par l'IA, disponible 24h/24 et 7j/7 dans votre langue préférée",
+    "cta": "Commencer votre parcours",
+    "tryDemo": "Essayer la démo"
+  },
+  "features": {
+    "title": "Pourquoi choisir notre plateforme",
+    "ai": {
+      "title": "Support alimenté par l'IA",
+      "description": "Une technologie IA avancée fournit des conversations thérapeutiques personnalisées"
+    },
+    "available": {
+      "title": "Disponibilité 24h/24 et 7j/7",
+      "description": "Accédez au support quand vous en avez besoin, jour et nuit"
+    },
+    "multilingual": {
+      "title": "Support multilingue",
+      "description": "Séances de thérapie disponibles en anglais, arabe, chinois, français et espagnol"
+    },
+    "secure": {
+      "title": "Sécurisé et privé",
+      "description": "Vos conversations sont cryptées et totalement confidentielles"
+    }
+  },
+  "about": {
+    "title": "À propos de notre plateforme",
+    "description": "Nous combinons une technologie IA de pointe avec des approches thérapeutiques fondées sur des preuves pour fournir un soutien en santé mentale accessible. Notre plateforme est conçue pour compléter la thérapie traditionnelle et fournir un soutien immédiat quand vous en avez le plus besoin."
+  },
+  "services": {
+    "title": "Nos services",
+    "therapy": {
+      "title": "Séances de thérapie IA",
+      "description": "Engagez-vous dans des conversations thérapeutiques avec notre thérapeute IA formé à diverses modalités thérapeutiques"
+    },
+    "monitoring": {
+      "title": "Suivi des progrès",
+      "description": "Suivez votre bien-être émotionnel et vos progrès thérapeutiques au fil du temps"
+    },
+    "crisis": {
+      "title": "Support de crise",
+      "description": "Support immédiat avec escalade automatique vers des professionnels humains si nécessaire"
+    }
+  },
+  "contact": {
+    "title": "Contactez-nous",
+    "description": "Des questions ? Nous sommes là pour vous aider dans votre parcours de guérison",
+    "email": "E-mail",
+    "phone": "Téléphone",
+    "address": "Adresse",
+    "available247": "Disponible 24/7",
+    "location": "Localisation",
+    "uk": "Royaume-Uni"
+  },
+  "demo": {
+    "mode": "Mode Démo",
+    "testing": "Vous testez la plateforme en tant que",
+    "exit": "Quitter la Démo",
+    "title": "Mode Démo",
+    "subtitle": "Testez la plateforme sans connexion backend",
+    "enterAs": "Entrer en démo en tant que",
+    "info1": "Le mode démo simule l'authentification sans AWS Cognito",
+    "info2": "Parfait pour tester l'interface et les fonctionnalités",
+    "roles": {
+      "client": {
+        "title": "Client Démo",
+        "description": "Découvrez l'interface de session thérapeutique"
+      },
+      "therapist": {
+        "title": "Thérapeute Démo",
+        "description": "Voir le tableau de bord et la surveillance du thérapeute"
+      },
+      "admin": {
+        "title": "Admin Démo",
+        "description": "Accéder au panneau de gestion du système"
+      }
+    }
+  },
+  "auth": {
+    "section": {
+      "title": "Prêt à prendre le contrôle de votre parcours de guérison ?",
+      "subtitle": "Soyez parmi les premiers à découvrir la thérapie IA innovante avec des outils puissants pour la récupération",
+      "joinNow": "Rejoignez-nous",
+      "signIn": "Se connecter",
+      "tryDemo": "Essayer la Démo"
+    },
+    "login": {
+      "title": "Bon retour",
+      "subtitle": "Continuez votre parcours de guérison avec Ally",
+      "email": "Adresse e-mail",
+      "password": "Mot de passe",
+      "rememberMe": "Se souvenir de moi",
+      "forgotPassword": "Mot de passe oublié ?",
+      "submit": "Se connecter pour continuer",
+      "submitting": "Connexion en cours...",
+      "noAccount": "Nouveau sur Ally ?",
+      "signupLink": "Créez votre compte"
+    },
+    "signup": {
+      "title": "Rejoignez Ally",
+      "subtitle": "Commencez votre parcours de guérison avec une thérapie IA innovante",
+      "firstName": "Prénom",
+      "lastName": "Nom de famille",
+      "email": "Adresse e-mail",
+      "password": "Mot de passe",
+      "confirmPassword": "Confirmer le mot de passe",
+      "role": "Je suis...",
+      "roleClient": "Client - Recherche de soutien thérapeutique",
+      "roleTherapist": "Thérapeute - Professionnel de la santé mentale",
+      "roleAdmin": "Administrateur - Administrateur système",
+      "language": "Langue préférée",
+      "terms": "J'accepte les conditions d'utilisation et la politique de confidentialité",
+      "submit": "Commencez votre parcours de guérison",
+      "submitting": "Création de votre compte...",
+      "hasAccount": "Vous avez déjà un compte ?",
+      "loginLink": "Connectez-vous ici",
+      "confirm": {
+        "title": "Vérifiez votre e-mail",
+        "subtitle": "Nous avons envoyé un code de vérification à",
+        "code": "Code de vérification",
+        "codePlaceholder": "Entrez le code à 6 chiffres",
+        "instruction": "Vérifiez votre e-mail et entrez le code à 6 chiffres",
+        "submit": "Vérifier et terminer l'inscription",
+        "verifying": "Vérification en cours...",
+        "resend": "Vous n'avez pas reçu le code ? Renvoyer",
+        "backToLogin": "Retour à la connexion"
+      }
+    },
+    "errors": {
+      "invalidEmail": "Veuillez entrer une adresse e-mail valide",
+      "passwordTooShort": "Le mot de passe doit contenir au moins 8 caractères",
+      "passwordMismatch": "Les mots de passe ne correspondent pas",
+      "loginFailed": "E-mail ou mot de passe invalide",
+      "signupFailed": "Échec de la création du compte. Veuillez réessayer.",
+      "required": "Ce champ est obligatoire"
+    }
+  },
+  "session": {
+    "title": "Séance de thérapie",
+    "start": "Démarrer la séance",
+    "end": "Terminer la séance",
+    "pause": "Pause",
+    "resume": "Reprendre",
+    "status": {
+      "connecting": "Connexion...",
+      "connected": "Connecté",
+      "disconnected": "Déconnecté",
+      "active": "Séance active",
+      "paused": "Séance en pause"
+    },
+    "duration": "Durée",
+    "transcript": "Transcription",
+    "notes": "Notes de séance",
+    "feedback": "Comment s'est passée votre séance ?",
+    "endConfirm": "Êtes-vous sûr de vouloir terminer cette séance ?",
+    "privacy": "Votre conversation sera privée et sécurisée",
+    "recording": "Enregistrement",
+    "muted": "Muet",
+    "audio": {
+      "system": "Système Audio",
+      "ready": "Prêt",
+      "checking": "Vérification...",
+      "microphone": "Microphone",
+      "standby": "En attente",
+      "voiceLevel": "Niveau de Voix",
+      "listening": "Écoute",
+      "silent": "Silencieux",
+      "connection": "Connexion",
+      "secure": "Sécurisé",
+      "error": "Système Audio:"
+    }
+  },
+  "dashboard": {
+    "client": {
+      "title": "Mon tableau de bord",
+      "welcome": "Bon retour, {name}",
+      "stats": {
+        "totalSessions": "Total des séances",
+        "thisWeek": "Cette semaine",
+        "avgDuration": "Durée moyenne",
+        "lastSession": "Dernière séance"
+      },
+      "recentSessions": "Séances récentes",
+      "upcomingSessions": "Séances à venir",
+      "progress": "Vos progrès",
+      "startNewSession": "Démarrer une nouvelle séance"
+    },
+    "therapist": {
+      "title": "Tableau de bord Thérapeute",
+      "subtitle": "Surveillez les séances clients et les signaux d'alerte",
+      "badge": "Supervision Professionnelle",
+      "title": "Tableau de bord du thérapeute",
+      "overview": "Vue d'ensemble",
+      "redFlags": "Signaux d'alerte",
+      "stats": {
+        "activeClients": "Clients actifs",
+        "pendingFlags": "Signaux en attente",
+        "resolvedToday": "Résolus aujourd'hui",
+        "avgResponseTime": "Temps de réponse moyen"
+      },
+      "flagDetails": {
+        "severity": "Gravité",
+        "type": "Type",
+        "detected": "Détecté",
+        "client": "Client",
+        "session": "Séance",
+        "status": "Statut",
+        "acknowledge": "Accuser réception",
+        "resolve": "Résoudre",
+        "viewSession": "Voir la séance"
+      },
+      "severityLevels": {
+        "critical": "Critique",
+        "high": "Élevé",
+        "medium": "Moyen",
+        "low": "Faible"
+      },
+      "flagTypes": {
+        "selfHarm": "Automutilation",
+        "suicide": "Risque de suicide",
+        "violence": "Violence",
+        "substance": "Abus de substances",
+        "crisis": "Crise"
+      }
+    },
+    "admin": {
+      "title": "Tableau de bord administrateur",
+      "overview": "Vue d'ensemble",
+      "users": "Utilisateurs",
+      "sessions": "Séances",
+      "redFlags": "Signaux d'alerte",
+      "system": "Santé du système",
+      "stats": {
+        "totalUsers": "Total des utilisateurs",
+        "activeUsers": "Utilisateurs actifs",
+        "totalSessions": "Total des séances",
+        "activeSessions": "Séances actives",
+        "pendingFlags": "Signaux en attente",
+        "systemHealth": "Santé du système"
+      },
+      "tables": {
+        "users": "Table des utilisateurs",
+        "sessions": "Table des séances",
+        "redFlags": "Table des signaux",
+        "connections": "Connexions WebSocket"
+      },
+      "userManagement": {
+        "addUser": "Ajouter un utilisateur",
+        "editUser": "Modifier l'utilisateur",
+        "deleteUser": "Supprimer l'utilisateur",
+        "activateUser": "Activer",
+        "deactivateUser": "Désactiver"
+      }
+    }
+  },
+  "profile": {
+    "title": "Mon profil",
+    "personalInfo": "Informations personnelles",
+    "preferences": "Préférences",
+    "security": "Sécurité",
+    "language": "Langue préférée",
+    "timezone": "Fuseau horaire",
+    "notifications": "Notifications",
+    "emailNotifications": "Notifications par e-mail",
+    "pushNotifications": "Notifications push",
+    "changePassword": "Changer le mot de passe",
+    "currentPassword": "Mot de passe actuel",
+    "newPassword": "Nouveau mot de passe",
+    "confirmNewPassword": "Confirmer le nouveau mot de passe",
+    "updateProfile": "Mettre à jour le profil",
+    "deleteAccount": "Supprimer le compte",
+    "deleteAccountWarning": "Cette action ne peut pas être annulée. Toutes vos données seront définitivement supprimées."
+  },
+  "notifications": {
+    "title": "Notifications",
+    "markAllRead": "Tout marquer comme lu",
+    "noNotifications": "Aucune notification",
+    "types": {
+      "session": "Séance",
+      "redFlag": "Alerte de signal",
+      "system": "Système",
+      "message": "Message"
+    }
+  },
+  "errors": {
+    "generic": "Quelque chose s'est mal passé. Veuillez réessayer.",
+    "network": "Erreur réseau. Veuillez vérifier votre connexion.",
+    "unauthorized": "Vous n'êtes pas autorisé à accéder à cette ressource.",
+    "notFound": "La ressource demandée n'a pas été trouvée.",
+    "serverError": "Erreur serveur. Veuillez réessayer plus tard.",
+    "sessionExpired": "Votre session a expiré. Veuillez vous reconnecter."
+  },
+  "footer": {
+    "copyright": "© 2026 Plateforme de Thérapie IA. Tous droits réservés.",
+    "privacy": "Politique de confidentialité",
+    "terms": "Conditions d'utilisation",
+    "contact": "Contactez-nous",
+    "crisis": "Ligne de crise : 988"
+  }
+}

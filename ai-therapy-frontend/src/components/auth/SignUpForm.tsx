@@ -5,6 +5,7 @@
 
 import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -19,6 +20,7 @@ interface SignUpFormProps {
 
 export function SignUpForm({ onBackToLogin }: SignUpFormProps) {
   const { signUp, confirmSignUp, resendConfirmationCode, loading, error, clearError } = useAuth();
+  const { t } = useLanguage();
   const [step, setStep] = useState<'signup' | 'confirm'>('signup');
   const [formData, setFormData] = useState({
     email: '',
@@ -91,9 +93,9 @@ export function SignUpForm({ onBackToLogin }: SignUpFormProps) {
           <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <Mail className="h-8 w-8 text-green-600" />
           </div>
-          <CardTitle className="text-2xl font-bold text-gray-900">Check Your Email</CardTitle>
+          <CardTitle className="text-2xl font-bold text-gray-900">{t('auth.signup.confirm.title')}</CardTitle>
           <CardDescription className="text-gray-600">
-            We sent a verification code to<br />
+            {t('auth.signup.confirm.subtitle')}<br />
             <span className="font-medium text-gray-900">{formData.email}</span>
           </CardDescription>
         </CardHeader>
@@ -106,11 +108,11 @@ export function SignUpForm({ onBackToLogin }: SignUpFormProps) {
             )}
             
             <div className="space-y-2">
-              <Label htmlFor="confirmationCode" className="text-gray-700 font-medium">Verification Code</Label>
+              <Label htmlFor="confirmationCode" className="text-gray-700 font-medium">{t('auth.signup.confirm.code')}</Label>
               <Input
                 id="confirmationCode"
                 type="text"
-                placeholder="Enter 6-digit code"
+                placeholder={t('auth.signup.confirm.codePlaceholder')}
                 value={confirmationCode}
                 onChange={(e) => setConfirmationCode(e.target.value)}
                 maxLength={6}
@@ -119,7 +121,7 @@ export function SignUpForm({ onBackToLogin }: SignUpFormProps) {
                 disabled={loading}
               />
               <p className="text-sm text-gray-600 text-center">
-                Check your email and enter the 6-digit code
+                {t('auth.signup.confirm.instruction')}
               </p>
             </div>
             
@@ -131,10 +133,10 @@ export function SignUpForm({ onBackToLogin }: SignUpFormProps) {
               {loading ? (
                 <>
                   <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                  Verifying...
+                  {t('auth.signup.confirm.verifying')}
                 </>
               ) : (
-                'Verify & Complete Registration'
+                t('auth.signup.confirm.submit')
               )}
             </Button>
             
@@ -146,7 +148,7 @@ export function SignUpForm({ onBackToLogin }: SignUpFormProps) {
                 disabled={loading}
                 className="text-purple-600 hover:text-purple-700 hover:bg-purple-50"
               >
-                Didn't receive the code? Resend
+                {t('auth.signup.confirm.resend')}
               </Button>
               
               <div>
@@ -157,7 +159,7 @@ export function SignUpForm({ onBackToLogin }: SignUpFormProps) {
                   className="text-gray-600 hover:text-gray-900"
                 >
                   <ArrowLeft className="mr-2 h-4 w-4" />
-                  Back to Sign In
+                  {t('auth.signup.confirm.backToLogin')}
                 </Button>
               </div>
             </div>
@@ -173,9 +175,9 @@ export function SignUpForm({ onBackToLogin }: SignUpFormProps) {
         <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
           <Heart className="h-8 w-8 text-purple-600" />
         </div>
-        <CardTitle className="text-2xl font-bold text-gray-900">Join UKind AI Therapy</CardTitle>
+        <CardTitle className="text-2xl font-bold text-gray-900">{t('auth.signup.title')}</CardTitle>
         <CardDescription className="text-gray-600">
-          Start your healing journey with innovative AI therapy
+          {t('auth.signup.subtitle')}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -188,13 +190,13 @@ export function SignUpForm({ onBackToLogin }: SignUpFormProps) {
           
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="firstName" className="text-gray-700 font-medium">First Name</Label>
+              <Label htmlFor="firstName" className="text-gray-700 font-medium">{t('auth.signup.firstName')}</Label>
               <div className="relative">
                 <User className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
                 <Input
                   id="firstName"
                   type="text"
-                  placeholder="First name"
+                  placeholder={t('auth.signup.firstName')}
                   value={formData.firstName}
                   onChange={handleInputChange('firstName')}
                   className="pl-10 h-12 border-gray-200 focus:border-purple-500 focus:ring-purple-500"
@@ -205,13 +207,13 @@ export function SignUpForm({ onBackToLogin }: SignUpFormProps) {
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="lastName" className="text-gray-700 font-medium">Last Name</Label>
+              <Label htmlFor="lastName" className="text-gray-700 font-medium">{t('auth.signup.lastName')}</Label>
               <div className="relative">
                 <User className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
                 <Input
                   id="lastName"
                   type="text"
-                  placeholder="Last name"
+                  placeholder={t('auth.signup.lastName')}
                   value={formData.lastName}
                   onChange={handleInputChange('lastName')}
                   className="pl-10 h-12 border-gray-200 focus:border-purple-500 focus:ring-purple-500"
@@ -223,13 +225,13 @@ export function SignUpForm({ onBackToLogin }: SignUpFormProps) {
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="email" className="text-gray-700 font-medium">Email Address</Label>
+            <Label htmlFor="email" className="text-gray-700 font-medium">{t('auth.signup.email')}</Label>
             <div className="relative">
               <Mail className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
               <Input
                 id="email"
                 type="email"
-                placeholder="Enter your email"
+                placeholder={t('auth.signup.email')}
                 value={formData.email}
                 onChange={handleInputChange('email')}
                 className="pl-10 h-12 border-gray-200 focus:border-purple-500 focus:ring-purple-500"
@@ -240,7 +242,7 @@ export function SignUpForm({ onBackToLogin }: SignUpFormProps) {
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="role" className="text-gray-700 font-medium">I am a...</Label>
+            <Label htmlFor="role" className="text-gray-700 font-medium">{t('auth.signup.role')}</Label>
             <select
               id="role"
               value={formData.role}
@@ -248,20 +250,20 @@ export function SignUpForm({ onBackToLogin }: SignUpFormProps) {
               className="w-full h-12 px-3 border border-gray-200 bg-white rounded-md text-gray-900 focus:border-purple-500 focus:ring-purple-500"
               disabled={loading}
             >
-              <option value="client">Client - Seeking Therapy Support</option>
-              <option value="therapist">Therapist - Mental Health Professional</option>
-              <option value="admin">Admin - System Administrator</option>
+              <option value="client">{t('auth.signup.roleClient')}</option>
+              <option value="therapist">{t('auth.signup.roleTherapist')}</option>
+              <option value="admin">{t('auth.signup.roleAdmin')}</option>
             </select>
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="password" className="text-gray-700 font-medium">Password</Label>
+            <Label htmlFor="password" className="text-gray-700 font-medium">{t('auth.signup.password')}</Label>
             <div className="relative">
               <Lock className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
               <Input
                 id="password"
                 type="password"
-                placeholder="Create a secure password"
+                placeholder={t('auth.signup.password')}
                 value={formData.password}
                 onChange={handleInputChange('password')}
                 className="pl-10 h-12 border-gray-200 focus:border-purple-500 focus:ring-purple-500"
@@ -272,13 +274,13 @@ export function SignUpForm({ onBackToLogin }: SignUpFormProps) {
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="confirmPassword" className="text-gray-700 font-medium">Confirm Password</Label>
+            <Label htmlFor="confirmPassword" className="text-gray-700 font-medium">{t('auth.signup.confirmPassword')}</Label>
             <div className="relative">
               <Lock className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
               <Input
                 id="confirmPassword"
                 type="password"
-                placeholder="Confirm your password"
+                placeholder={t('auth.signup.confirmPassword')}
                 value={formData.confirmPassword}
                 onChange={handleInputChange('confirmPassword')}
                 className="pl-10 h-12 border-gray-200 focus:border-purple-500 focus:ring-purple-500"
@@ -290,7 +292,7 @@ export function SignUpForm({ onBackToLogin }: SignUpFormProps) {
           
           {formData.password !== formData.confirmPassword && formData.confirmPassword && (
             <Alert variant="destructive" className="border-red-200 bg-red-50">
-              <AlertDescription className="text-red-800">Passwords do not match</AlertDescription>
+              <AlertDescription className="text-red-800">{t('auth.errors.passwordMismatch')}</AlertDescription>
             </Alert>
           )}
           
@@ -308,23 +310,23 @@ export function SignUpForm({ onBackToLogin }: SignUpFormProps) {
             {loading ? (
               <>
                 <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                Creating Your Account...
+                {t('auth.signup.submitting')}
               </>
             ) : (
-              'Start Your Healing Journey'
+              t('auth.signup.submit')
             )}
           </Button>
         </form>
         
         <div className="mt-6 text-center">
           <p className="text-gray-600">
-            Already have an account?{' '}
+            {t('auth.signup.hasAccount')}{' '}
             <button 
               type="button"
               className="text-purple-600 hover:text-purple-700 font-medium hover:underline"
               onClick={onBackToLogin}
             >
-              Sign in here
+              {t('auth.signup.loginLink')}
             </button>
           </p>
         </div>
