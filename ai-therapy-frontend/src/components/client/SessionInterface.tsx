@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { BabylonAvatar } from '@/components/client/BabylonAvatar';
 import { 
   Mic, 
   MicOff, 
@@ -70,6 +71,10 @@ export function SessionInterface() {
 
   const [isMuted, setIsMuted] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState<'disconnected' | 'connecting' | 'connected'>('disconnected');
+  
+  // Manual control states for when audio doesn't work
+  const [manualSpeaking, setManualSpeaking] = useState(false);
+  const [manualListening, setManualListening] = useState(false);
 
   // Initialize audio and WebSocket
   useEffect(() => {
@@ -304,29 +309,28 @@ export function SessionInterface() {
       </Card>
 
       {/* AI Therapist Section */}
-      <Card className="mb-8 border-0 shadow-lg">
+      <Card className="mb-8 border-0 shadow-lg overflow-visible">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl text-gray-900">{t('session.therapist.title')}</CardTitle>
           <CardDescription className="text-gray-600">
             {t('session.therapist.subtitle')}
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="overflow-visible">
           <div className="flex flex-col items-center space-y-6">
-            {/* AI Avatar */}
-            <div className="relative">
-              <div className="w-40 h-40 rounded-full bg-gradient-to-br from-purple-400 via-purple-500 to-purple-600 flex items-center justify-center shadow-2xl">
-                <Heart className="w-16 h-16 text-white" />
-              </div>
+            {/* 3D AI Avatar - Babylon.js */}
+            <div className="relative w-full max-w-md h-96 overflow-visible">
+              <BabylonAvatar
+                isActive={session.isActive}
+                isSpeaking={manualSpeaking || (session.isActive && !isRecording && session.messageCount > 0)}
+                isListening={manualListening || (session.isActive && isRecording)}
+                volumeLevel={volumeLevel}
+                modelUrl="https://models.readyplayer.me/692c94887b7a88e1f63f3d82.glb?pose=A&morphTargets=ARKit"
+              />
               
-              {/* Pulse animation when active */}
-              {session.isActive && (
-                <div className="absolute inset-0 rounded-full bg-purple-400 animate-ping opacity-20"></div>
-              )}
-              
-              {/* Volume indicator */}
+              {/* Volume indicator overlay */}
               {isRecording && (
-                <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2">
+                <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 z-10">
                   <div className="bg-white rounded-full px-4 py-2 shadow-lg">
                     <div className="flex items-center space-x-1">
                       {[...Array(5)].map((_, i) => (
@@ -421,6 +425,56 @@ export function SessionInterface() {
                 </Button>
               </div>
             )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Manual Avatar Controls (for when audio doesn't work) */}
+      <Card className="mb-8 border-0 shadow-lg bg-blue-50">
+        <CardHeader className="text-center pb-4">
+          <CardTitle className="text-lg text-gray-900">🎭 Avatar Controls</CardTitle>
+          <CardDescription className="text-sm text-gray-600">
+            Simulate talking and listening when audio isn't working
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-center space-x-4">
+            <Button
+              onClick={() => setManualListening(!manualListening)}
+              variant={manualListening ? "default" : "outline"}
+              size="lg"
+              className={`rounded-full px-8 py-4 ${
+                manualListening 
+                  ? 'bg-green-600 hover:bg-green-700 text-white' 
+                  : 'border-green-300 text-green-600 hover:bg-green-50'
+              }`}
+            >
+              <Mic className="mr-2 h-5 w-5" />
+              {manualListening ? 'Stop Listening' : 'Start Listening'}
+            </Button>
+            
+            <Button
+              onClick={() => setManualSpeaking(!manualSpeaking)}
+              variant={manualSpeaking ? "default" : "outline"}
+              size="lg"
+              className={`rounded-full px-8 py-4 ${
+                manualSpeaking 
+                  ? 'bg-blue-600 hover:bg-blue-700 text-white' 
+                  : 'border-blue-300 text-blue-600 hover:bg-blue-50'
+              }`}
+            >
+              <MessageCircle className="mr-2 h-5 w-5" />
+              {manualSpeaking ? 'Stop Talking' : 'Start Talking'}
+            </Button>
+          </div>
+          
+          <div className="mt-4 text-center">
+            <p className="text-sm text-gray-600">
+              {manualListening && manualSpeaking && '🎭 Both states active - Avatar is listening and talking'}
+              {manualListening && !manualSpeaking && '👂 Avatar is listening to you'}
+              {!manualListening && manualSpeaking && '💬 Avatar is talking to you'}
+              {!manualListening && !manualSpeaking && '😌 Avatar is in idle state'}
+            </p>
           </div>
         </CardContent>
       </Card>

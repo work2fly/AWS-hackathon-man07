@@ -16,6 +16,8 @@ The AI Therapy Platform is a web-based application for UKind therapy charity tha
 - **Session_Summary**: AI-generated sentiment and progress summary accessible to therapists (not full transcripts)
 - **Guardrails**: Safety mechanisms that control and filter AI responses to ensure therapeutic appropriateness
 - **Platform**: The complete AI Therapy Platform system including web app and backend infrastructure
+- **Avatar**: The 3D visual representation of the AI_Agent displayed during therapy sessions
+- **Lip_Sync**: Synchronization of avatar mouth movements with AI-generated speech audio
 
 ## Requirements
 
@@ -165,3 +167,18 @@ The AI Therapy Platform is a web-based application for UKind therapy charity tha
 4. WHEN external APIs are called, THE Platform SHALL proxy requests through the backend to protect API keys
 5. THE Platform SHALL log all API requests for audit and monitoring purposes without storing sensitive content
 6. WHEN API limits are exceeded, THE Platform SHALL return appropriate error responses and temporarily block excessive requests
+
+### Requirement 12: 3D Avatar Visual Representation
+
+**User Story:** As a client, I want to see a 3D animated avatar of the AI therapist during sessions, so that I have a more engaging and human-like therapeutic experience.
+
+#### Acceptance Criteria
+
+1. THE Platform SHALL display a 3D avatar using Ready.Player.Me integration in the client session interface
+2. WHEN a session is inactive, THE Platform SHALL display the avatar in an idle state with subtle breathing animations
+3. WHEN the AI_Agent is speaking, THE Platform SHALL animate the avatar's mouth movements synchronized with the audio output
+4. WHEN the client is speaking, THE Platform SHALL display visual feedback on the avatar indicating active listening
+5. THE Platform SHALL load the 3D avatar efficiently without blocking the session interface rendering
+6. WHEN audio volume changes, THE Platform SHALL reflect speaking intensity through avatar facial expressions or head movements
+7. THE Platform SHALL provide a fallback 2D avatar if 3D rendering fails or is unsupported on the client device
+8. THE Platform SHALL ensure the 3D avatar renders smoothly on both desktop and mobile devices with acceptable performance
