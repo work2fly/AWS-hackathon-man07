@@ -21,20 +21,24 @@ polly_client = boto3.client('polly', region_name='us-west-2')
 # S3 bucket for temporary audio storage
 S3_BUCKET = 'ai-therapy-platform-dev-audio-temp'
 
-def synthesize_speech_polly(text):
+def synthesize_speech_polly(text, voice_id='Joanna'):
     """
     Convert text to speech using Amazon Polly Neural voices
     🏆 Uses permitted AWS service (Polly)
     Neural voices sound VERY natural!
+    
+    Available voices:
+    - Joanna (Female, US) - Warm & caring
+    - Matthew (Male, US) - Calm & supportive
     """
     try:
-        print("🔊 Synthesizing speech with Amazon Polly Neural...")
+        print(f"🔊 Synthesizing speech with Amazon Polly Neural ({voice_id})...")
         
-        # Use Joanna Neural voice (very natural female voice)
+        # Use selected voice
         response = polly_client.synthesize_speech(
             Text=text,
             OutputFormat='mp3',
-            VoiceId='Joanna',  # Natural female US English
+            VoiceId=voice_id,
             Engine='neural',   # Neural engine for best quality!
             LanguageCode='en-US'
         )
@@ -278,9 +282,10 @@ def lambda_handler(event, context):
         audio_format = body.get('format', 'webm')
         sample_rate = body.get('sampleRate', 16000)
         user_text = body.get('userText')  # Direct text input from frontend
+        polly_voice = body.get('pollyVoice', 'Joanna')  # Selected voice (Joanna or Matthew)
         
         print(f"📨 Processing request for session: {session_id}")
-        print(f"Format: {audio_format}, Has user_text: {user_text is not None}")
+        print(f"Format: {audio_format}, Polly Voice: {polly_voice}")
         
         if not audio_data and not user_text:
             return {
@@ -334,8 +339,8 @@ def lambda_handler(event, context):
         ai_text = ai_response
         
         # Step 3: Synthesize speech with Amazon Polly Neural (NATURAL VOICE!)
-        print("🔊 Step 3: Synthesizing speech with Polly Neural...")
-        ai_audio = synthesize_speech_polly(ai_text)
+        print(f"🔊 Step 3: Synthesizing speech with Polly Neural ({polly_voice})...")
+        ai_audio = synthesize_speech_polly(ai_text, polly_voice)
         
         if not ai_audio:
             # Fallback: return text only
@@ -360,6 +365,7 @@ def lambda_handler(event, context):
                 'audioData': ai_audio,
                 'format': 'mp3',
                 'voiceEngine': 'polly-neural',
+                'voiceId': polly_voice,
                 'sessionId': session_id,
                 'timestamp': datetime.utcnow().isoformat()
             })

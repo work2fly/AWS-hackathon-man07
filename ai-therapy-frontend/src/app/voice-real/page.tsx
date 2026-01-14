@@ -24,6 +24,7 @@ export default function VoiceRealPage() {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [transcript, setTranscript] = useState('');
   const [selectedVoice, setSelectedVoice] = useState<SpeechSynthesisVoice | null>(null);
+  const [pollyVoice, setPollyVoice] = useState<'Joanna' | 'Matthew'>('Joanna'); // Default female
   
   const recognitionRef = useRef<any>(null);
 
@@ -154,7 +155,8 @@ export default function VoiceRealPage() {
           audioData: btoa(text), // Send text as base64
           format: 'text',
           sampleRate: 16000,
-          userText: text // Direct text input
+          userText: text, // Direct text input
+          pollyVoice: pollyVoice // Send selected voice
         })
       });
       
@@ -317,6 +319,7 @@ export default function VoiceRealPage() {
     const newSessionId = `session_${Date.now()}`;
     setSessionId(newSessionId);
     addMessage(`🚀 Session started: ${newSessionId}`);
+    addMessage(`🎤 Voice selected: ${pollyVoice} (${pollyVoice === 'Joanna' ? 'Female' : 'Male'})`);
     setStatus('✅ Ready - Click "Start Talking" to speak');
   };
 
@@ -337,9 +340,9 @@ export default function VoiceRealPage() {
             <div className="text-sm text-gray-600">
               {sessionId ? `Session: ${sessionId.slice(-8)}` : 'No active session'}
             </div>
-            {selectedVoice && (
+            {sessionId && (
               <div className="mt-2 text-sm text-purple-600 font-medium">
-                🎤 Voice: {selectedVoice.name}
+                🎤 Voice: {pollyVoice} ({pollyVoice === 'Joanna' ? 'Female' : 'Male'})
               </div>
             )}
             {transcript && (
@@ -350,6 +353,40 @@ export default function VoiceRealPage() {
             )}
           </div>
         </div>
+        
+        {/* Voice Selection (before session starts) */}
+        {!sessionId && (
+          <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
+            <h2 className="text-xl font-bold text-center mb-4 text-purple-900">
+              Choose Your Therapist's Voice
+            </h2>
+            <div className="flex justify-center space-x-4">
+              <button
+                onClick={() => setPollyVoice('Joanna')}
+                className={`px-8 py-4 rounded-xl font-bold text-lg transition transform hover:scale-105 ${
+                  pollyVoice === 'Joanna'
+                    ? 'bg-gradient-to-r from-pink-500 to-purple-500 text-white shadow-lg'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                }`}
+              >
+                👩 Female Voice
+                <div className="text-sm font-normal mt-1">Joanna - Warm & Caring</div>
+              </button>
+              
+              <button
+                onClick={() => setPollyVoice('Matthew')}
+                className={`px-8 py-4 rounded-xl font-bold text-lg transition transform hover:scale-105 ${
+                  pollyVoice === 'Matthew'
+                    ? 'bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-lg'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                }`}
+              >
+                👨 Male Voice
+                <div className="text-sm font-normal mt-1">Matthew - Calm & Supportive</div>
+              </button>
+            </div>
+          </div>
+        )}
         
         {/* Controls */}
         <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
