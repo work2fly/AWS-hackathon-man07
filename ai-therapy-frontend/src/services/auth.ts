@@ -252,11 +252,19 @@ export class AuthService {
       // Get user email from signInDetails
       const email = signInDetails?.loginId || username;
 
+      // Determine role from email for hackathon demo
+      let role: 'client' | 'therapist' | 'admin' = 'client';
+      if (email.toLowerCase().includes('admin')) {
+        role = 'admin';
+      } else if (email.toLowerCase().includes('therapist') || email.toLowerCase().includes('dr.')) {
+        role = 'therapist';
+      }
+
       // Return user object with email as display name
       const user: User = {
         userId: userId || username,
         email: email,
-        role: 'client', // This would come from custom attributes or your API
+        role: role,
         profile: {
           firstName: email, // Use email as display name for hackathon
           lastName: '',
