@@ -140,8 +140,8 @@ output "livekit_infrastructure" {
     nlb_dns_name = aws_lb.livekit_webrtc.dns_name
     ecs_cluster_name = aws_ecs_cluster.livekit.name
     ecs_service_name = aws_ecs_service.livekit.name
-    redis_endpoint = aws_elasticache_cluster.livekit.cache_nodes[0].address
-    redis_port = aws_elasticache_cluster.livekit.cache_nodes[0].port
+    redis_endpoint = aws_elasticache_replication_group.livekit.primary_endpoint_address
+    redis_port = aws_elasticache_replication_group.livekit.port
   }
 }
 
@@ -199,7 +199,7 @@ output "environment_config" {
     LIVEKIT_SERVER_URL       = "ws://${aws_lb.livekit.dns_name}:7880"
     LIVEKIT_API_KEY_SECRET   = aws_secretsmanager_secret.livekit_api_key.arn
     LIVEKIT_API_SECRET_SECRET = aws_secretsmanager_secret.livekit_api_secret.arn
-    REDIS_ENDPOINT           = aws_elasticache_cluster.livekit.cache_nodes[0].address
+    REDIS_ENDPOINT           = aws_elasticache_replication_group.livekit.primary_endpoint_address
     
     # Security
     KMS_KEY_ID               = aws_kms_key.main.id

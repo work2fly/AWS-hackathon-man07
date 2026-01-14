@@ -167,7 +167,7 @@ resource "aws_ecs_task_definition" "livekit" {
       environment = [
         {
           name  = "REDIS_HOST"
-          value = aws_elasticache_cluster.livekit.cache_nodes[0].address
+          value = aws_elasticache_replication_group.livekit.primary_endpoint_address
         },
         {
           name  = "REDIS_PORT"

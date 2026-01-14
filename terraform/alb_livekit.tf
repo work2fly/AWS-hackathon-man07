@@ -3,7 +3,7 @@
 
 # Application Load Balancer
 resource "aws_lb" "livekit" {
-  name               = "${local.name_prefix}-livekit-alb"
+  name               = "aitherapy-${var.environment}-lk-alb"
   internal           = false
   load_balancer_type = "application"
   security_groups    = [aws_security_group.alb.id]
@@ -23,7 +23,7 @@ resource "aws_lb" "livekit" {
 
 # Target Group for LiveKit HTTP (7880)
 resource "aws_lb_target_group" "livekit_http" {
-  name        = "${local.name_prefix}-livekit-http"
+  name        = "aitherapy-${var.environment}-lk-http"
   port        = 7880
   protocol    = "HTTP"
   vpc_id      = aws_vpc.main.id
@@ -52,7 +52,7 @@ resource "aws_lb_target_group" "livekit_http" {
 
 # Target Group for LiveKit HTTPS (7881)
 resource "aws_lb_target_group" "livekit_https" {
-  name        = "${local.name_prefix}-livekit-https"
+  name        = "aitherapy-${var.environment}-lk-https"
   port        = 7881
   protocol    = "HTTP"
   vpc_id      = aws_vpc.main.id
@@ -119,7 +119,7 @@ resource "aws_lb_listener" "livekit_https" {
 
 # Network Load Balancer for WebRTC UDP traffic
 resource "aws_lb" "livekit_webrtc" {
-  name               = "${local.name_prefix}-livekit-nlb"
+  name               = "aitherapy-${var.environment}-lk-nlb"
   internal           = false
   load_balancer_type = "network"
   subnets            = aws_subnet.public[*].id
@@ -137,7 +137,7 @@ resource "aws_lb" "livekit_webrtc" {
 
 # Target Group for WebRTC UDP
 resource "aws_lb_target_group" "livekit_webrtc_udp" {
-  name        = "${local.name_prefix}-livekit-udp"
+  name        = "aitherapy-${var.environment}-lk-udp"
   port        = 50000
   protocol    = "UDP"
   vpc_id      = aws_vpc.main.id
