@@ -189,7 +189,7 @@ Backend team is responsible for the serverless Python Lambda functions, API Gate
     - _Requirements: 9.5_
 
 - [ ] 8. Implement API security and monitoring
-  - [ ] 8.1 Add comprehensive API security
+  - [x] 8.1 Add comprehensive API security
     - Implement API key management and rotation
     - Create request validation and sanitization
     - Add SQL injection and XSS protection
