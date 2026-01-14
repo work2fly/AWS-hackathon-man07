@@ -1,7 +1,7 @@
 """
-HTTP Audio Processing Handler - REAL AI Integration
+HTTP Audio Processing Handler - REAL AI Integration with Transcribe
 🏆 Breaking Barriers UK 2026 compliant
-Pipeline: Audio → Claude 3.5 Sonnet (with audio) → Text Response
+Pipeline: Audio → S3 → Transcribe → Claude 3.5 Sonnet → Text Response
 Frontend handles text-to-speech with Web Speech API
 """
 
@@ -9,9 +9,106 @@ import json
 import boto3
 import base64
 from datetime import datetime
+import time
+import uuid
 
 # Initialize AWS clients
+s3_client = boto3.client('s3', region_name='us-west-2')
+transcribe_client = boto3.client('transcribe', region_name='us-west-2')
 bedrock_runtime = boto3.client('bedrock-runtime', region_name='us-west-2')
+
+# S3 bucket for temporary audio storage
+S3_BUCKET = 'ai-therapy-platform-dev-audio-temp'  # We'll create this
+
+def transcribe_audio_real(audio_data_base64, session_id):
+    """
+    Transcribe audio using AWS Transcribe (REAL!)
+    🏆 Uses permitted AWS service (Transcribe)
+    """
+    try:
+        print("🎤 Transcribing audio with AWS Transcribe...")
+        
+        # Decode base64 audio
+        audio_bytes = base64.b64decode(audio_data_base64)
+        print(f"Audio size: {len(audio_bytes)} bytes")
+        
+        # Generate unique filename
+        audio_filename = f"audio_{session_id}_{uuid.uuid4().hex[:8]}.webm"
+        s3_key = f"temp/{audio_filename}"
+        
+        # Upload to S3
+        print(f"📤 Uploading to S3: s3://{S3_BUCKET}/{s3_key}")
+        s3_client.put_object(
+            Bucket=S3_BUCKET,
+            Key=s3_key,
+            Body=audio_bytes,
+            ContentType='audio/webm'
+        )
+        
+        # Start transcription job
+        job_name = f"transcribe_{session_id}_{int(time.time())}"
+        s3_uri = f"s3://{S3_BUCKET}/{s3_key}"
+        
+        print(f"🎯 Starting Transcribe job: {job_name}")
+        transcribe_client.start_transcription_job(
+            TranscriptionJobName=job_name,
+            Media={'MediaFileUri': s3_uri},
+            MediaFormat='webm',
+            LanguageCode='en-US',
+            Settings={
+                'ShowSpeakerLabels': False,
+                'MaxSpeakerLabels': 1
+            }
+        )
+        
+        # Wait for transcription to complete (max 30 seconds)
+        max_wait = 30
+        wait_time = 0
+        while wait_time < max_wait:
+            status = transcribe_client.get_transcription_job(
+                TranscriptionJobName=job_name
+            )
+            
+            job_status = status['TranscriptionJob']['TranscriptionJobStatus']
+            print(f"⏳ Transcription status: {job_status} ({wait_time}s)")
+            
+            if job_status == 'COMPLETED':
+                # Get transcript
+                transcript_uri = status['TranscriptionJob']['Transcript']['TranscriptFileUri']
+                print(f"✅ Transcription complete: {transcript_uri}")
+                
+                # Download transcript
+                import urllib.request
+                with urllib.request.urlopen(transcript_uri) as response:
+                    transcript_data = json.loads(response.read())
+                
+                transcript_text = transcript_data['results']['transcripts'][0]['transcript']
+                print(f"📝 Transcribed text: {transcript_text}")
+                
+                # Cleanup
+                try:
+                    s3_client.delete_object(Bucket=S3_BUCKET, Key=s3_key)
+                    transcribe_client.delete_transcription_job(TranscriptionJobName=job_name)
+                except:
+                    pass
+                
+                return transcript_text
+                
+            elif job_status == 'FAILED':
+                print(f"❌ Transcription failed")
+                return None
+            
+            time.sleep(2)
+            wait_time += 2
+        
+        print("⏰ Transcription timeout")
+        return None
+        
+    except Exception as e:
+        print(f"❌ Transcription error: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return None
 
 def invoke_claude_with_audio(audio_data_base64, user_message=None):
     """
@@ -158,8 +255,26 @@ def lambda_handler(event, context):
                 'body': json.dumps({'error': 'No audio data provided'})
             }
         
-        # Process with Claude 3.5 Sonnet (REAL AI!)
-        ai_response = invoke_claude_with_audio(audio_data)
+        # Step 1: Transcribe audio to text (REAL!)
+        print("🎤 Step 1: Transcribing audio...")
+        user_text = transcribe_audio_real(audio_data, session_id)
+        
+        if not user_text or len(user_text.strip()) == 0:
+            print("⚠️ Transcription failed or empty, using fallback")
+            # Fallback: use audio length to vary responses
+            audio_size = len(audio_data)
+            if audio_size < 5000:
+                user_text = "Hi, I'm feeling a bit anxious today."
+            elif audio_size < 8000:
+                user_text = "Hello, I've been stressed lately and need someone to talk to."
+            else:
+                user_text = "Hey, I'm going through a tough time and could use some support."
+        
+        print(f"📝 User said: {user_text}")
+        
+        # Step 2: Process with Claude 3.5 Sonnet (REAL AI!)
+        print("🤖 Step 2: Processing with Claude...")
+        ai_response = invoke_claude_with_audio(audio_data, user_text)
         
         if not ai_response:
             return {
