@@ -37,17 +37,17 @@ export function SessionInterface() {
   const { user } = useAuth();
   const { t } = useLanguage();
   
-  // Get auth token for WebSocket connection
-  const [authToken, setAuthToken] = useState<string | null>(null);
+  // Get auth token for WebSocket connection (not needed - authorization is NONE)
+  // const [authToken, setAuthToken] = useState<string | null>(null);
   
-  useEffect(() => {
-    const getToken = async () => {
-      const { AuthService } = await import('@/services/auth');
-      const token = await AuthService.getAuthToken();
-      setAuthToken(token);
-    };
-    getToken();
-  }, []);
+  // useEffect(() => {
+  //   const getToken = async () => {
+  //     const { AuthService } = await import('@/services/auth');
+  //     const token = await AuthService.getAuthToken();
+  //     setAuthToken(token);
+  //   };
+  //   getToken();
+  // }, []);
   
   const { 
     isConnected, 
@@ -57,7 +57,7 @@ export function SessionInterface() {
     sendControl, 
     addEventListener, 
     removeEventListener 
-  } = useWebSocket(authToken || undefined);
+  } = useWebSocket(); // No token needed - API Gateway authorization is NONE
   
   const {
     isInitialized,

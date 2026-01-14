@@ -21,6 +21,12 @@ export function useWebSocket(token?: string) {
   });
 
   const handlersRef = useRef<Map<WebSocketEventType, Function>>(new Map());
+  const tokenRef = useRef<string | undefined>(token);
+
+  // Update token ref when token changes
+  useEffect(() => {
+    tokenRef.current = token;
+  }, [token]);
 
   // Initialize WebSocket connection
   const connect = useCallback(async () => {
@@ -31,7 +37,8 @@ export function useWebSocket(token?: string) {
     setState(prev => ({ ...prev, isConnecting: true, error: null }));
 
     try {
-      const success = await webSocketService.connect(token);
+      // Use the latest token from ref
+      const success = await webSocketService.connect(tokenRef.current);
       if (success) {
         setState(prev => ({ 
           ...prev, 
@@ -53,7 +60,7 @@ export function useWebSocket(token?: string) {
         error: error instanceof Error ? error.message : 'Connection failed' 
       }));
     }
-  }, [token, state.isConnecting, state.isConnected]);
+  }, [state.isConnecting, state.isConnected]);
 
   // Disconnect WebSocket
   const disconnect = useCallback(() => {
