@@ -181,6 +181,8 @@ resource "aws_api_gateway_integration_response" "health_check" {
       timestamp = "$context.requestTime"
     })
   }
+
+  depends_on = [aws_api_gateway_integration.health_check]
 }
 
 # Authentication Lambda Function
