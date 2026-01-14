@@ -32,7 +32,15 @@ def synthesize_speech_polly(text, voice_id='Joanna'):
     - Matthew (Male, US) - Calm & supportive
     """
     try:
-        print(f"🔊 Synthesizing speech with Amazon Polly Neural ({voice_id})...")
+        print(f"🔊 Synthesizing speech with Amazon Polly Neural")
+        print(f"   Voice ID: {voice_id}")
+        print(f"   Text length: {len(text)} characters")
+        
+        # Validate voice_id
+        valid_voices = ['Joanna', 'Matthew']
+        if voice_id not in valid_voices:
+            print(f"⚠️ Invalid voice '{voice_id}', defaulting to Joanna")
+            voice_id = 'Joanna'
         
         # Use selected voice
         response = polly_client.synthesize_speech(
