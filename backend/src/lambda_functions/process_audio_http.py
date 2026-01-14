@@ -243,32 +243,39 @@ def lambda_handler(event, context):
         audio_data = body.get('audioData')
         audio_format = body.get('format', 'webm')
         sample_rate = body.get('sampleRate', 16000)
+        user_text = body.get('userText')  # Direct text input from frontend
         
-        print(f"📨 Processing audio for session: {session_id}")
-        print(f"Audio format: {audio_format}, Sample rate: {sample_rate}")
-        print(f"Audio data length: {len(audio_data) if audio_data else 0} bytes (base64)")
+        print(f"📨 Processing request for session: {session_id}")
+        print(f"Format: {audio_format}, Has user_text: {user_text is not None}")
         
-        if not audio_data:
+        if not audio_data and not user_text:
             return {
                 'statusCode': 400,
                 'headers': headers,
-                'body': json.dumps({'error': 'No audio data provided'})
+                'body': json.dumps({'error': 'No audio data or text provided'})
             }
         
-        # Step 1: Transcribe audio to text (REAL!)
-        print("🎤 Step 1: Transcribing audio...")
-        user_text = transcribe_audio_real(audio_data, session_id)
-        
-        if not user_text or len(user_text.strip()) == 0:
-            print("⚠️ Transcription failed or empty, using fallback")
-            # Fallback: use audio length to vary responses
-            audio_size = len(audio_data)
-            if audio_size < 5000:
-                user_text = "Hi, I'm feeling a bit anxious today."
-            elif audio_size < 8000:
-                user_text = "Hello, I've been stressed lately and need someone to talk to."
-            else:
-                user_text = "Hey, I'm going through a tough time and could use some support."
+        # If text is provided directly, use it (fastest path!)
+        if user_text:
+            print(f"📝 Using direct text input: {user_text}")
+        elif audio_format == 'text':
+            # Text sent as base64
+            user_text = base64.b64decode(audio_data).decode('utf-8')
+            print(f"📝 Decoded text from base64: {user_text}")
+        else:
+            # Try Transcribe (slower)
+            print("🎤 Step 1: Transcribing audio...")
+            user_text = transcribe_audio_real(audio_data, session_id)
+            
+            if not user_text or len(user_text.strip()) == 0:
+                print("⚠️ Transcription failed or empty, using fallback")
+                audio_size = len(audio_data)
+                if audio_size < 5000:
+                    user_text = "Hi, I'm feeling a bit anxious today."
+                elif audio_size < 8000:
+                    user_text = "Hello, I've been stressed lately and need someone to talk to."
+                else:
+                    user_text = "Hey, I'm going through a tough time and could use some support."
         
         print(f"📝 User said: {user_text}")
         
