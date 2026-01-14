@@ -11,5 +11,6 @@ __all__ = [
     'session_handlers',
     'user_handlers',
     'websocket_handlers',
-    'red_flag_handlers'
+    'red_flag_handlers',
+    'notification_handlers'
 ]
