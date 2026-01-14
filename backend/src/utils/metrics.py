@@ -8,8 +8,8 @@ import time
 from datetime import datetime
 from typing import Dict, List, Optional, Any
 from contextlib import contextmanager
-from config.aws_config import aws_clients
-from utils.logger import logger
+from ..config.aws_config import aws_clients
+from .logger import logger
 
 class MetricsCollector:
     """

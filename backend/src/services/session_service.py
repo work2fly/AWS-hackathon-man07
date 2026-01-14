@@ -17,6 +17,7 @@ from ..models.session import (
 )
 from ..utils.logger import get_logger
 from ..utils.validation import validate_session_data
+from .sentiment_analysis_service import SentimentAnalysisService
 
 logger = get_logger(__name__)
 
@@ -26,6 +27,7 @@ class SessionService:
     
     def __init__(self):
         self.session_repo = SessionRepository()
+        self.sentiment_service = SentimentAnalysisService()
     
     def create_session(self, client_id: str, agent_id: str, language: str = "en") -> Optional[TherapySession]:
         """
@@ -352,15 +354,38 @@ class SessionService:
             timestamp: Session timestamp
         """
         try:
-            # This would typically trigger an async process or queue a job
-            # For now, we'll create a placeholder sentiment summary
             logger.info(f"Triggering sentiment analysis for session {session_id}")
             
-            # In a real implementation, this would:
-            # 1. Send session to AI sentiment analysis service
-            # 2. Process conversation context from AgentCore memory
-            # 3. Generate therapeutic insights and progress indicators
-            # 4. Store results back to the session
+            # Get session data
+            session = self.get_session(session_id, timestamp)
+            if not session:
+                logger.error(f"Session {session_id} not found for sentiment analysis")
+                return
+            
+            # In a real implementation, this would load conversation context from AgentCore
+            # For now, we'll pass None and rely on session metadata
+            conversation_context = None
+            
+            # Perform sentiment analysis
+            sentiment_summary = self.sentiment_service.analyze_session_sentiment(
+                session=session,
+                conversation_context=conversation_context
+            )
+            
+            if sentiment_summary:
+                # Store sentiment summary in database
+                success = self.session_repo.add_sentiment_summary(
+                    session_id=session_id,
+                    timestamp=timestamp,
+                    sentiment_summary=sentiment_summary
+                )
+                
+                if success:
+                    logger.info(f"Sentiment analysis completed and stored for session {session_id}")
+                else:
+                    logger.error(f"Failed to store sentiment summary for session {session_id}")
+            else:
+                logger.error(f"Sentiment analysis failed for session {session_id}")
             
         except Exception as e:
             logger.error(f"Failed to trigger sentiment analysis for session {session_id}: {str(e)}")

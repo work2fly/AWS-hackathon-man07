@@ -90,3 +90,11 @@ def get_account_id() -> Optional[str]:
     except Exception as e:
         print(f"Error getting account ID: {e}")
         return None
+
+def get_aws_config() -> dict:
+    """Get AWS configuration dictionary"""
+    return {
+        'region': AWS_REGION,
+        'account_id': AWS_ACCOUNT_ID or get_account_id(),
+        'retry_config': RETRY_CONFIG
+    }

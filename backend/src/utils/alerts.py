@@ -8,9 +8,9 @@ import boto3
 from datetime import datetime
 from typing import Dict, List, Optional, Any
 from enum import Enum
-from config.aws_config import aws_clients
-from utils.logger import logger
-from utils.metrics import metrics
+from ..config.aws_config import aws_clients
+from .logger import logger
+from .metrics import metrics
 
 class AlertSeverity(Enum):
     """Alert severity levels"""
