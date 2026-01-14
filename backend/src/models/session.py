@@ -85,6 +85,7 @@ class TherapySession(BaseModel):
     language: str = Field(default="en")
     metadata: SessionMetadata = Field(default_factory=SessionMetadata)
     sentiment_summary: Optional[SentimentSummary] = None
+    sentiment_score: Optional[int] = Field(None, ge=1, le=10)  # User sentiment score 1-10 (internal use)
     agent_memory_id: str = Field(..., min_length=1)
     
     class Config:
@@ -131,6 +132,9 @@ class TherapySession(BaseModel):
         
         if self.duration:
             item['duration'] = {'N': str(self.duration)}
+        
+        if self.sentiment_score:
+            item['sentimentScore'] = {'N': str(self.sentiment_score)}
         
         if self.sentiment_summary:
             progress_indicators = []
@@ -219,5 +223,6 @@ class TherapySession(BaseModel):
             language=item['language']['S'],
             metadata=metadata,
             sentiment_summary=sentiment_summary,
+            sentiment_score=int(item['sentimentScore']['N']) if 'sentimentScore' in item else None,
             agent_memory_id=item['agentMemoryId']['S']
         )

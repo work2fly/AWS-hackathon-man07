@@ -310,3 +310,79 @@ class SessionRepository(BaseRepository):
         except Exception as e:
             logger.error(f"Failed to get sessions for sentiment analysis: {str(e)}")
             return []
+    
+    def update_session_sentiment_score(self, session_id: str, sentiment_score: int) -> bool:
+        """
+        Update session sentiment score (1-10)
+        
+        Args:
+            session_id: Session identifier
+            sentiment_score: Score from 1-10 indicating user sentiment
+        """
+        try:
+            # Query to find the session by sessionId (need timestamp for key)
+            response = self.query(
+                key_condition_expression="sessionId = :session_id",
+                expression_attribute_values={":session_id": session_id},
+                limit=1
+            )
+            
+            items = response.get('Items', [])
+            if not items:
+                logger.error(f"Session {session_id} not found")
+                return False
+            
+            # Get timestamp from the found item
+            timestamp = items[0]['timestamp']['S']
+            
+            key = {
+                'sessionId': session_id,
+                'timestamp': timestamp
+            }
+            
+            update_expression = "SET sentimentScore = :score"
+            expression_attribute_values = {":score": sentiment_score}
+            condition = "attribute_exists(sessionId)"
+            
+            return self.update_item(
+                key=key,
+                update_expression=update_expression,
+                expression_attribute_values=expression_attribute_values,
+                condition_expression=condition
+            )
+            
+        except Exception as e:
+            logger.error(f"Failed to update sentiment score for session {session_id}: {str(e)}")
+            return False
+    
+    def get_sentiment_score_history(self, client_id: str, limit: Optional[int] = None) -> List[Dict[str, Any]]:
+        """
+        Get sentiment score history for a client (for progress tracking)
+        
+        Returns list of {session_id, timestamp, sentiment_score, status}
+        """
+        try:
+            response = self.query(
+                key_condition_expression="GSI1PK = :client_id",
+                expression_attribute_values={":client_id": client_id},
+                index_name="ClientIndex",
+                limit=limit,
+                scan_index_forward=True  # Oldest first for chronological order
+            )
+            
+            history = []
+            for item in response.get('Items', []):
+                if 'sentimentScore' in item:
+                    history.append({
+                        'session_id': item['sessionId']['S'],
+                        'timestamp': item['timestamp']['S'],
+                        'sentiment_score': int(item['sentimentScore']['N']),
+                        'status': item['status']['S'],
+                        'duration': int(item['duration']['N']) if 'duration' in item else None
+                    })
+            
+            return history
+            
+        except Exception as e:
+            logger.error(f"Failed to get sentiment score history for client {client_id}: {str(e)}")
+            return []
