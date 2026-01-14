@@ -1,6 +1,7 @@
 """
 AWS Configuration for AI Therapy Platform
 Handles AWS service clients and configuration
+🏆 Breaking Barriers UK 2026 compliant
 """
 
 import boto3
@@ -29,6 +30,7 @@ class AWSClients:
         self._cognito_idp = None
         self._apigateway = None
         self._bedrock = None
+        self._bedrock_runtime = None
         self._lambda_client = None
         self._cloudwatch = None
     
@@ -62,8 +64,15 @@ class AWSClients:
     def bedrock(self):
         """Amazon Bedrock client for AI services"""
         if self._bedrock is None:
-            self._bedrock = boto3.client('bedrock-runtime', config=RETRY_CONFIG)
+            self._bedrock = boto3.client('bedrock', config=RETRY_CONFIG)
         return self._bedrock
+    
+    @property
+    def bedrock_runtime(self):
+        """Amazon Bedrock Runtime client for inference"""
+        if self._bedrock_runtime is None:
+            self._bedrock_runtime = boto3.client('bedrock-runtime', config=RETRY_CONFIG)
+        return self._bedrock_runtime
     
     @property
     def lambda_client(self):
