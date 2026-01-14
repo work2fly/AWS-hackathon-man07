@@ -24,8 +24,10 @@ resource "aws_api_gateway_rest_api" "main" {
 # API Gateway Deployment
 resource "aws_api_gateway_deployment" "main" {
   depends_on = [
+    # Health check
     aws_api_gateway_method.health_check,
     aws_api_gateway_integration.health_check,
+    # Auth endpoints
     aws_api_gateway_method.auth_register,
     aws_api_gateway_integration.auth_register,
     aws_api_gateway_method.auth_login,
@@ -41,7 +43,36 @@ resource "aws_api_gateway_deployment" "main" {
     aws_api_gateway_method.auth_profile_put,
     aws_api_gateway_integration.auth_profile_put,
     aws_api_gateway_method.auth_enable_mfa,
-    aws_api_gateway_integration.auth_enable_mfa
+    aws_api_gateway_integration.auth_enable_mfa,
+    # Chat endpoints
+    aws_api_gateway_method.chat_send,
+    aws_api_gateway_integration.chat_send,
+    # Session endpoints
+    aws_api_gateway_method.sessions_create,
+    aws_api_gateway_integration.sessions_create,
+    aws_api_gateway_method.sessions_get,
+    aws_api_gateway_integration.sessions_get,
+    aws_api_gateway_method.sessions_end,
+    aws_api_gateway_integration.sessions_end,
+    aws_api_gateway_method.sessions_analysis,
+    aws_api_gateway_integration.sessions_analysis,
+    aws_api_gateway_method.sessions_sentiment,
+    aws_api_gateway_integration.sessions_sentiment,
+    # Red flag endpoints
+    aws_api_gateway_method.redflags_session,
+    aws_api_gateway_integration.redflags_session,
+    aws_api_gateway_method.redflags_severity,
+    aws_api_gateway_integration.redflags_severity,
+    # API key endpoints
+    aws_api_gateway_method.api_keys_create,
+    aws_api_gateway_integration.api_keys_create,
+    aws_api_gateway_method.api_keys_revoke,
+    aws_api_gateway_integration.api_keys_revoke,
+    # Notification endpoints
+    aws_api_gateway_method.notifications_list,
+    aws_api_gateway_integration.notifications_list,
+    aws_api_gateway_method.notifications_acknowledge,
+    aws_api_gateway_integration.notifications_acknowledge
   ]
   
   rest_api_id = aws_api_gateway_rest_api.main.id
@@ -562,4 +593,386 @@ resource "aws_apigatewayv2_route" "default" {
 # API Gateway Account (for CloudWatch logging)
 resource "aws_api_gateway_account" "main" {
   cloudwatch_role_arn = aws_iam_role.api_gateway_cloudwatch_role.arn
+}
+
+
+# ============================================
+# Chat API Resources
+# ============================================
+
+# Chat resource
+resource "aws_api_gateway_resource" "chat" {
+  rest_api_id = aws_api_gateway_rest_api.main.id
+  parent_id   = aws_api_gateway_rest_api.main.root_resource_id
+  path_part   = "chat"
+}
+
+# Chat send message resource
+resource "aws_api_gateway_resource" "chat_send" {
+  rest_api_id = aws_api_gateway_rest_api.main.id
+  parent_id   = aws_api_gateway_resource.chat.id
+  path_part   = "send"
+}
+
+# Chat send message method
+resource "aws_api_gateway_method" "chat_send" {
+  rest_api_id   = aws_api_gateway_rest_api.main.id
+  resource_id   = aws_api_gateway_resource.chat_send.id
+  http_method   = "POST"
+  authorization = "NONE"
+}
+
+# Chat send message integration
+resource "aws_api_gateway_integration" "chat_send" {
+  rest_api_id = aws_api_gateway_rest_api.main.id
+  resource_id = aws_api_gateway_resource.chat_send.id
+  http_method = aws_api_gateway_method.chat_send.http_method
+  
+  integration_http_method = "POST"
+  type                   = "AWS_PROXY"
+  uri                    = aws_lambda_function.chat_handler.invoke_arn
+}
+
+# ============================================
+# Session API Resources
+# ============================================
+
+# Sessions resource
+resource "aws_api_gateway_resource" "sessions" {
+  rest_api_id = aws_api_gateway_rest_api.main.id
+  parent_id   = aws_api_gateway_rest_api.main.root_resource_id
+  path_part   = "sessions"
+}
+
+# Session create resource
+resource "aws_api_gateway_resource" "sessions_create" {
+  rest_api_id = aws_api_gateway_rest_api.main.id
+  parent_id   = aws_api_gateway_resource.sessions.id
+  path_part   = "create"
+}
+
+# Session create method
+resource "aws_api_gateway_method" "sessions_create" {
+  rest_api_id   = aws_api_gateway_rest_api.main.id
+  resource_id   = aws_api_gateway_resource.sessions_create.id
+  http_method   = "POST"
+  authorization = "NONE"
+}
+
+# Session create integration
+resource "aws_api_gateway_integration" "sessions_create" {
+  rest_api_id = aws_api_gateway_rest_api.main.id
+  resource_id = aws_api_gateway_resource.sessions_create.id
+  http_method = aws_api_gateway_method.sessions_create.http_method
+  
+  integration_http_method = "POST"
+  type                   = "AWS_PROXY"
+  uri                    = aws_lambda_function.session_handlers.invoke_arn
+}
+
+# Session by ID resource
+resource "aws_api_gateway_resource" "sessions_id" {
+  rest_api_id = aws_api_gateway_rest_api.main.id
+  parent_id   = aws_api_gateway_resource.sessions.id
+  path_part   = "{sessionId}"
+}
+
+# Session GET method
+resource "aws_api_gateway_method" "sessions_get" {
+  rest_api_id   = aws_api_gateway_rest_api.main.id
+  resource_id   = aws_api_gateway_resource.sessions_id.id
+  http_method   = "GET"
+  authorization = "NONE"
+}
+
+# Session GET integration
+resource "aws_api_gateway_integration" "sessions_get" {
+  rest_api_id = aws_api_gateway_rest_api.main.id
+  resource_id = aws_api_gateway_resource.sessions_id.id
+  http_method = aws_api_gateway_method.sessions_get.http_method
+  
+  integration_http_method = "POST"
+  type                   = "AWS_PROXY"
+  uri                    = aws_lambda_function.session_handlers.invoke_arn
+}
+
+# Session end resource
+resource "aws_api_gateway_resource" "sessions_end" {
+  rest_api_id = aws_api_gateway_rest_api.main.id
+  parent_id   = aws_api_gateway_resource.sessions_id.id
+  path_part   = "end"
+}
+
+# Session end method
+resource "aws_api_gateway_method" "sessions_end" {
+  rest_api_id   = aws_api_gateway_rest_api.main.id
+  resource_id   = aws_api_gateway_resource.sessions_end.id
+  http_method   = "POST"
+  authorization = "NONE"
+}
+
+# Session end integration
+resource "aws_api_gateway_integration" "sessions_end" {
+  rest_api_id = aws_api_gateway_rest_api.main.id
+  resource_id = aws_api_gateway_resource.sessions_end.id
+  http_method = aws_api_gateway_method.sessions_end.http_method
+  
+  integration_http_method = "POST"
+  type                   = "AWS_PROXY"
+  uri                    = aws_lambda_function.session_handlers.invoke_arn
+}
+
+# Session analysis resource
+resource "aws_api_gateway_resource" "sessions_analysis" {
+  rest_api_id = aws_api_gateway_rest_api.main.id
+  parent_id   = aws_api_gateway_resource.sessions_id.id
+  path_part   = "analysis"
+}
+
+# Session analysis method
+resource "aws_api_gateway_method" "sessions_analysis" {
+  rest_api_id   = aws_api_gateway_rest_api.main.id
+  resource_id   = aws_api_gateway_resource.sessions_analysis.id
+  http_method   = "GET"
+  authorization = "NONE"
+}
+
+# Session analysis integration
+resource "aws_api_gateway_integration" "sessions_analysis" {
+  rest_api_id = aws_api_gateway_rest_api.main.id
+  resource_id = aws_api_gateway_resource.sessions_analysis.id
+  http_method = aws_api_gateway_method.sessions_analysis.http_method
+  
+  integration_http_method = "POST"
+  type                   = "AWS_PROXY"
+  uri                    = aws_lambda_function.session_analysis.invoke_arn
+}
+
+# Session sentiment history resource
+resource "aws_api_gateway_resource" "sessions_sentiment" {
+  rest_api_id = aws_api_gateway_rest_api.main.id
+  parent_id   = aws_api_gateway_resource.sessions_id.id
+  path_part   = "sentiment-history"
+}
+
+# Session sentiment history method
+resource "aws_api_gateway_method" "sessions_sentiment" {
+  rest_api_id   = aws_api_gateway_rest_api.main.id
+  resource_id   = aws_api_gateway_resource.sessions_sentiment.id
+  http_method   = "GET"
+  authorization = "NONE"
+}
+
+# Session sentiment history integration
+resource "aws_api_gateway_integration" "sessions_sentiment" {
+  rest_api_id = aws_api_gateway_rest_api.main.id
+  resource_id = aws_api_gateway_resource.sessions_sentiment.id
+  http_method = aws_api_gateway_method.sessions_sentiment.http_method
+  
+  integration_http_method = "POST"
+  type                   = "AWS_PROXY"
+  uri                    = aws_lambda_function.session_analysis.invoke_arn
+}
+
+# ============================================
+# Red Flag API Resources
+# ============================================
+
+# Red flags resource
+resource "aws_api_gateway_resource" "redflags" {
+  rest_api_id = aws_api_gateway_rest_api.main.id
+  parent_id   = aws_api_gateway_rest_api.main.root_resource_id
+  path_part   = "redflags"
+}
+
+# Red flags by session resource
+resource "aws_api_gateway_resource" "redflags_session" {
+  rest_api_id = aws_api_gateway_rest_api.main.id
+  parent_id   = aws_api_gateway_resource.redflags.id
+  path_part   = "session"
+}
+
+# Red flags by session ID resource
+resource "aws_api_gateway_resource" "redflags_session_id" {
+  rest_api_id = aws_api_gateway_rest_api.main.id
+  parent_id   = aws_api_gateway_resource.redflags_session.id
+  path_part   = "{sessionId}"
+}
+
+# Red flags by session method
+resource "aws_api_gateway_method" "redflags_session" {
+  rest_api_id   = aws_api_gateway_rest_api.main.id
+  resource_id   = aws_api_gateway_resource.redflags_session_id.id
+  http_method   = "GET"
+  authorization = "NONE"
+}
+
+# Red flags by session integration
+resource "aws_api_gateway_integration" "redflags_session" {
+  rest_api_id = aws_api_gateway_rest_api.main.id
+  resource_id = aws_api_gateway_resource.redflags_session_id.id
+  http_method = aws_api_gateway_method.redflags_session.http_method
+  
+  integration_http_method = "POST"
+  type                   = "AWS_PROXY"
+  uri                    = aws_lambda_function.redflag_handlers.invoke_arn
+}
+
+# Red flags by severity resource
+resource "aws_api_gateway_resource" "redflags_severity" {
+  rest_api_id = aws_api_gateway_rest_api.main.id
+  parent_id   = aws_api_gateway_resource.redflags.id
+  path_part   = "severity"
+}
+
+# Red flags by severity level resource
+resource "aws_api_gateway_resource" "redflags_severity_level" {
+  rest_api_id = aws_api_gateway_rest_api.main.id
+  parent_id   = aws_api_gateway_resource.redflags_severity.id
+  path_part   = "{severity}"
+}
+
+# Red flags by severity method
+resource "aws_api_gateway_method" "redflags_severity" {
+  rest_api_id   = aws_api_gateway_rest_api.main.id
+  resource_id   = aws_api_gateway_resource.redflags_severity_level.id
+  http_method   = "GET"
+  authorization = "NONE"
+}
+
+# Red flags by severity integration
+resource "aws_api_gateway_integration" "redflags_severity" {
+  rest_api_id = aws_api_gateway_rest_api.main.id
+  resource_id = aws_api_gateway_resource.redflags_severity_level.id
+  http_method = aws_api_gateway_method.redflags_severity.http_method
+  
+  integration_http_method = "POST"
+  type                   = "AWS_PROXY"
+  uri                    = aws_lambda_function.redflag_handlers.invoke_arn
+}
+
+# ============================================
+# API Key Management Resources
+# ============================================
+
+# API keys resource
+resource "aws_api_gateway_resource" "api_keys" {
+  rest_api_id = aws_api_gateway_rest_api.main.id
+  parent_id   = aws_api_gateway_rest_api.main.root_resource_id
+  path_part   = "api-keys"
+}
+
+# API key create resource
+resource "aws_api_gateway_resource" "api_keys_create" {
+  rest_api_id = aws_api_gateway_rest_api.main.id
+  parent_id   = aws_api_gateway_resource.api_keys.id
+  path_part   = "create"
+}
+
+# API key create method
+resource "aws_api_gateway_method" "api_keys_create" {
+  rest_api_id   = aws_api_gateway_rest_api.main.id
+  resource_id   = aws_api_gateway_resource.api_keys_create.id
+  http_method   = "POST"
+  authorization = "NONE"
+}
+
+# API key create integration
+resource "aws_api_gateway_integration" "api_keys_create" {
+  rest_api_id = aws_api_gateway_rest_api.main.id
+  resource_id = aws_api_gateway_resource.api_keys_create.id
+  http_method = aws_api_gateway_method.api_keys_create.http_method
+  
+  integration_http_method = "POST"
+  type                   = "AWS_PROXY"
+  uri                    = aws_lambda_function.api_key_handlers.invoke_arn
+}
+
+# API key by ID resource
+resource "aws_api_gateway_resource" "api_keys_id" {
+  rest_api_id = aws_api_gateway_rest_api.main.id
+  parent_id   = aws_api_gateway_resource.api_keys.id
+  path_part   = "{keyId}"
+}
+
+# API key revoke method
+resource "aws_api_gateway_method" "api_keys_revoke" {
+  rest_api_id   = aws_api_gateway_rest_api.main.id
+  resource_id   = aws_api_gateway_resource.api_keys_id.id
+  http_method   = "DELETE"
+  authorization = "NONE"
+}
+
+# API key revoke integration
+resource "aws_api_gateway_integration" "api_keys_revoke" {
+  rest_api_id = aws_api_gateway_rest_api.main.id
+  resource_id = aws_api_gateway_resource.api_keys_id.id
+  http_method = aws_api_gateway_method.api_keys_revoke.http_method
+  
+  integration_http_method = "POST"
+  type                   = "AWS_PROXY"
+  uri                    = aws_lambda_function.api_key_handlers.invoke_arn
+}
+
+# ============================================
+# Notification API Resources
+# ============================================
+
+# Notifications resource
+resource "aws_api_gateway_resource" "notifications" {
+  rest_api_id = aws_api_gateway_rest_api.main.id
+  parent_id   = aws_api_gateway_rest_api.main.root_resource_id
+  path_part   = "notifications"
+}
+
+# Notifications list method
+resource "aws_api_gateway_method" "notifications_list" {
+  rest_api_id   = aws_api_gateway_rest_api.main.id
+  resource_id   = aws_api_gateway_resource.notifications.id
+  http_method   = "GET"
+  authorization = "NONE"
+}
+
+# Notifications list integration
+resource "aws_api_gateway_integration" "notifications_list" {
+  rest_api_id = aws_api_gateway_rest_api.main.id
+  resource_id = aws_api_gateway_resource.notifications.id
+  http_method = aws_api_gateway_method.notifications_list.http_method
+  
+  integration_http_method = "POST"
+  type                   = "AWS_PROXY"
+  uri                    = aws_lambda_function.notification_handlers.invoke_arn
+}
+
+# Notification by ID resource
+resource "aws_api_gateway_resource" "notifications_id" {
+  rest_api_id = aws_api_gateway_rest_api.main.id
+  parent_id   = aws_api_gateway_resource.notifications.id
+  path_part   = "{notificationId}"
+}
+
+# Notification acknowledge resource
+resource "aws_api_gateway_resource" "notifications_acknowledge" {
+  rest_api_id = aws_api_gateway_rest_api.main.id
+  parent_id   = aws_api_gateway_resource.notifications_id.id
+  path_part   = "acknowledge"
+}
+
+# Notification acknowledge method
+resource "aws_api_gateway_method" "notifications_acknowledge" {
+  rest_api_id   = aws_api_gateway_rest_api.main.id
+  resource_id   = aws_api_gateway_resource.notifications_acknowledge.id
+  http_method   = "POST"
+  authorization = "NONE"
+}
+
+# Notification acknowledge integration
+resource "aws_api_gateway_integration" "notifications_acknowledge" {
+  rest_api_id = aws_api_gateway_rest_api.main.id
+  resource_id = aws_api_gateway_resource.notifications_acknowledge.id
+  http_method = aws_api_gateway_method.notifications_acknowledge.http_method
+  
+  integration_http_method = "POST"
+  type                   = "AWS_PROXY"
+  uri                    = aws_lambda_function.notification_handlers.invoke_arn
 }

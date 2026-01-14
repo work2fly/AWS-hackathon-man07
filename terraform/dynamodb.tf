@@ -276,3 +276,82 @@ resource "aws_dynamodb_table" "websocket_connections" {
     Name = "${local.name_prefix}-websocket-connections-table"
   })
 }
+
+# API Keys Table
+resource "aws_dynamodb_table" "api_keys" {
+  name           = "${local.name_prefix}-api-keys"
+  billing_mode   = var.dynamodb_billing_mode
+  hash_key       = "keyId"
+  
+  attribute {
+    name = "keyId"
+    type = "S"
+  }
+  
+  attribute {
+    name = "userId"
+    type = "S"
+  }
+  
+  # GSI for user-based queries
+  global_secondary_index {
+    name     = "UserIndex"
+    hash_key = "userId"
+    
+    projection_type = "ALL"
+  }
+  
+  # Enable encryption at rest
+  server_side_encryption {
+    enabled     = var.enable_encryption
+    kms_key_arn = var.enable_encryption ? aws_kms_key.main.arn : null
+  }
+  
+  # Enable point-in-time recovery
+  point_in_time_recovery {
+    enabled = var.dynamodb_point_in_time_recovery
+  }
+  
+  # Deletion protection
+  deletion_protection_enabled = var.enable_deletion_protection
+  
+  tags = merge(local.common_tags, {
+    Name = "${local.name_prefix}-api-keys-table"
+  })
+}
+
+# Rate Limits Table
+resource "aws_dynamodb_table" "rate_limits" {
+  name           = "${local.name_prefix}-rate-limits"
+  billing_mode   = var.dynamodb_billing_mode
+  hash_key       = "limit_key"
+  
+  attribute {
+    name = "limit_key"
+    type = "S"
+  }
+  
+  # TTL for automatic cleanup of expired rate limit records
+  ttl {
+    attribute_name = "ttl"
+    enabled        = true
+  }
+  
+  # Enable encryption at rest
+  server_side_encryption {
+    enabled     = var.enable_encryption
+    kms_key_arn = var.enable_encryption ? aws_kms_key.main.arn : null
+  }
+  
+  # Enable point-in-time recovery
+  point_in_time_recovery {
+    enabled = var.dynamodb_point_in_time_recovery
+  }
+  
+  # Deletion protection
+  deletion_protection_enabled = var.enable_deletion_protection
+  
+  tags = merge(local.common_tags, {
+    Name = "${local.name_prefix}-rate-limits-table"
+  })
+}

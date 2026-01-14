@@ -12,6 +12,7 @@ from ..data.session_repository import SessionRepository
 from ..data.user_repository import UserRepository
 from ..models.session import TherapySession, SessionStatus
 from ..security.api_security import secure_handler, SecurityHeaders
+from ..security.rate_limiter import rate_limit_handler, RateLimiter
 from ..utils.logger import get_logger
 
 logger = get_logger(__name__)
@@ -26,6 +27,7 @@ AGENT_ALIAS_ID = os.environ.get('BEDROCK_AGENT_ALIAS_ID')
 
 
 @secure_handler
+@rate_limit_handler('chat')
 def chat_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     """
     Lambda handler for chat messages

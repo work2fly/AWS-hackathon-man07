@@ -43,6 +43,18 @@ output "dynamodb_tables" {
       name = aws_dynamodb_table.notifications.name
       arn  = aws_dynamodb_table.notifications.arn
     }
+    api_keys_table = {
+      name = aws_dynamodb_table.api_keys.name
+      arn  = aws_dynamodb_table.api_keys.arn
+    }
+    rate_limits_table = {
+      name = aws_dynamodb_table.rate_limits.name
+      arn  = aws_dynamodb_table.rate_limits.arn
+    }
+    websocket_connections_table = {
+      name = aws_dynamodb_table.websocket_connections.name
+      arn  = aws_dynamodb_table.websocket_connections.arn
+    }
   }
 }
 
@@ -110,6 +122,57 @@ output "api_gateway_rest" {
   }
 }
 
+# Lambda Function Outputs
+output "lambda_functions" {
+  description = "Lambda function information"
+  value = {
+    auth_handlers = {
+      name = aws_lambda_function.auth_handlers.function_name
+      arn  = aws_lambda_function.auth_handlers.arn
+    }
+    chat_handler = {
+      name = aws_lambda_function.chat_handler.function_name
+      arn  = aws_lambda_function.chat_handler.arn
+    }
+    session_analysis = {
+      name = aws_lambda_function.session_analysis.function_name
+      arn  = aws_lambda_function.session_analysis.arn
+    }
+    session_handlers = {
+      name = aws_lambda_function.session_handlers.function_name
+      arn  = aws_lambda_function.session_handlers.arn
+    }
+    redflag_handlers = {
+      name = aws_lambda_function.redflag_handlers.function_name
+      arn  = aws_lambda_function.redflag_handlers.arn
+    }
+    api_key_handlers = {
+      name = aws_lambda_function.api_key_handlers.function_name
+      arn  = aws_lambda_function.api_key_handlers.arn
+    }
+    notification_handlers = {
+      name = aws_lambda_function.notification_handlers.function_name
+      arn  = aws_lambda_function.notification_handlers.arn
+    }
+    cognito_triggers = {
+      name = aws_lambda_function.cognito_triggers.function_name
+      arn  = aws_lambda_function.cognito_triggers.arn
+    }
+    websocket_connect = {
+      name = aws_lambda_function.websocket_connect.function_name
+      arn  = aws_lambda_function.websocket_connect.arn
+    }
+    websocket_disconnect = {
+      name = aws_lambda_function.websocket_disconnect.function_name
+      arn  = aws_lambda_function.websocket_disconnect.arn
+    }
+    websocket_default = {
+      name = aws_lambda_function.websocket_default.function_name
+      arn  = aws_lambda_function.websocket_default.arn
+    }
+  }
+}
+
 # CloudWatch Outputs
 output "cloudwatch_log_groups" {
   description = "CloudWatch log group information"
@@ -137,10 +200,13 @@ output "environment_config" {
     LAMBDA_EXECUTION_ROLE_ARN = aws_iam_role.lambda_execution_role.arn
     
     # DynamoDB
-    USERS_TABLE_NAME         = aws_dynamodb_table.users.name
-    SESSIONS_TABLE_NAME      = aws_dynamodb_table.sessions.name
-    REDFLAGS_TABLE_NAME      = aws_dynamodb_table.redflags.name
-    NOTIFICATIONS_TABLE_NAME = aws_dynamodb_table.notifications.name
+    USERS_TABLE_NAME                = aws_dynamodb_table.users.name
+    SESSIONS_TABLE_NAME             = aws_dynamodb_table.sessions.name
+    REDFLAGS_TABLE_NAME             = aws_dynamodb_table.redflags.name
+    NOTIFICATIONS_TABLE_NAME        = aws_dynamodb_table.notifications.name
+    API_KEYS_TABLE_NAME             = aws_dynamodb_table.api_keys.name
+    RATE_LIMITS_TABLE_NAME          = aws_dynamodb_table.rate_limits.name
+    WEBSOCKET_CONNECTIONS_TABLE_NAME = aws_dynamodb_table.websocket_connections.name
     
     # Cognito
     COGNITO_USER_POOL_ID     = aws_cognito_user_pool.main.id
