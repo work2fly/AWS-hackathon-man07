@@ -37,7 +37,6 @@ export function BabylonAvatar({
   // Update refs when props change
   useEffect(() => {
     animPropsRef.current = { isSpeaking, isListening, volumeLevel };
-    console.log('Animation props updated:', { isSpeaking, isListening, volumeLevel });
   }, [isSpeaking, isListening, volumeLevel]);
 
   const sceneRef = useRef<{
@@ -69,6 +68,10 @@ export function BabylonAvatar({
     neckBaseRotation: null as BABYLON.Vector3 | null,
     leftArmBaseRotation: null as BABYLON.Vector3 | null,
     rightArmBaseRotation: null as BABYLON.Vector3 | null,
+    leftForeArmBaseRotation: null as BABYLON.Vector3 | null,
+    rightForeArmBaseRotation: null as BABYLON.Vector3 | null,
+    leftHandBaseRotation: null as BABYLON.Vector3 | null,
+    rightHandBaseRotation: null as BABYLON.Vector3 | null,
     initialized: false
   });
 
@@ -184,12 +187,10 @@ export function BabylonAvatar({
       if (!head && meshes.length > 1) head = meshes[1] as BABYLON.Mesh;
 
       // Arm pose fix (lower from A-frame) using bone.rotate (reliable for glTF)
-      console.log('=== Ready Player Me Arm Adjustment ===');
-      console.log('Total meshes loaded:', meshes.length);
 
       if (result.skeletons && result.skeletons.length > 0) {
         const skeleton = result.skeletons[0];
-        console.log('Skeleton found with', skeleton.bones.length, 'bones');
+        console.log('🦴 Skeleton bones:', skeleton.bones.map(b => b.name));
 
         // CRITICAL: Force skeleton to update by using needInitialSkinMatrix
         skeleton.needInitialSkinMatrix = true;
@@ -197,8 +198,6 @@ export function BabylonAvatar({
         // Find all skinned meshes and force them to use the skeleton properly
         result.meshes.forEach((mesh) => {
           if ((mesh as any).skeleton) {
-            console.log('Found skinned mesh:', mesh.name);
-            // Force the mesh to recalculate its bone matrices
             (mesh as any).skeleton = skeleton;
           }
         });
@@ -222,8 +221,6 @@ export function BabylonAvatar({
         const shoulderDownValue = armValuesRef.current.shoulderDown;
         const upperArmDownValue = armValuesRef.current.upperArmDown;
         const foreArmInValue = armValuesRef.current.foreArmIn;
-        
-        console.log('Using arm values:', { shoulderDownValue, upperArmDownValue, foreArmInValue });
 
         // Use the bone's linked transform node for rotation
         let adjusted = 0;
@@ -231,17 +228,10 @@ export function BabylonAvatar({
         const rotateBone = (bone: BABYLON.Bone | undefined, axis: BABYLON.Vector3, angle: number, name: string) => {
           if (!bone) return;
           
-          console.log(`✓ Rotating ${name} by ${angle} radians`);
-          
-          // Get the transform node linked to this bone
           const transformNode = bone.getTransformNode();
           if (transformNode) {
-            console.log(`  Using transform node: ${transformNode.name}`);
-            // Rotate the transform node
             transformNode.rotate(axis, angle, BABYLON.Space.LOCAL);
           } else {
-            console.log(`  No transform node, using bone directly`);
-            // Fallback to bone rotation
             bone.rotate(axis, angle, BABYLON.Space.LOCAL, skinnedMesh);
           }
           
@@ -261,14 +251,11 @@ export function BabylonAvatar({
         // Force all meshes to update their world matrices
         result.meshes.forEach((m) => {
           m.computeWorldMatrix(true);
-          // If mesh has skeleton, force bone matrix update
           if ((m as any).skeleton) {
             const skel = (m as any).skeleton as BABYLON.Skeleton;
             skel.computeAbsoluteTransforms(true);
           }
         });
-
-        console.log('=== Total arm bones adjusted:', adjusted, '===');
 
         // Find face mesh with morph targets for facial animation
         let faceMesh: BABYLON.Mesh | null = null;
@@ -276,57 +263,40 @@ export function BabylonAvatar({
         let leftEyeCloseTarget: BABYLON.MorphTarget | null = null;
         let rightEyeCloseTarget: BABYLON.MorphTarget | null = null;
 
-        // Search ALL meshes for morph targets
-        console.log('=== Searching for morph targets ===');
+        // First pass: Find the mesh with the MOST morph targets (usually the head)
+        let maxTargets = 0;
+        let headMeshWithMostTargets: BABYLON.Mesh | null = null;
+        
         for (const mesh of meshes) {
           const m = mesh as BABYLON.Mesh;
-          console.log(`Mesh: ${m.name}, hasMorphTargetManager: ${!!m.morphTargetManager}`);
-          
           if (m.morphTargetManager && m.morphTargetManager.numTargets > 0) {
-            console.log(`  Found ${m.morphTargetManager.numTargets} morph targets on ${m.name}`);
+            if (m.morphTargetManager.numTargets > maxTargets) {
+              maxTargets = m.morphTargetManager.numTargets;
+              headMeshWithMostTargets = m;
+            }
+          }
+        }
+        
+        // Use the mesh with most targets as the face mesh
+        if (headMeshWithMostTargets) {
+          faceMesh = headMeshWithMostTargets;
+          
+          const manager = faceMesh.morphTargetManager!;
+          for (let i = 0; i < manager.numTargets; i++) {
+            const target = manager.getTarget(i);
+            const name = target.name.toLowerCase();
             
-            // List all morph targets
-            for (let i = 0; i < m.morphTargetManager.numTargets; i++) {
-              const target = m.morphTargetManager.getTarget(i);
-              console.log(`    [${i}] ${target.name} (influence: ${target.influence})`);
-              
-              // Find mouth-related morph targets
-              const name = target.name.toLowerCase();
-              if (!mouthOpenTarget && (name.includes('mouthopen') || name.includes('jawopen') || name === 'viseme_aa' || name === 'viseme_o' || name === 'a' || name === 'aa')) {
-                mouthOpenTarget = target;
-                faceMesh = m;
-                console.log(`    ✓ Selected "${target.name}" for MOUTH on mesh "${m.name}"`);
-              }
-              // Find eye blink targets
-              if (name.includes('eyeblinkleft') || (name.includes('eye') && name.includes('left') && name.includes('close'))) {
-                leftEyeCloseTarget = target;
-                console.log(`    ✓ Selected "${target.name}" for LEFT EYE`);
-              }
-              if (name.includes('eyeblinkright') || (name.includes('eye') && name.includes('right') && name.includes('close'))) {
-                rightEyeCloseTarget = target;
-                console.log(`    ✓ Selected "${target.name}" for RIGHT EYE`);
-              }
+            if (!mouthOpenTarget && (name.includes('mouthopen') || name.includes('jawopen') || name === 'viseme_aa' || name === 'viseme_o' || name === 'a' || name === 'aa')) {
+              mouthOpenTarget = target;
+            }
+            if (name.includes('eyeblinkleft') || (name.includes('eye') && name.includes('left') && name.includes('close'))) {
+              leftEyeCloseTarget = target;
+            }
+            if (name.includes('eyeblinkright') || (name.includes('eye') && name.includes('right') && name.includes('close'))) {
+              rightEyeCloseTarget = target;
             }
           }
         }
-
-        // If no mouth target found, try the first morph target on any mesh
-        if (!mouthOpenTarget) {
-          console.log('No specific mouth target found, trying first available morph target...');
-          for (const mesh of meshes) {
-            const m = mesh as BABYLON.Mesh;
-            if (m.morphTargetManager && m.morphTargetManager.numTargets > 0) {
-              mouthOpenTarget = m.morphTargetManager.getTarget(0);
-              faceMesh = m;
-              console.log(`Using first morph target: "${mouthOpenTarget.name}" on "${m.name}"`);
-              break;
-            }
-          }
-        }
-
-        console.log('=== Morph target search complete ===');
-        console.log('faceMesh:', faceMesh?.name);
-        console.log('mouthOpenTarget:', mouthOpenTarget?.name);
 
         if (sceneRef.current) {
           sceneRef.current.avatar = rootMesh as BABYLON.Mesh;
@@ -341,7 +311,6 @@ export function BabylonAvatar({
           sceneRef.current.rightEyeCloseTarget = rightEyeCloseTarget;
         }
       } else {
-        console.log('No skeleton found, cannot adjust arms.');
         if (sceneRef.current) {
           sceneRef.current.avatar = rootMesh as BABYLON.Mesh;
           sceneRef.current.head = (head || rootMesh) as BABYLON.Mesh;
@@ -558,7 +527,6 @@ export function BabylonAvatar({
     state.talkTimer += 0.016;
     if (state.talkTimer > 2) {
       state.talkTimer = 0;
-      console.log('Animation state:', { speaking, listening, hasMouthTarget: !!sceneRef.current?.mouthOpenTarget });
     }
 
     // Breathing animation - always active on root mesh
@@ -569,15 +537,30 @@ export function BabylonAvatar({
     // Get skeleton for bone animations
     const skeleton = sceneRef.current?.skeleton;
     
+    // Debug: log skeleton status once
+    if (!state.initialized) {
+      console.log('🦴 Animation init - skeleton:', !!skeleton, 'bones:', skeleton?.bones?.length);
+    }
+    
     if (skeleton) {
       // Find bones
       const headBone = skeleton.bones.find(b => b.name === 'Head');
       const neckBone = skeleton.bones.find(b => b.name === 'Neck');
       const leftArmBone = skeleton.bones.find(b => b.name === 'LeftArm');
       const rightArmBone = skeleton.bones.find(b => b.name === 'RightArm');
+      const leftForeArmBone = skeleton.bones.find(b => b.name === 'LeftForeArm');
+      const rightForeArmBone = skeleton.bones.find(b => b.name === 'RightForeArm');
+      const leftHandBone = skeleton.bones.find(b => b.name === 'LeftHand');
+      const rightHandBone = skeleton.bones.find(b => b.name === 'RightHand');
       
       // Store base rotations on first run
       if (!state.initialized) {
+        console.log('🦴 Initializing bone rotations...');
+        console.log('  Head bone:', !!headBone, 'has transform:', !!headBone?.getTransformNode());
+        console.log('  LeftArm bone:', !!leftArmBone, 'has transform:', !!leftArmBone?.getTransformNode());
+        console.log('  LeftForeArm bone:', !!leftForeArmBone, 'has transform:', !!leftForeArmBone?.getTransformNode());
+        console.log('  LeftHand bone:', !!leftHandBone, 'has transform:', !!leftHandBone?.getTransformNode());
+        
         if (headBone?.getTransformNode()) {
           state.headBaseRotation = headBone.getTransformNode()!.rotation.clone();
         }
@@ -586,12 +569,24 @@ export function BabylonAvatar({
         }
         if (leftArmBone?.getTransformNode()) {
           state.leftArmBaseRotation = leftArmBone.getTransformNode()!.rotation.clone();
+          console.log('  LeftArm base rotation:', state.leftArmBaseRotation);
         }
         if (rightArmBone?.getTransformNode()) {
           state.rightArmBaseRotation = rightArmBone.getTransformNode()!.rotation.clone();
         }
+        if (leftForeArmBone?.getTransformNode()) {
+          state.leftForeArmBaseRotation = leftForeArmBone.getTransformNode()!.rotation.clone();
+        }
+        if (rightForeArmBone?.getTransformNode()) {
+          state.rightForeArmBaseRotation = rightForeArmBone.getTransformNode()!.rotation.clone();
+        }
+        if (leftHandBone?.getTransformNode()) {
+          state.leftHandBaseRotation = leftHandBone.getTransformNode()!.rotation.clone();
+        }
+        if (rightHandBone?.getTransformNode()) {
+          state.rightHandBaseRotation = rightHandBone.getTransformNode()!.rotation.clone();
+        }
         state.initialized = true;
-        console.log('Animation initialized with base rotations');
       }
       
       // Calculate animation offsets based on state
@@ -635,21 +630,8 @@ export function BabylonAvatar({
         }
       }
       
-      // Apply arm animation (only when speaking)
-      if (speaking) {
-        if (leftArmBone && state.leftArmBaseRotation) {
-          const leftArmNode = leftArmBone.getTransformNode();
-          if (leftArmNode) {
-            leftArmNode.rotation.x = state.leftArmBaseRotation.x + armOffsetX;
-          }
-        }
-        if (rightArmBone && state.rightArmBaseRotation) {
-          const rightArmNode = rightArmBone.getTransformNode();
-          if (rightArmNode) {
-            rightArmNode.rotation.x = state.rightArmBaseRotation.x + Math.sin(time * 2.2) * 0.08;
-          }
-        }
-      }
+      // Arm animation disabled - keeping avatar simple and natural
+      // The head movement, blinking, and mouth animation provide enough life
     }
     
     // Body sway animation on root mesh - MORE VISIBLE
@@ -672,61 +654,96 @@ export function BabylonAvatar({
     }
 
     // Morph target animations (mouth movement, blinking)
-    const mouthTarget = sceneRef.current?.mouthOpenTarget;
-    const leftEyeTarget = sceneRef.current?.leftEyeCloseTarget;
-    const rightEyeTarget = sceneRef.current?.rightEyeCloseTarget;
-    const faceMesh = sceneRef.current?.faceMesh;
-    const scene = sceneRef.current?.scene;
+    // IMPORTANT: Iterate over ALL meshes to find and animate morph targets
+    const allMeshesWithMorphs = allMeshes.filter(m => {
+      const mesh = m as BABYLON.Mesh;
+      return mesh.morphTargetManager && mesh.morphTargetManager.numTargets > 0;
+    });
 
-    // Mouth animation when speaking - directly set influence
-    if (mouthTarget && faceMesh && scene) {
-      if (speaking) {
-        // Animate mouth open/close rapidly to simulate talking
-        // Use a combination of sine waves for more natural movement
-        const fastWave = Math.sin(time * 12); // Fast open/close
-        const slowWave = Math.sin(time * 3); // Slower variation
-        const mouthValue = Math.max(0, (fastWave * 0.5 + 0.5) * (slowWave * 0.3 + 0.7));
+    // Mouth animation when speaking - ITERATE ALL MESHES
+    if (speaking) {
+      const fastWave = Math.sin(time * 8); // Slightly slower
+      const slowWave = Math.sin(time * 2.5); // Slower variation
+      const mouthValue = Math.max(0, (fastWave * 0.3 + 0.3) * (slowWave * 0.2 + 0.5)); // Reduced intensity
+      
+      let totalMouthTargetsAnimated = 0;
+      
+      for (const mesh of allMeshesWithMorphs) {
+        const m = mesh as BABYLON.Mesh;
+        const manager = m.morphTargetManager!;
         
-        // DIRECTLY set the influence on the morph target
-        mouthTarget.influence = mouthValue;
+        manager.enableNormalMorphing = true;
+        manager.enableTangentMorphing = true;
         
-        // Also try setting via the manager index
-        const manager = faceMesh.morphTargetManager;
-        if (manager) {
-          for (let i = 0; i < manager.numTargets; i++) {
-            if (manager.getTarget(i) === mouthTarget) {
-              manager.getTarget(i).influence = mouthValue;
-              break;
-            }
+        for (let i = 0; i < manager.numTargets; i++) {
+          const target = manager.getTarget(i);
+          const name = target.name.toLowerCase();
+          
+          if (name.includes('mouth') || name.includes('jaw') || 
+              name.includes('viseme') || name === 'aa' || name === 'a' || 
+              name === 'o' || name === 'e') {
+            target.influence = mouthValue * 0.4;
+            totalMouthTargetsAnimated++;
           }
         }
+      }
+    } else {
+      // Close all mouth targets when not speaking
+      for (const mesh of allMeshesWithMorphs) {
+        const m = mesh as BABYLON.Mesh;
+        const manager = m.morphTargetManager!;
         
-        // Debug log
-        if (state.talkTimer < 0.05) {
-          console.log(`Mouth: ${mouthValue.toFixed(2)} on ${faceMesh.name}/${mouthTarget.name}`);
-        }
-      } else {
-        // Close mouth when not speaking
-        if (mouthTarget.influence > 0.02) {
-          mouthTarget.influence *= 0.85; // Smooth decay
-        } else {
-          mouthTarget.influence = 0;
+        for (let i = 0; i < manager.numTargets; i++) {
+          const target = manager.getTarget(i);
+          const name = target.name.toLowerCase();
+          
+          if (name.includes('mouth') || name.includes('jaw') || 
+              name.includes('viseme') || name === 'aa' || name === 'a' || 
+              name === 'o' || name === 'e') {
+            if (target.influence > 0.02) {
+              target.influence *= 0.85;
+            } else {
+              target.influence = 0;
+            }
+          }
         }
       }
     }
 
-    // Eye blinking animation (random blinks)
+    // Eye blinking animation - natural random blinks
     state.blinkTimer += 0.016;
-    if (state.blinkTimer > 3 + Math.random() * 4) {
+    
+    // Blink every 2-5 seconds randomly
+    let shouldBlink = false;
+    if (state.blinkTimer > 2.5) {
+      if (Math.random() < 0.02) { // 2% chance each frame after 2.5s
+        shouldBlink = true;
+        state.blinkTimer = 0;
+      }
+    }
+    // Force blink if it's been too long (max 5 seconds)
+    if (state.blinkTimer > 5) {
+      shouldBlink = true;
       state.blinkTimer = 0;
-      if (leftEyeTarget) leftEyeTarget.influence = 1;
-      if (rightEyeTarget) rightEyeTarget.influence = 1;
     }
-    if (leftEyeTarget && leftEyeTarget.influence > 0) {
-      leftEyeTarget.influence = Math.max(0, leftEyeTarget.influence - 0.12);
-    }
-    if (rightEyeTarget && rightEyeTarget.influence > 0) {
-      rightEyeTarget.influence = Math.max(0, rightEyeTarget.influence - 0.12);
+    
+    for (const mesh of allMeshesWithMorphs) {
+      const m = mesh as BABYLON.Mesh;
+      const manager = m.morphTargetManager!;
+      
+      for (let i = 0; i < manager.numTargets; i++) {
+        const target = manager.getTarget(i);
+        const name = target.name.toLowerCase();
+        
+        if (name.includes('eyeblink') || (name.includes('eye') && name.includes('close'))) {
+          if (shouldBlink) {
+            target.influence = 1;
+          } else if (target.influence > 0) {
+            // Quick blink down
+            target.influence = Math.max(0, target.influence - 0.15);
+          }
+        }
+      }
     }
   }
 
