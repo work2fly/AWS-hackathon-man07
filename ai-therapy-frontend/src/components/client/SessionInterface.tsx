@@ -7,6 +7,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useWebSocket } from '@/hooks/useWebSocket';
 import { useAudio } from '@/hooks/useAudio';
+import { useSpeechRecognition } from '@/hooks/useSpeechRecognition';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -69,6 +70,18 @@ export function SessionInterface() {
     isReady: audioReady,
     cleanup
   } = useAudio();
+  
+  const {
+    isListening: isSpeechListening,
+    transcript: speechTranscript,
+    interimTranscript,
+    isSupported: speechSupported,
+    error: speechError,
+    startListening: startSpeechListening,
+    stopListening: stopSpeechListening,
+    resetTranscript,
+    setOnTranscript
+  } = useSpeechRecognition();
 
   const [session, setSession] = useState<SessionState>({
     isActive: false,
@@ -83,6 +96,8 @@ export function SessionInterface() {
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [messageInput, setMessageInput] = useState('');
   const [isSendingMessage, setIsSendingMessage] = useState(false);
+  const [isVoiceMode, setIsVoiceMode] = useState(false);
+  const [isAIPlaying, setIsAIPlaying] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   // Initialize audio and WebSocket
@@ -110,6 +125,8 @@ export function SessionInterface() {
   useEffect(() => {
     const handleAudioMessage = (message: any) => {
       if (message.payload?.audioData) {
+        console.log('🔊 Audio message received, setting AI as speaking');
+        
         // Decode base64 audio data to ArrayBuffer
         const audioData = message.payload.audioData;
         let arrayBuffer: ArrayBuffer;
@@ -127,8 +144,23 @@ export function SessionInterface() {
           arrayBuffer = audioData;
         }
         
+        // Set AI as speaking BEFORE playing
+        setIsAIPlaying(true);
+        console.log('✅ isAIPlaying set to TRUE');
+        
         // Play received audio from AI
-        playAudio(arrayBuffer, message.payload.format || 'mp3');
+        playAudio(arrayBuffer, message.payload.format || 'mp3').then(() => {
+          console.log('🎵 Audio finished playing');
+          // Audio finished playing - wait a bit before stopping animation
+          setTimeout(() => {
+            setIsAIPlaying(false);
+            console.log('✅ isAIPlaying set to FALSE');
+          }, 500);
+        }).catch((error) => {
+          console.error('❌ Audio playback error:', error);
+          setIsAIPlaying(false);
+        });
+        
         setSession(prev => ({ ...prev, messageCount: prev.messageCount + 1 }));
       }
     };
@@ -164,6 +196,22 @@ export function SessionInterface() {
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [chatMessages]);
+  
+  // Handle speech recognition transcript
+  useEffect(() => {
+    setOnTranscript((transcript) => {
+      if (transcript && session.isActive) {
+        // Auto-send when user finishes speaking
+        setMessageInput(transcript);
+        // Auto-send after a brief pause
+        setTimeout(() => {
+          if (transcript === messageInput) {
+            sendTextMessage();
+          }
+        }, 1500);
+      }
+    });
+  }, [setOnTranscript, session.isActive, messageInput]);
 
   // Update connection status
   useEffect(() => {
@@ -339,14 +387,32 @@ export function SessionInterface() {
         console.error('Failed to send text message');
       }
       
-      // Clear input
+      // Clear input and reset speech
       setMessageInput('');
+      resetTranscript();
     } catch (error) {
       console.error('Error sending message:', error);
     } finally {
       setIsSendingMessage(false);
     }
-  }, [messageInput, session.isActive, isSendingMessage, sendText]);
+  }, [messageInput, session.isActive, isSendingMessage, sendText, resetTranscript]);
+  
+  const toggleVoiceInput = useCallback(() => {
+    if (!speechSupported) {
+      alert('Speech recognition is not supported in your browser. Please use Chrome, Edge, or Safari.');
+      return;
+    }
+    
+    if (isSpeechListening) {
+      stopSpeechListening();
+      setIsVoiceMode(false);
+    } else {
+      const started = startSpeechListening();
+      if (started) {
+        setIsVoiceMode(true);
+      }
+    }
+  }, [speechSupported, isSpeechListening, startSpeechListening, stopSpeechListening]);
   
   const handleKeyPress = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -428,58 +494,6 @@ export function SessionInterface() {
         </CardContent>
       </Card>
 
-      {/* AI Therapist Section */}
-      <Card className="mb-8 border-0 shadow-lg">
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl text-gray-900">Your AI Therapist</CardTitle>
-          <CardDescription className="text-gray-600">
-            Powered by Amazon Nova Sonic 2 for natural, empathetic conversations
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col items-center space-y-6">
-            {/* 3D AI Avatar - Babylon.js */}
-            <div className="relative w-full max-w-md h-96">
-              <BabylonAvatar
-                isActive={session.isActive}
-                isSpeaking={session.isActive && !isRecording && session.messageCount > 0}
-                isListening={session.isActive && isRecording}
-                volumeLevel={volumeLevel}
-                modelUrl="https://models.readyplayer.me/692c94887b7a88e1f63f3d82.glb?pose=A"
-              />
-              
-              {/* Volume indicator overlay */}
-              {isRecording && (
-                <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 z-10">
-                  <div className="bg-white rounded-full px-4 py-2 shadow-lg">
-                    <div className="flex items-center space-x-1">
-                      {[...Array(5)].map((_, i) => (
-                        <div
-                          key={i}
-                          className={`w-1 h-6 rounded-full transition-all duration-150 ${
-                            volumeLevel > (i * 20) ? 'bg-green-500' : 'bg-gray-300'
-                          }`}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-            
-            <div className="text-center">
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">Dr. AI Assistant</h3>
-              <p className="text-gray-600 max-w-md">
-                {session.isActive 
-                  ? 'I\'m here to listen and support you through your healing journey...' 
-                  : 'Ready to start a compassionate conversation whenever you are'
-                }
-              </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
       {/* Session Controls */}
       <Card className="mb-8 border-0 shadow-lg">
         <CardContent className="pt-8">
@@ -516,25 +530,6 @@ export function SessionInterface() {
             ) : (
               <div className="flex items-center space-x-4">
                 <Button
-                  onClick={toggleMute}
-                  variant={isMuted ? "destructive" : "secondary"}
-                  size="lg"
-                  className="rounded-full px-8 py-4"
-                >
-                  {isMuted ? (
-                    <>
-                      <MicOff className="mr-2 h-5 w-5" />
-                      Unmute
-                    </>
-                  ) : (
-                    <>
-                      <Mic className="mr-2 h-5 w-5" />
-                      Mute
-                    </>
-                  )}
-                </Button>
-                
-                <Button
                   onClick={endSession}
                   variant="outline"
                   size="lg"
@@ -549,80 +544,181 @@ export function SessionInterface() {
         </CardContent>
       </Card>
 
-      {/* Chat Interface - Only show when session is active */}
-      {session.isActive && (
-        <Card className="mb-8 border-0 shadow-lg">
-          <CardHeader>
-            <CardTitle className="flex items-center text-xl text-gray-900">
-              <MessageCircle className="mr-2 h-5 w-5 text-purple-600" />
-              Chat with Your AI Therapist
-            </CardTitle>
-            <CardDescription>
-              Type your thoughts and feelings - your AI therapist is here to listen
+      {/* AI Therapist Section - Side by Side Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+        {/* Left: Avatar */}
+        <Card className="border-0 shadow-lg">
+          <CardHeader className="text-center">
+            <CardTitle className="text-2xl text-gray-900">Your AI Therapist</CardTitle>
+            <CardDescription className="text-gray-600">
+              Powered by Amazon Bedrock for natural, empathetic conversations
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {/* Chat Messages */}
-            <div className="bg-gray-50 rounded-lg p-4 mb-4 h-96 overflow-y-auto">
-              {chatMessages.length === 0 ? (
-                <div className="flex items-center justify-center h-full text-gray-500">
-                  <div className="text-center">
-                    <MessageCircle className="h-12 w-12 mx-auto mb-2 text-gray-400" />
-                    <p>Start the conversation by typing a message below</p>
-                  </div>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {chatMessages.map((msg) => (
-                    <div
-                      key={msg.id}
-                      className={`flex ${msg.isFromAI ? 'justify-start' : 'justify-end'}`}
-                    >
-                      <div
-                        className={`max-w-[80%] rounded-lg px-4 py-3 ${
-                          msg.isFromAI
-                            ? 'bg-white border border-purple-200 text-gray-900'
-                            : 'bg-purple-600 text-white'
-                        }`}
-                      >
-                        <p className="text-sm whitespace-pre-wrap">{msg.text}</p>
-                        <p className={`text-xs mt-1 ${msg.isFromAI ? 'text-gray-500' : 'text-purple-200'}`}>
-                          {msg.timestamp.toLocaleTimeString()}
-                        </p>
+            <div className="flex flex-col items-center space-y-6">
+              {/* 3D AI Avatar - Babylon.js */}
+              <div className="relative w-full h-96">
+                <BabylonAvatar
+                  isActive={session.isActive}
+                  isSpeaking={isAIPlaying}
+                  isListening={session.isActive && (isRecording || isSpeechListening)}
+                  volumeLevel={isAIPlaying ? 80 : volumeLevel}
+                  modelUrl="https://models.readyplayer.me/692c94887b7a88e1f63f3d82.glb?pose=A"
+                />
+                
+                {/* Volume indicator overlay */}
+                {(isRecording || isSpeechListening) && (
+                  <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 z-10">
+                    <div className="bg-white rounded-full px-4 py-2 shadow-lg">
+                      <div className="flex items-center space-x-1">
+                        {[...Array(5)].map((_, i) => (
+                          <div
+                            key={i}
+                            className={`w-1 h-6 rounded-full transition-all duration-150 ${
+                              volumeLevel > (i * 20) ? 'bg-green-500' : 'bg-gray-300'
+                            }`}
+                          />
+                        ))}
                       </div>
                     </div>
-                  ))}
-                  <div ref={chatEndRef} />
-                </div>
-              )}
-            </div>
-
-            {/* Message Input */}
-            <div className="flex space-x-2">
-              <Input
-                type="text"
-                placeholder="Type your message here..."
-                value={messageInput}
-                onChange={(e) => setMessageInput(e.target.value)}
-                onKeyPress={handleKeyPress}
-                disabled={!session.isActive || isSendingMessage}
-                className="flex-1"
-              />
-              <Button
-                onClick={sendTextMessage}
-                disabled={!messageInput.trim() || !session.isActive || isSendingMessage}
-                className="bg-purple-600 hover:bg-purple-700 text-white"
-              >
-                {isSendingMessage ? (
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                ) : (
-                  <Send className="h-5 w-5" />
+                  </div>
                 )}
-              </Button>
+              </div>
+              
+              <div className="text-center">
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">Dr. AI Assistant</h3>
+                <div className="flex items-center justify-center space-x-2 mb-2">
+                  {isAIPlaying && (
+                    <Badge className="bg-green-500 text-white animate-pulse">
+                      🔊 Speaking
+                    </Badge>
+                  )}
+                  {(isRecording || isSpeechListening) && (
+                    <Badge className="bg-blue-500 text-white animate-pulse">
+                      👂 Listening
+                    </Badge>
+                  )}
+                  {!isAIPlaying && !isRecording && !isSpeechListening && session.isActive && (
+                    <Badge className="bg-gray-400 text-white">
+                      💭 Ready
+                    </Badge>
+                  )}
+                </div>
+                <p className="text-gray-600 max-w-md">
+                  {session.isActive 
+                    ? isAIPlaying 
+                      ? 'Speaking to you now...'
+                      : (isRecording || isSpeechListening)
+                        ? 'Listening to you...'
+                        : 'Ready to help'
+                    : 'Ready to start a compassionate conversation whenever you are'
+                  }
+                </p>
+              </div>
             </div>
           </CardContent>
         </Card>
-      )}
+
+        {/* Right: Chat Interface - Only show when session is active */}
+        {session.isActive && (
+          <Card className="border-0 shadow-lg">
+            <CardHeader>
+              <CardTitle className="flex items-center text-xl text-gray-900">
+                <MessageCircle className="mr-2 h-5 w-5 text-purple-600" />
+                Chat with Your AI Therapist
+              </CardTitle>
+              <CardDescription>
+                Type or speak your thoughts - your AI therapist is here to listen
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {/* Chat Messages */}
+              <div className="bg-gray-50 rounded-lg p-4 mb-4 h-80 overflow-y-auto">
+                {chatMessages.length === 0 ? (
+                  <div className="flex items-center justify-center h-full text-gray-500">
+                    <div className="text-center">
+                      <MessageCircle className="h-12 w-12 mx-auto mb-2 text-gray-400" />
+                      <p>Start the conversation by typing or speaking</p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {chatMessages.map((msg) => (
+                      <div
+                        key={msg.id}
+                        className={`flex ${msg.isFromAI ? 'justify-start' : 'justify-end'}`}
+                      >
+                        <div
+                          className={`max-w-[80%] rounded-lg px-4 py-3 ${
+                            msg.isFromAI
+                              ? 'bg-white border border-purple-200 text-gray-900'
+                              : 'bg-purple-600 text-white'
+                          }`}
+                        >
+                          <p className="text-sm whitespace-pre-wrap">{msg.text}</p>
+                          <p className={`text-xs mt-1 ${msg.isFromAI ? 'text-gray-500' : 'text-purple-200'}`}>
+                            {msg.timestamp.toLocaleTimeString()}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                    <div ref={chatEndRef} />
+                  </div>
+                )}
+              </div>
+
+              {/* Message Input */}
+              <div className="flex space-x-2">
+                <Button
+                  onClick={toggleVoiceInput}
+                  disabled={!session.isActive}
+                  variant={isVoiceMode ? "default" : "outline"}
+                  className={isVoiceMode ? "bg-red-600 hover:bg-red-700 text-white animate-pulse" : ""}
+                  title={speechSupported ? "Click to speak" : "Speech not supported in this browser"}
+                >
+                  {isSpeechListening ? (
+                    <MicOff className="h-5 w-5" />
+                  ) : (
+                    <Mic className="h-5 w-5" />
+                  )}
+                </Button>
+                <Input
+                  type="text"
+                  placeholder={isSpeechListening ? "Listening... speak now" : (interimTranscript || "Type your message or click mic to speak...")}
+                  value={messageInput || interimTranscript}
+                  onChange={(e) => setMessageInput(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  disabled={!session.isActive || isSendingMessage || isSpeechListening}
+                  className="flex-1"
+                />
+                <Button
+                  onClick={sendTextMessage}
+                  disabled={!messageInput.trim() || !session.isActive || isSendingMessage}
+                  className="bg-purple-600 hover:bg-purple-700 text-white"
+                >
+                  {isSendingMessage ? (
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                  ) : (
+                    <Send className="h-5 w-5" />
+                  )}
+                </Button>
+              </div>
+              
+              {speechError && (
+                <p className="text-sm text-red-600 mt-2">
+                  ⚠️ {speechError}
+                </p>
+              )}
+              
+              {!speechSupported && (
+                <p className="text-sm text-yellow-600 mt-2">
+                  💡 Voice input works best in Chrome, Edge, or Safari
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        )}
+      </div>
 
       {/* System Status */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">

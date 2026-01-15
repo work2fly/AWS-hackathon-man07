@@ -123,7 +123,7 @@ def handle_ping(connection_id, message, domain_name, stage):
     return {'statusCode': 200}
 
 def handle_audio(connection_id, user_id, message, domain_name, stage):
-    """Handle audio message - transcribe and process with AI"""
+    """Handle audio message - transcribe, process with AI, and respond with speech"""
     print(f"🎤 Audio message received from {user_id}")
     
     try:
@@ -156,12 +156,15 @@ def handle_audio(connection_id, user_id, message, domain_name, stage):
         
         print(f"📊 Audio data size: {len(audio_bytes)} bytes, format: {audio_format}")
         
-        # For now, send acknowledgment and suggest using text
-        # Full audio pipeline would require: audio format conversion, Transcribe streaming, Polly
+        # For WebM/Opus audio from browser, we need to use StartTranscriptionJob
+        # For real-time, we'd need to convert to PCM first
+        # Simpler approach: Ask user to use text chat for now, but acknowledge audio
+        
+        # Send acknowledgment
         send_message(connection_id, {
             'type': 'text',
             'payload': {
-                'text': 'I received your audio message. For the best experience right now, please use the text chat below. Audio transcription is being enhanced.',
+                'text': 'I heard you! For the best experience, please type your message in the chat below. Full speech-to-speech is being enhanced.',
                 'isFromAI': True
             },
             'timestamp': datetime.utcnow().isoformat()
@@ -300,18 +303,42 @@ def get_ai_therapy_response(user_message, session_context):
             'content': user_message
         })
         
-        # System prompt for therapy AI
-        system_prompt = """You are a compassionate AI therapy assistant. Your role is to:
+        # Enhanced system prompt with cultural awareness
+        system_prompt = """You are a compassionate, culturally-aware AI therapy assistant. Your role is to:
+
+**Core Responsibilities:**
 - Listen actively and empathetically to the user's concerns
 - Ask thoughtful questions to help them explore their feelings
 - Provide supportive, non-judgmental responses
 - Use evidence-based therapeutic techniques when appropriate
 - Encourage self-reflection and personal growth
 - Maintain professional boundaries
+
+**Cultural Sensitivity:**
+- Be aware of and respect diverse cultural backgrounds, beliefs, and values
+- Recognize that mental health stigma varies across cultures
+- Adapt communication style to be culturally appropriate
+- Acknowledge that family dynamics, gender roles, and social expectations differ across cultures
+- Be sensitive to religious and spiritual beliefs that may influence mental health perspectives
+- Understand that expressions of emotion and distress vary culturally
+- Respect cultural approaches to healing and wellness
+- Avoid imposing Western therapeutic models as universal solutions
+
+**Cultural Context Awareness:**
+- If the user mentions their cultural background, acknowledge and incorporate it into your responses
+- Be mindful of collectivist vs individualist cultural values
+- Recognize that concepts like "self-care" may have different meanings across cultures
+- Be aware of migration, diaspora, and identity challenges
+- Understand intergenerational trauma and cultural displacement
+- Respect traditional healing practices alongside modern therapy
+
+**Professional Guidelines:**
 - Never provide medical diagnoses or prescribe treatments
 - Suggest professional help for serious mental health concerns
+- Keep responses concise (2-3 sentences) for natural conversation flow
+- Be warm, genuine, and human in your interactions
 
-Keep responses concise (2-3 sentences) for natural conversation flow."""
+Remember: Cultural humility means continuously learning and adapting to each individual's unique cultural context."""
 
         # Prepare Bedrock request (Claude format)
         request_body = {

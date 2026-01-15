@@ -481,20 +481,31 @@ export function BabylonAvatar({
 
     if (!head) return;
 
-    const breathingIntensity = 0.008;
-    const breathingSpeed = 1.2;
+    // Enhanced breathing animation
+    const breathingIntensity = speaking ? 0.015 : 0.008;
+    const breathingSpeed = speaking ? 1.5 : 1.2;
     avatar.position.y = Math.sin(time * breathingSpeed) * breathingIntensity;
 
     if (speaking) {
-      const talkIntensity = Math.max(0.3, volume / 100);
+      // More pronounced speaking animations
+      const talkIntensity = Math.max(0.5, volume / 100);
 
+      // Head movements - more natural and expressive
       if (head.name.toLowerCase().includes('head') && !head.name.toLowerCase().includes('eye')) {
-        head.rotation.y = Math.sin(time * 1.8) * 0.1 * talkIntensity;
-        head.rotation.x = Math.sin(time * 2.2) * 0.08 * talkIntensity;
-        head.rotation.z = Math.sin(time * 1.5) * 0.05 * talkIntensity;
+        head.rotation.y = Math.sin(time * 2.0) * 0.15 * talkIntensity; // Side to side
+        head.rotation.x = Math.sin(time * 2.5) * 0.12 * talkIntensity; // Nod up/down
+        head.rotation.z = Math.sin(time * 1.8) * 0.08 * talkIntensity; // Tilt
       }
 
-      avatar.rotation.y = Math.sin(time * 0.8) * 0.03 * talkIntensity;
+      // Body movements - subtle sway
+      avatar.rotation.y = Math.sin(time * 1.2) * 0.05 * talkIntensity;
+      
+      // Add slight forward lean when speaking
+      avatar.rotation.x = Math.sin(time * 1.5) * 0.02 * talkIntensity;
+      
+      // Shoulder movement simulation (if no skeleton)
+      avatar.position.x = Math.sin(time * 1.8) * 0.01 * talkIntensity;
+      
     } else if (listening) {
       const listenIntensity = 0.5;
 
