@@ -198,6 +198,18 @@
       "ready": "Gata să încep o conversație compassionată oricând ești pregătit"
     },
     "privacy": "Conversația ta va fi privată și sigură",
+    "recording": "Înregistrare",
+    "muted": "Mut",
+    "voiceSelection": {
+      "title": "Alege Vocea Terapeutului Tău",
+      "subtitle": "Selectează vocea care te face să te simți cel mai confortabil",
+      "female": "Voce Feminină",
+      "femaleDescription": "Joanna - Caldă și Grijulie",
+      "male": "Voce Masculină",
+      "maleDescription": "Matthew - Calm și Susținător",
+      "startWith": "Începe Sesiunea cu {voice}",
+      "cancel": "Anulează"
+    },
     "recording": "Se înregistrează",
     "muted": "Sunet dezactivat",
     "audio": {

@@ -200,6 +200,16 @@
     "privacy": "محادثتك ستكون خاصة وآمنة",
     "recording": "جاري التسجيل",
     "muted": "مكتوم",
+    "voiceSelection": {
+      "title": "اختر صوت معالجك",
+      "subtitle": "اختر الصوت الذي يشعرك بالراحة أكثر",
+      "female": "صوت أنثوي",
+      "femaleDescription": "جوانا - دافئة ومهتمة",
+      "male": "صوت ذكوري",
+      "maleDescription": "ماثيو - هادئ وداعم",
+      "startWith": "ابدأ الجلسة مع {voice}",
+      "cancel": "إلغاء"
+    },
     "audio": {
       "system": "نظام الصوت",
       "ready": "جاهز",

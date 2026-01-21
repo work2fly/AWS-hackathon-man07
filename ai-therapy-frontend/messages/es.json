@@ -166,26 +166,50 @@
     }
   },
   "session": {
-    "title": "Sesión de terapia",
-    "start": "Iniciar sesión",
+    "title": "Tu sesión de terapia IA",
+    "welcome": "Bienvenido, {name}. ¿Listo para continuar tu viaje de sanación con nuestro terapeuta IA?",
+    "start": "Iniciar tu sesión",
     "end": "Finalizar sesión",
     "pause": "Pausar",
     "resume": "Reanudar",
+    "mute": "Silenciar",
+    "unmute": "Activar sonido",
     "status": {
       "connecting": "Conectando...",
-      "connected": "Conectado",
-      "disconnected": "Desconectado",
+      "connected": "Conectado al terapeuta IA",
+      "disconnected": "Listo para conectar",
       "active": "Sesión activa",
-      "paused": "Sesión pausada"
+      "paused": "Sesión pausada",
+      "sessionActive": "Tu sesión está activa y segura",
+      "establishing": "Estableciendo conexión segura",
+      "clickStart": "Haz clic en \"Iniciar sesión\" cuando estés listo"
     },
-    "duration": "Duración",
+    "duration": "Tiempo de sesión",
+    "exchanges": "Intercambios",
     "transcript": "Transcripción",
     "notes": "Notas de sesión",
     "feedback": "¿Cómo fue tu sesión?",
     "endConfirm": "¿Estás seguro de que quieres finalizar esta sesión?",
+    "therapist": {
+      "title": "Tu terapeuta IA",
+      "subtitle": "Impulsado por Amazon Nova Sonic 2 para conversaciones naturales y empáticas",
+      "name": "Dr. Asistente IA",
+      "listening": "Estoy aquí para escuchar y apoyarte en tu viaje de sanación...",
+      "ready": "Listo para comenzar una conversación compasiva cuando lo estés"
+    },
     "privacy": "Tu conversación será privada y segura",
     "recording": "Grabando",
     "muted": "Silenciado",
+    "voiceSelection": {
+      "title": "Elige la Voz de Tu Terapeuta",
+      "subtitle": "Selecciona la voz que te haga sentir más cómodo",
+      "female": "Voz Femenina",
+      "femaleDescription": "Joanna - Cálida y Cariñosa",
+      "male": "Voz Masculina",
+      "maleDescription": "Matthew - Tranquilo y Comprensivo",
+      "startWith": "Iniciar Sesión con {voice}",
+      "cancel": "Cancelar"
+    },
     "audio": {
       "system": "Sistema de Audio",
       "ready": "Listo",

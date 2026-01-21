@@ -33,7 +33,7 @@ def synthesize_speech_polly(text, voice_id='Joanna'):
     """
     try:
         print(f"🔊 Synthesizing speech with Amazon Polly Neural")
-        print(f"   Voice ID: {voice_id}")
+        print(f"   Voice ID RECEIVED: '{voice_id}' (type: {type(voice_id).__name__})")
         print(f"   Text length: {len(text)} characters")
         
         # Validate voice_id
@@ -41,6 +41,8 @@ def synthesize_speech_polly(text, voice_id='Joanna'):
         if voice_id not in valid_voices:
             print(f"⚠️ Invalid voice '{voice_id}', defaulting to Joanna")
             voice_id = 'Joanna'
+        
+        print(f"   ✅ Using voice: '{voice_id}'")
         
         # Use selected voice
         response = polly_client.synthesize_speech(
@@ -260,9 +262,9 @@ Respond naturally to what the user says."""
 
 def lambda_handler(event, context):
     """
-    HTTP POST /process-audio handler
+    HTTP POST /process-audio handler - OPTIMIZED FOR SPEED
     REAL AI: Claude 3.5 Sonnet processes request
-    Frontend handles text-to-speech with Web Speech API
+    Direct text input → Claude → Polly Neural → Audio response
     🏆 Breaking Barriers UK 2026 compliant
     """
     try:
@@ -287,48 +289,41 @@ def lambda_handler(event, context):
         
         session_id = body.get('sessionId')
         audio_data = body.get('audioData')
-        audio_format = body.get('format', 'webm')
-        sample_rate = body.get('sampleRate', 16000)
+        audio_format = body.get('format', 'text')
         user_text = body.get('userText')  # Direct text input from frontend
         polly_voice = body.get('pollyVoice', 'Joanna')  # Selected voice (Joanna or Matthew)
         
         print(f"📨 Processing request for session: {session_id}")
-        print(f"Format: {audio_format}, Polly Voice: {polly_voice}")
+        print(f"📨 Format: {audio_format}")
+        print(f"🔊 POLLY VOICE REQUESTED: {polly_voice}")  # CLEAR DEBUG
+        print(f"📝 User text: {user_text[:50] if user_text else 'None'}...")  # First 50 chars
         
-        if not audio_data and not user_text:
-            return {
-                'statusCode': 400,
-                'headers': headers,
-                'body': json.dumps({'error': 'No audio data or text provided'})
-            }
-        
-        # If text is provided directly, use it (fastest path!)
+        # FAST PATH: Use direct text input (no transcription needed!)
         if user_text:
             print(f"📝 Using direct text input: {user_text}")
-        elif audio_format == 'text':
+        elif audio_format == 'text' and audio_data:
             # Text sent as base64
             user_text = base64.b64decode(audio_data).decode('utf-8')
             print(f"📝 Decoded text from base64: {user_text}")
         else:
-            # Try Transcribe (slower)
-            print("🎤 Step 1: Transcribing audio...")
-            user_text = transcribe_audio_real(audio_data, session_id)
-            
-            if not user_text or len(user_text.strip()) == 0:
-                print("⚠️ Transcription failed or empty, using fallback")
-                audio_size = len(audio_data)
-                if audio_size < 5000:
-                    user_text = "Hi, I'm feeling a bit anxious today."
-                elif audio_size < 8000:
-                    user_text = "Hello, I've been stressed lately and need someone to talk to."
-                else:
-                    user_text = "Hey, I'm going through a tough time and could use some support."
+            return {
+                'statusCode': 400,
+                'headers': headers,
+                'body': json.dumps({'error': 'No text provided - use userText field'})
+            }
+        
+        if not user_text or len(user_text.strip()) == 0:
+            return {
+                'statusCode': 400,
+                'headers': headers,
+                'body': json.dumps({'error': 'Empty text provided'})
+            }
         
         print(f"📝 User said: {user_text}")
         
-        # Step 2: Process with Claude 3.5 Sonnet (REAL AI!)
-        print("🤖 Step 2: Processing with Claude...")
-        ai_response = invoke_claude_with_audio(audio_data, user_text)
+        # Step 1: Process with Claude 3.5 Sonnet (REAL AI!)
+        print("🤖 Step 1: Processing with Claude...")
+        ai_response = invoke_claude_with_audio(None, user_text)
         
         if not ai_response:
             return {
@@ -346,8 +341,9 @@ def lambda_handler(event, context):
         
         ai_text = ai_response
         
-        # Step 3: Synthesize speech with Amazon Polly Neural (NATURAL VOICE!)
-        print(f"🔊 Step 3: Synthesizing speech with Polly Neural ({polly_voice})...")
+        # Step 2: Synthesize speech with Amazon Polly Neural (NATURAL VOICE!)
+        print(f"🔊 Step 2: Synthesizing speech with Polly Neural ({polly_voice})...")
+        print(f"🔊 VOICE PARAMETER VALUE: '{polly_voice}' (type: {type(polly_voice).__name__})")
         ai_audio = synthesize_speech_polly(ai_text, polly_voice)
         
         if not ai_audio:

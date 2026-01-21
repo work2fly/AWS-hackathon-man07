@@ -12,10 +12,10 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { VideoAvatar } from '@/components/client/VideoAvatar';
-import { BabylonAvatar } from '@/components/client/BabylonAvatarTest';
 // import { FramerAvatar } from '@/components/client/FramerAvatar'; // Animated - not realistic
 // import { SimpleAnimatedAvatar } from '@/components/client/SimpleAnimatedAvatar'; // CSS only
 // import { ThreeFiberAvatar } from '@/components/client/ThreeFiberAvatar'; // 3D - too slow
+// import { BabylonAvatar } from '@/components/client/BabylonAvatar'; // OLD - commented out
 import { 
   Mic, 
   MicOff, 
@@ -397,14 +397,13 @@ export function SessionInterface() {
         </CardHeader>
         <CardContent className="overflow-visible">
           <div className="flex flex-col items-center space-y-6">
-            {/* Babylon Avatar - REAL 3D MODEL with Morph Targets! */}
-            <div className="relative w-full max-w-lg h-[500px] overflow-visible">
-              <BabylonAvatar
+            {/* Video Avatar - REALISTIC & PROFESSIONAL! */}
+            <div className="relative w-full max-w-md h-96 overflow-visible">
+              <VideoAvatar
                 isActive={session.isActive}
                 isSpeaking={isSpeaking}
                 isListening={isListening}
                 volumeLevel={volumeLevel}
-                modelUrl="https://models.readyplayer.me/692c94887b7a88e1f63f3d82.glb?pose=A&morphTargets=ARKit"
               />
               
               {/* Volume indicator overlay */}
@@ -463,8 +462,8 @@ export function SessionInterface() {
                 {/* Voice Selection - appears after clicking Start */}
                 {showVoiceSelector && (
                   <div className="border-2 border-purple-300 rounded-xl p-6 bg-purple-50">
-                    <h3 className="text-xl font-bold text-purple-900 mb-2">{t('session.voiceSelection.title')}</h3>
-                    <p className="text-sm text-gray-600 mb-4">{t('session.voiceSelection.subtitle')}</p>
+                    <h3 className="text-xl font-bold text-purple-900 mb-2">Choose Your Therapist's Voice</h3>
+                    <p className="text-sm text-gray-600 mb-4">Select the voice that feels most comfortable for you</p>
                     
                     <div className="flex justify-center space-x-4 mb-6">
                       <button
@@ -479,8 +478,8 @@ export function SessionInterface() {
                             : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                         }`}
                       >
-                        👩 {t('session.voiceSelection.female')}
-                        <div className="text-sm font-normal mt-1">{t('session.voiceSelection.femaleDescription')}</div>
+                        👩 Female Voice
+                        <div className="text-sm font-normal mt-1">Joanna - Warm & Caring</div>
                       </button>
                       
                       <button
@@ -495,8 +494,8 @@ export function SessionInterface() {
                             : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                         }`}
                       >
-                        👨 {t('session.voiceSelection.male')}
-                        <div className="text-sm font-normal mt-1">{t('session.voiceSelection.maleDescription')}</div>
+                        👨 Male Voice
+                        <div className="text-sm font-normal mt-1">Matthew - Calm & Supportive</div>
                       </button>
                     </div>
                     
@@ -506,14 +505,14 @@ export function SessionInterface() {
                         size="lg"
                         className="bg-purple-600 hover:bg-purple-700 text-white px-12 py-4"
                       >
-                        {t('session.voiceSelection.startWith').replace('{voice}', pollyVoice)}
+                        Start Session with {pollyVoice}
                       </Button>
                       <Button
                         onClick={() => setShowVoiceSelector(false)}
                         variant="outline"
                         size="lg"
                       >
-                        {t('session.voiceSelection.cancel')}
+                        Cancel
                       </Button>
                     </div>
                   </div>

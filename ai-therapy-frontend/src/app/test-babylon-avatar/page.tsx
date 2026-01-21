@@ -1,29 +1,22 @@
 'use client';
 
-// Client session interface with avatar and REAL voice therapy
-// 🏆 Breaking Barriers UK 2026 compliant
-// Integrated with Web Speech API + Claude + Polly
+/**
+ * TEST PAGE - Babylon Avatar with Voice Integration
+ * Same interface as SessionInterface but SEPARATE for testing
+ * 🏆 Breaking Barriers UK 2026 compliant
+ */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { useAuth } from '@/hooks/useAuth';
-import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { VideoAvatar } from '@/components/client/VideoAvatar';
 import { BabylonAvatar } from '@/components/client/BabylonAvatarTest';
-// import { FramerAvatar } from '@/components/client/FramerAvatar'; // Animated - not realistic
-// import { SimpleAnimatedAvatar } from '@/components/client/SimpleAnimatedAvatar'; // CSS only
-// import { ThreeFiberAvatar } from '@/components/client/ThreeFiberAvatar'; // 3D - too slow
 import { 
   Mic, 
   MicOff, 
-  Phone, 
   PhoneOff,
   Activity,
-  Heart,
-  MessageCircle
+  Heart
 } from 'lucide-react';
 
 // Extend Window interface for webkitSpeechRecognition
@@ -42,11 +35,7 @@ interface SessionState {
   messageCount: number;
 }
 
-export function SessionInterface() {
-  const { user } = useAuth();
-  const { t } = useLanguage();
-  
-  // Voice therapy state
+export default function TestBabylonAvatarPage() {
   const [session, setSession] = useState<SessionState>({
     isActive: false,
     sessionId: null,
@@ -62,7 +51,6 @@ export function SessionInterface() {
   const [pollyVoice, setPollyVoice] = useState<'Joanna' | 'Matthew'>('Joanna');
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [volumeLevel, setVolumeLevel] = useState(0);
-  const [audioError, setAudioError] = useState<string | null>(null);
   const [showVoiceSelector, setShowVoiceSelector] = useState(false);
   
   const recognitionRef = useRef<any>(null);
@@ -104,14 +92,12 @@ export function SessionInterface() {
           } else if (interimTranscript) {
             setStatus(`🎤 Listening: "${interimTranscript}"`);
             setTranscript(interimTranscript);
-            // Simulate volume level for avatar
             setVolumeLevel(50 + Math.random() * 50);
           }
         };
         
         recognitionRef.current.onerror = (event: any) => {
           addMessage(`❌ Recognition error: ${event.error}`);
-          setAudioError(`Recognition error: ${event.error}`);
           setIsListening(false);
           setStatus('❌ Error');
           setVolumeLevel(0);
@@ -124,10 +110,6 @@ export function SessionInterface() {
             setStatus('✅ Ready');
           }
         };
-      } else {
-        addMessage('❌ Speech Recognition not supported');
-        setAudioError('Speech Recognition not supported in this browser');
-        setStatus('❌ Not Supported');
       }
     }
   }, []);
@@ -140,26 +122,19 @@ export function SessionInterface() {
       setIsSpeaking(false);
       setVolumeLevel(0);
       
-      console.log('🔊 FRONTEND: Current pollyVoice state:', pollyVoice);
-      console.log('🔊 FRONTEND: Sending request with voice:', pollyVoice);
-      
-      const requestBody = {
-        sessionId: session.sessionId,
-        audioData: btoa(text),
-        format: 'text',
-        sampleRate: 16000,
-        userText: text,
-        pollyVoice: pollyVoice
-      };
-      
-      console.log('🔊 FRONTEND: Request body:', JSON.stringify(requestBody, null, 2));
-      
       const response = await fetch(`${API_URL}/process-audio`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(requestBody)
+        body: JSON.stringify({
+          sessionId: session.sessionId,
+          audioData: btoa(text),
+          format: 'text',
+          sampleRate: 16000,
+          userText: text,
+          pollyVoice: pollyVoice
+        })
       });
       
       if (!response.ok) {
@@ -185,7 +160,6 @@ export function SessionInterface() {
       
     } catch (error) {
       addMessage(`❌ Error: ${error}`);
-      setAudioError(`Processing error: ${error}`);
       setStatus('❌ Error');
       setIsSpeaking(false);
     }
@@ -244,7 +218,6 @@ export function SessionInterface() {
         setTranscript('');
       } catch (error) {
         addMessage(`❌ Error: ${error}`);
-        setAudioError(`Recognition error: ${error}`);
       }
     }
   };
@@ -288,8 +261,6 @@ export function SessionInterface() {
   // Confirm voice and start
   const confirmVoiceAndStart = useCallback(() => {
     const sessionId = `session_${Date.now()}`;
-    console.log('✅ CONFIRM: Current pollyVoice state:', pollyVoice);
-    console.log('✅ Starting session with voice:', pollyVoice); // DEBUG
     setSession({
       isActive: true,
       sessionId,
@@ -339,13 +310,20 @@ export function SessionInterface() {
 
   return (
     <div className="container mx-auto px-4 py-8">
+      {/* Test Page Header */}
+      <div className="mb-6 p-4 bg-yellow-50 border-2 border-yellow-200 rounded-lg">
+        <h2 className="text-xl font-bold text-yellow-900 mb-2">🧪 TEST PAGE - Babylon Avatar</h2>
+        <p className="text-yellow-800">This is a SEPARATE test page. Your production code is safe!</p>
+        <a href="/" className="text-blue-600 hover:underline text-sm">← Back to Main App</a>
+      </div>
+
       {/* Hero Section */}
       <section className="text-center mb-12">
         <h1 className="text-4xl font-bold text-gray-900 mb-4">
-          {t('session.title')}
+          Your AI Therapy Session
         </h1>
         <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-          {t('session.welcome').replace('{name}', user?.profile.firstName || user?.email || 'there')}
+          Testing Babylon Avatar with Voice Integration
         </p>
       </section>
 
@@ -385,20 +363,18 @@ export function SessionInterface() {
         </CardContent>
       </Card>
 
-
-
-      {/* AI Therapist Section */}
+      {/* AI Therapist Section with Babylon Avatar */}
       <Card className="mb-8 border-0 shadow-lg overflow-visible">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl text-gray-900">{t('session.therapist.title')}</CardTitle>
+          <CardTitle className="text-2xl text-gray-900">Your AI Therapist</CardTitle>
           <CardDescription className="text-gray-600">
-            {t('session.therapist.subtitle')}
+            Powered by Babylon.js 3D Avatar with Morph Targets
           </CardDescription>
         </CardHeader>
         <CardContent className="overflow-visible">
           <div className="flex flex-col items-center space-y-6">
-            {/* Babylon Avatar - REAL 3D MODEL with Morph Targets! */}
-            <div className="relative w-full max-w-lg h-[500px] overflow-visible">
+            {/* Babylon Avatar - REAL 3D MODEL! */}
+            <div className="relative w-full max-w-md h-96 overflow-visible">
               <BabylonAvatar
                 isActive={session.isActive}
                 isSpeaking={isSpeaking}
@@ -427,11 +403,11 @@ export function SessionInterface() {
             </div>
             
             <div className="text-center">
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">{t('session.therapist.name')}</h3>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Dr. AI Assistant</h3>
               <p className="text-gray-600 max-w-md">
                 {session.isActive 
                   ? (isListening ? 'Listening to you...' : isSpeaking ? 'Speaking to you...' : 'Ready to listen')
-                  : t('session.therapist.ready')
+                  : 'Ready to start a compassionate conversation whenever you are'
                 }
               </p>
               {transcript && (
@@ -457,46 +433,38 @@ export function SessionInterface() {
                   className="bg-purple-600 hover:bg-purple-700 text-white px-12 py-4 text-lg rounded-full shadow-lg hover:shadow-xl transition-all"
                 >
                   <Heart className="mr-3 h-6 w-6" />
-                  {t('session.start')}
+                  Start Your Session
                 </Button>
                 
-                {/* Voice Selection - appears after clicking Start */}
+                {/* Voice Selection */}
                 {showVoiceSelector && (
                   <div className="border-2 border-purple-300 rounded-xl p-6 bg-purple-50">
-                    <h3 className="text-xl font-bold text-purple-900 mb-2">{t('session.voiceSelection.title')}</h3>
-                    <p className="text-sm text-gray-600 mb-4">{t('session.voiceSelection.subtitle')}</p>
+                    <h3 className="text-xl font-bold text-purple-900 mb-2">Choose Your Therapist's Voice</h3>
+                    <p className="text-sm text-gray-600 mb-4">Select the voice that feels most comfortable for you</p>
                     
                     <div className="flex justify-center space-x-4 mb-6">
                       <button
-                        onClick={() => {
-                          console.log('🟣 Setting voice to Joanna');
-                          setPollyVoice('Joanna');
-                          console.log('🟣 Voice state after set:', 'Joanna');
-                        }}
+                        onClick={() => setPollyVoice('Joanna')}
                         className={`px-8 py-6 rounded-xl font-bold text-lg transition transform hover:scale-105 ${
                           pollyVoice === 'Joanna'
                             ? 'bg-gradient-to-r from-pink-500 to-purple-500 text-white shadow-lg'
                             : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                         }`}
                       >
-                        👩 {t('session.voiceSelection.female')}
-                        <div className="text-sm font-normal mt-1">{t('session.voiceSelection.femaleDescription')}</div>
+                        👩 Female Voice
+                        <div className="text-sm font-normal mt-1">Joanna - Warm & Caring</div>
                       </button>
                       
                       <button
-                        onClick={() => {
-                          console.log('🔵 Setting voice to Matthew');
-                          setPollyVoice('Matthew');
-                          console.log('🔵 Voice state after set:', 'Matthew');
-                        }}
+                        onClick={() => setPollyVoice('Matthew')}
                         className={`px-8 py-6 rounded-xl font-bold text-lg transition transform hover:scale-105 ${
                           pollyVoice === 'Matthew'
                             ? 'bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-lg'
                             : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                         }`}
                       >
-                        👨 {t('session.voiceSelection.male')}
-                        <div className="text-sm font-normal mt-1">{t('session.voiceSelection.maleDescription')}</div>
+                        👨 Male Voice
+                        <div className="text-sm font-normal mt-1">Matthew - Calm & Supportive</div>
                       </button>
                     </div>
                     
@@ -506,26 +474,17 @@ export function SessionInterface() {
                         size="lg"
                         className="bg-purple-600 hover:bg-purple-700 text-white px-12 py-4"
                       >
-                        {t('session.voiceSelection.startWith').replace('{voice}', pollyVoice)}
+                        Start Session with {pollyVoice}
                       </Button>
                       <Button
                         onClick={() => setShowVoiceSelector(false)}
                         variant="outline"
                         size="lg"
                       >
-                        {t('session.voiceSelection.cancel')}
+                        Cancel
                       </Button>
                     </div>
                   </div>
-                )}
-                
-                <p className="text-sm text-gray-600">
-                  {t('session.privacy')}
-                </p>
-                {audioError && (
-                  <p className="text-sm text-red-600">
-                    ⚠️ {audioError}
-                  </p>
                 )}
               </div>
             ) : (
@@ -566,17 +525,6 @@ export function SessionInterface() {
         </CardContent>
       </Card>
 
-      {/* Activity Log - REMOVED */}
-
-      {/* Error Display */}
-      {audioError && (
-        <Alert variant="destructive" className="mb-8">
-          <AlertDescription>
-            <strong>Audio System:</strong> {audioError}
-          </AlertDescription>
-        </Alert>
-      )}
-
       {/* Ally Branding Footer */}
       <div className="text-center py-8 border-t border-gray-200">
         <div className="flex items-center justify-center mb-4">
@@ -584,7 +532,7 @@ export function SessionInterface() {
           <span className="text-gray-600">Powered by Ally & AWS Innovation</span>
         </div>
         <Badge variant="secondary" className="bg-purple-100 text-purple-800">
-          🏆 Breaking Barriers UK 2026 - Empowering Healing Through Technology
+          🏆 Breaking Barriers UK 2026 - TEST PAGE
         </Badge>
       </div>
     </div>

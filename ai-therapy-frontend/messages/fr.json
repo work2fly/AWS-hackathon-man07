@@ -166,26 +166,50 @@
     }
   },
   "session": {
-    "title": "Séance de thérapie",
-    "start": "Démarrer la séance",
+    "title": "Votre séance de thérapie IA",
+    "welcome": "Bienvenue, {name}. Prêt à continuer votre parcours de guérison avec notre thérapeute IA ?",
+    "start": "Démarrer votre séance",
     "end": "Terminer la séance",
     "pause": "Pause",
     "resume": "Reprendre",
+    "mute": "Muet",
+    "unmute": "Activer le son",
     "status": {
       "connecting": "Connexion...",
-      "connected": "Connecté",
-      "disconnected": "Déconnecté",
+      "connected": "Connecté au thérapeute IA",
+      "disconnected": "Prêt à se connecter",
       "active": "Séance active",
-      "paused": "Séance en pause"
+      "paused": "Séance en pause",
+      "sessionActive": "Votre séance est active et sécurisée",
+      "establishing": "Établissement d'une connexion sécurisée",
+      "clickStart": "Cliquez sur \"Démarrer la séance\" quand vous êtes prêt"
     },
-    "duration": "Durée",
+    "duration": "Durée de la séance",
+    "exchanges": "Échanges",
     "transcript": "Transcription",
     "notes": "Notes de séance",
     "feedback": "Comment s'est passée votre séance ?",
     "endConfirm": "Êtes-vous sûr de vouloir terminer cette séance ?",
+    "therapist": {
+      "title": "Votre thérapeute IA",
+      "subtitle": "Propulsé par Amazon Nova Sonic 2 pour des conversations naturelles et empathiques",
+      "name": "Dr. Assistant IA",
+      "listening": "Je suis là pour écouter et vous soutenir dans votre parcours de guérison...",
+      "ready": "Prêt à commencer une conversation compatissante quand vous le souhaitez"
+    },
     "privacy": "Votre conversation sera privée et sécurisée",
     "recording": "Enregistrement",
     "muted": "Muet",
+    "voiceSelection": {
+      "title": "Choisissez la Voix de Votre Thérapeute",
+      "subtitle": "Sélectionnez la voix qui vous met le plus à l'aise",
+      "female": "Voix Féminine",
+      "femaleDescription": "Joanna - Chaleureuse et Attentionnée",
+      "male": "Voix Masculine",
+      "maleDescription": "Matthew - Calme et Soutenant",
+      "startWith": "Commencer la Séance avec {voice}",
+      "cancel": "Annuler"
+    },
     "audio": {
       "system": "Système Audio",
       "ready": "Prêt",

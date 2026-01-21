@@ -166,26 +166,50 @@
     }
   },
   "session": {
-    "title": "治疗会话",
+    "title": "您的AI治疗会话",
+    "welcome": "欢迎，{name}。准备好与我们的AI治疗师继续您的康复之旅了吗？",
     "start": "开始会话",
     "end": "结束会话",
     "pause": "暂停",
     "resume": "继续",
+    "mute": "静音",
+    "unmute": "取消静音",
     "status": {
       "connecting": "连接中...",
-      "connected": "已连接",
-      "disconnected": "已断开",
-      "active": "会话进行中",
-      "paused": "会话已暂停"
+      "connected": "已连接到AI治疗师",
+      "disconnected": "准备连接",
+      "active": "活跃会话",
+      "paused": "会话已暂停",
+      "sessionActive": "您的会话处于活跃且安全状态",
+      "establishing": "正在建立安全连接",
+      "clickStart": "准备好后点击\"开始会话\""
     },
-    "duration": "持续时间",
+    "duration": "会话时间",
+    "exchanges": "交流次数",
     "transcript": "记录",
     "notes": "会话笔记",
     "feedback": "您的会话体验如何？",
     "endConfirm": "您确定要结束此会话吗？",
+    "therapist": {
+      "title": "您的AI治疗师",
+      "subtitle": "由Amazon Nova Sonic 2提供支持，实现自然、富有同理心的对话",
+      "name": "AI助理博士",
+      "listening": "我在这里倾听并支持您的康复之旅...",
+      "ready": "随时准备好与您进行富有同情心的对话"
+    },
     "privacy": "您的对话将是私密且安全的",
     "recording": "录音中",
     "muted": "已静音",
+    "voiceSelection": {
+      "title": "选择您的治疗师声音",
+      "subtitle": "选择让您感觉最舒适的声音",
+      "female": "女性声音",
+      "femaleDescription": "乔安娜 - 温暖关怀",
+      "male": "男性声音",
+      "maleDescription": "马修 - 平静支持",
+      "startWith": "使用{voice}开始会话",
+      "cancel": "取消"
+    },
     "audio": {
       "system": "音频系统",
       "ready": "就绪",

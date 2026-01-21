@@ -200,6 +200,16 @@
     "privacy": "Your conversation will be private and secure",
     "recording": "Recording",
     "muted": "Muted",
+    "voiceSelection": {
+      "title": "Choose Your Therapist's Voice",
+      "subtitle": "Select the voice that feels most comfortable for you",
+      "female": "Female Voice",
+      "femaleDescription": "Joanna - Warm & Caring",
+      "male": "Male Voice",
+      "maleDescription": "Matthew - Calm & Supportive",
+      "startWith": "Start Session with {voice}",
+      "cancel": "Cancel"
+    },
     "audio": {
       "system": "Audio System",
       "ready": "Ready",
